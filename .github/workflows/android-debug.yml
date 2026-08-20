@@ -3,6 +3,8 @@ name: Build SOMADEX Android APK
 on:
   workflow_dispatch:
   push:
+    branches: [main, "rebuild/core-v2"]
+  pull_request:
     branches: [main]
 
 jobs:
@@ -81,17 +83,32 @@ jobs:
           export/android/debug_keystore_pass = "android"
           EOF
 
-      - name: Import Godot project
+      - name: Import and compile Godot project
         shell: bash
         run: |
-          godot --headless --path . --import --quit
+          set -o pipefail
+          godot --headless --path . --import --quit 2>&1 | tee godot-import.log
+          if grep -E "SCRIPT ERROR:|Parse Error:|Compile Error:|Failed to load script" godot-import.log; then
+            echo "GDScript compilation failed"
+            exit 1
+          fi
+
+      - name: Smoke-test main scene
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --path . --quit-after 2 2>&1 | tee godot-smoke.log
+          if grep -E "SCRIPT ERROR:|Parse Error:|Compile Error:|Failed to load script" godot-smoke.log; then
+            echo "Godot smoke test found script errors"
+            exit 1
+          fi
 
       - name: Export debug APK
         shell: bash
         run: |
           mkdir -p build
           godot --headless --path . --export-debug "Android" build/SOMADEX-debug.apk
-          test -f build/SOMADEX-debug.apk
+          test -s build/SOMADEX-debug.apk
           ls -lh build/SOMADEX-debug.apk
 
       - name: Upload APK
