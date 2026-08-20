@@ -50,7 +50,7 @@ static var _TRAINERS: Dictionary = {
 		"title": "Strażniczka Północnej Bramy",
 		"party": [
 			{"name": "Kotwiczek", "level": 9},
-			{"name": "Dwumik", "level": 9},
+			{"name": "Kompasik", "level": 9},
 			{"name": "Nucik", "level": 10}
 		],
 		"reward_xp": 74,
