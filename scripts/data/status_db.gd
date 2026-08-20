@@ -1,33 +1,54 @@
 extends RefCounted
 
 static var _STATUSES: Dictionary = {
-	"soaked": {"name": "MOKRY", "default_turns": 2, "description": "Wzmacnia reakcje z elektrycznością i chłodem."},
-	"charged": {"name": "NAŁADOWANY", "default_turns": 2, "description": "Pole jest podatne na reakcje falowe."},
-	"burn": {"name": "OPARZENIE", "default_turns": 3, "description": "Traci HP na końcu rundy.", "tick_damage": 2},
-	"unstable": {"name": "NIESTABILNY", "default_turns": 2, "description": "Otrzymuje więcej obrażeń rezonansowych."},
-	"marked": {"name": "OZNACZONY", "default_turns": 3, "description": "Łatwiejszy chwyt po analizie."},
-	"disrupted": {"name": "ZAKŁÓCONY", "default_turns": 1, "description": "Zadaje mniej obrażeń.", "outgoing_mult": 0.75},
-	"rooted": {"name": "UKORZENIONY", "default_turns": 2, "description": "Trudniej ucieka, łatwiej schwytać."},
-	"armor_break": {"name": "PĘKNIĘTA OSŁONA", "default_turns": 2, "description": "Podatność na ruchy fizyczne."},
-	"bleed": {"name": "NARUSZENIE", "default_turns": 2, "description": "Traci HP na końcu rundy.", "tick_damage": 1},
-	"chilled": {"name": "WYCHŁODZONY", "default_turns": 2, "description": "Obniżona dynamika pola."},
-	"frozen": {"name": "ZAMROŻONY", "default_turns": 1, "description": "Silna kontrola po reakcji chłodu."},
-	"oiled": {"name": "POKRYTY ŻYWICĄ", "default_turns": 3, "description": "Silna podatność na ogień."},
-	"focused": {"name": "SKUPIONY", "default_turns": 1, "description": "Następny atak jest wzmocniony.", "outgoing_mult": 1.15},
-	"regen": {"name": "REGENERACJA", "default_turns": 2, "description": "Odzyskuje HP na końcu rundy.", "tick_heal": 2},
-	"stagger": {"name": "ZACHWIANIE", "default_turns": 1, "description": "Osłabiona obrona i tempo."},
-	"silence": {"name": "CISZA", "default_turns": 1, "description": "Zakłóca specjalne komendy."}
+	"soaked": {"name":"MOKRY","default_turns":2,"description":"Wzmacnia reakcje z elektrycznością i chłodem."},
+	"charged": {"name":"NAŁADOWANY","default_turns":2,"description":"Pole jest podatne na reakcje falowe."},
+	"burn": {"name":"OPARZENIE","default_turns":3,"description":"Traci HP na końcu rundy.","tick_damage":2},
+	"unstable": {"name":"NIESTABILNY","default_turns":2,"description":"Otrzymuje więcej obrażeń rezonansowych."},
+	"marked": {"name":"OZNACZONY","default_turns":3,"description":"Łatwiejszy chwyt i lepsza analiza słabości."},
+	"disrupted": {"name":"ZAKŁÓCONY","default_turns":1,"description":"Zadaje mniej obrażeń.","outgoing_mult":0.75},
+	"rooted": {"name":"UKORZENIONY","default_turns":2,"description":"Trudniej ucieka, łatwiej schwytać."},
+	"armor_break": {"name":"PĘKNIĘTA OSŁONA","default_turns":2,"description":"Podatność na ruchy fizyczne i torsyjne."},
+	"bleed": {"name":"KRWAWIENIE","default_turns":2,"description":"Traci HP na końcu rundy.","tick_damage":1},
+	"chilled": {"name":"WYCHŁODZONY","default_turns":2,"description":"Obniżona dynamika pola."},
+	"frozen": {"name":"ZAMROŻONY","default_turns":1,"description":"Silna kontrola po reakcji chłodu."},
+	"oiled": {"name":"POKRYTY ŻYWICĄ","default_turns":3,"description":"Silna podatność na ogień."},
+	"focused": {"name":"SKUPIONY","default_turns":1,"description":"Następny atak jest wzmocniony.","outgoing_mult":1.15},
+	"regen": {"name":"REGENERACJA","default_turns":2,"description":"Odzyskuje HP na końcu rundy.","tick_heal":2},
+	"stagger": {"name":"ZACHWIANIE","default_turns":1,"description":"Osłabiona obrona i tempo."},
+	"silence": {"name":"CISZA","default_turns":1,"description":"Zakłóca specjalne komendy."},
+	"poisoned": {"name":"ZATRUTY","default_turns":3,"description":"Traci HP przez kilka rund.","tick_damage":2},
+	"paralyzed": {"name":"PORAŻONY","default_turns":2,"description":"Obniża dynamikę i zwiększa podatność na kaskady.","outgoing_mult":0.90},
+	"confused": {"name":"DEZORIENTACJA","default_turns":2,"description":"Utrudnia przewidywanie i wzmacnia ruchy czujnikowe.","outgoing_mult":0.92},
+	"vulnerable": {"name":"PODATNY","default_turns":2,"description":"Otwarte pole przyjmuje silniejsze uderzenia."}
 }
 
 static var _INTERACTIONS: Array[Dictionary] = [
-	{"move_type": "ELECTRIC", "requires": "soaked", "multiplier": 1.35, "label": "PRZEWODZENIE"},
-	{"move_type": "ICE", "requires": "soaked", "multiplier": 1.25, "label": "SZOK TERMICZNY"},
-	{"move_type": "FIRE", "requires": "oiled", "multiplier": 1.40, "label": "ZAPŁON"},
-	{"move_type": "PHYSICAL", "requires": "armor_break", "multiplier": 1.25, "label": "PRZEŁAMANIE"},
-	{"move_type": "REZONANS", "requires": "unstable", "multiplier": 1.25, "label": "REZONANS KRYTYCZNY"},
-	{"move_type": "WAVE", "requires": "charged", "multiplier": 1.20, "label": "SPRZĘŻENIE"},
-	{"move_type": "OSC", "requires": "rooted", "multiplier": 1.15, "label": "ODBICIE"},
-	{"move_type": "PHYSICAL", "requires": "stagger", "multiplier": 1.15, "label": "WYKORZYSTANIE ZACHWIANIA"}
+	{"move_type":"ELECTRIC","requires":"soaked","multiplier":1.35,"label":"PRZEWODZENIE","apply":"paralyzed"},
+	{"move_type":"ICE","requires":"soaked","multiplier":1.25,"label":"SZOK TERMICZNY","apply":"frozen"},
+	{"move_type":"FIRE","requires":"oiled","multiplier":1.40,"label":"ZAPŁON","apply":"burn"},
+	{"move_type":"PHYSICAL","requires":"armor_break","multiplier":1.25,"label":"PRZEŁAMANIE"},
+	{"move_type":"REZONANS","requires":"unstable","multiplier":1.25,"label":"REZONANS KRYTYCZNY"},
+	{"move_type":"WAVE","requires":"charged","multiplier":1.20,"label":"SPRZĘŻENIE"},
+	{"move_type":"FALA","requires":"charged","multiplier":1.20,"label":"SPRZĘŻENIE"},
+	{"move_type":"OSC","requires":"rooted","multiplier":1.15,"label":"ODBICIE"},
+	{"move_type":"PHYSICAL","requires":"stagger","multiplier":1.15,"label":"WYKORZYSTANIE ZACHWIANIA"},
+	{"move_type":"FIRE","requires":"soaked","multiplier":0.85,"label":"PARA"},
+	{"move_type":"ELECTRIC","requires":"charged","multiplier":1.15,"label":"PRZECIĄŻENIE"},
+	{"move_type":"ICE","requires":"chilled","multiplier":1.35,"label":"GŁĘBOKIE ZAMROŻENIE","apply":"frozen"},
+	{"move_type":"PHYSICAL","requires":"frozen","multiplier":1.30,"label":"ROZKRUSZENIE"},
+	{"move_type":"REZONANS","requires":"marked","multiplier":1.10,"label":"ZESTROJENIE CELU"},
+	{"move_type":"WAVE","requires":"marked","multiplier":1.10,"label":"ECHO NAMIERZENIA"},
+	{"move_type":"TORSJA","requires":"armor_break","multiplier":1.30,"label":"PĘKNIĘCIE TORSYJNE"},
+	{"move_type":"KIERUNEK","requires":"marked","multiplier":1.25,"label":"WEKTOR SŁABOŚCI"},
+	{"move_type":"NAPIĘCIE","requires":"rooted","multiplier":1.20,"label":"DOCIĄŻONA KOTWA"},
+	{"move_type":"ŚLIZG","requires":"rooted","multiplier":1.15,"label":"ŚCINANIE PODPARCIA"},
+	{"move_type":"STABIL","requires":"unstable","multiplier":1.25,"label":"KONTRAST STABILNOŚCI"},
+	{"move_type":"CZUCIE","requires":"confused","multiplier":1.20,"label":"PRZEWIDZENIE"},
+	{"move_type":"PHYSICAL","requires":"vulnerable","multiplier":1.25,"label":"OTWARTA GARDA"},
+	{"move_type":"REZONANS","requires":"vulnerable","multiplier":1.20,"label":"OTWARTE POLE"},
+	{"move_type":"ELECTRIC","requires":"paralyzed","multiplier":1.10,"label":"KASKADA"},
+	{"move_type":"OSC","requires":"confused","multiplier":1.15,"label":"DEZORIENTACJA OSCYLACYJNA"}
 ]
 
 static func ids() -> Array[String]:
@@ -58,7 +79,7 @@ static func remove(statuses: Dictionary, status_id: String) -> void:
 	statuses.erase(status_id)
 
 static func cleanse_stability(statuses: Dictionary) -> void:
-	for status_id: String in ["unstable", "disrupted", "stagger", "silence"]:
+	for status_id: String in ["unstable","disrupted","stagger","silence","confused"]:
 		statuses.erase(status_id)
 
 static func tick(statuses: Dictionary) -> Dictionary:
@@ -73,22 +94,19 @@ static func tick(statuses: Dictionary) -> Dictionary:
 static func tick_damage(statuses: Dictionary) -> int:
 	var total: int = 0
 	for key: Variant in statuses.keys():
-		var data: Dictionary = info(str(key))
-		total += maxi(0, int(data.get("tick_damage", 0)))
+		total += maxi(0, int(info(str(key)).get("tick_damage", 0)))
 	return total
 
 static func tick_heal(statuses: Dictionary) -> int:
 	var total: int = 0
 	for key: Variant in statuses.keys():
-		var data: Dictionary = info(str(key))
-		total += maxi(0, int(data.get("tick_heal", 0)))
+		total += maxi(0, int(info(str(key)).get("tick_heal", 0)))
 	return total
 
 static func outgoing_multiplier(statuses: Dictionary) -> float:
 	var result: float = 1.0
 	for key: Variant in statuses.keys():
-		var data: Dictionary = info(str(key))
-		result *= float(data.get("outgoing_mult", 1.0))
+		result *= float(info(str(key)).get("outgoing_mult", 1.0))
 	return result
 
 static func damage_multiplier(move_type: String, target_statuses: Dictionary) -> float:
@@ -102,13 +120,33 @@ static func damage_multiplier(move_type: String, target_statuses: Dictionary) ->
 	return result
 
 static func interaction_label(move_type: String, target_statuses: Dictionary) -> String:
+	var labels: Array[String] = []
 	for interaction: Dictionary in _INTERACTIONS:
 		if str(interaction.get("move_type", "")) != move_type:
 			continue
 		var required: String = str(interaction.get("requires", ""))
 		if has_status(target_statuses, required):
-			return str(interaction.get("label", "REAKCJA"))
-	return ""
+			labels.append(str(interaction.get("label", "REAKCJA")))
+	var shown: Array[String] = []
+	for i: int in range(mini(2, labels.size())):
+		shown.append(labels[i])
+	return " + ".join(shown)
+
+static func resolve_reaction(move_type: String, target_statuses: Dictionary) -> Dictionary:
+	for interaction: Dictionary in _INTERACTIONS:
+		if str(interaction.get("move_type", "")) != move_type:
+			continue
+		var required: String = str(interaction.get("requires", ""))
+		if not has_status(target_statuses, required):
+			continue
+		var applied: String = str(interaction.get("apply", ""))
+		if not applied.is_empty():
+			apply(target_statuses, applied)
+		var consumed: String = str(interaction.get("consume", ""))
+		if not consumed.is_empty():
+			remove(target_statuses, consumed)
+		return {"label":str(interaction.get("label", "REAKCJA")),"applied":applied,"consumed":consumed,"multiplier":float(interaction.get("multiplier", 1.0))}
+	return {}
 
 static func capture_modifier(statuses: Dictionary) -> float:
 	var bonus: float = 0.0
@@ -116,22 +154,27 @@ static func capture_modifier(statuses: Dictionary) -> float:
 	if has_status(statuses, "rooted"): bonus += 0.06
 	if has_status(statuses, "soaked"): bonus += 0.02
 	if has_status(statuses, "frozen"): bonus += 0.08
+	if has_status(statuses, "paralyzed"): bonus += 0.05
 	return bonus
 
 static func escape_modifier(statuses: Dictionary) -> float:
 	var modifier: float = 0.0
 	if has_status(statuses, "rooted"): modifier -= 0.18
 	if has_status(statuses, "stagger"): modifier -= 0.08
+	if has_status(statuses, "paralyzed"): modifier -= 0.08
 	return modifier
 
 static func summary(statuses: Dictionary, limit: int = 3) -> String:
 	var labels: Array[String] = []
 	for key: Variant in statuses.keys():
-		if labels.size() >= limit: break
+		if labels.size() >= limit:
+			break
 		var status_id: String = str(key)
-		var data: Dictionary = info(status_id)
-		labels.append(str(data.get("name", status_id.to_upper())))
+		labels.append(str(info(status_id).get("name", status_id.to_upper())))
 	return " · ".join(labels)
 
 static func interaction_count() -> int:
 	return _INTERACTIONS.size()
+
+static func interactions() -> Array[Dictionary]:
+	return _INTERACTIONS.duplicate(true)

@@ -1,7 +1,8 @@
-extends "res://scripts/battle/animated_battle_screen.gd"
+extends "res://scripts/battle/rpg_battle_screen.gd"
 
 const TRAINERS = preload("res://scripts/data/alpha1_trainer_db.gd")
 const MONSTERS = preload("res://scripts/data/monster_db.gd")
+const BATTLE_MODES = preload("res://scripts/data/battle_mode_db.gd")
 
 var trainer_id: String = ""
 var trainer_name: String = "Trener"
@@ -43,6 +44,7 @@ func setup_trainer(
 		talent_levels,
 		loadout
 	)
+	set_battle_mode(str(data.get("battle_mode", BATTLE_MODES.MODE_RESONANCE)))
 
 func _ready() -> void:
 	super._ready()
@@ -86,6 +88,8 @@ func _win(lines: Array[String]) -> void:
 		enemy_statuses.clear()
 		enemy_guard = false
 		enemy_tex = ART.texture_for(next_name)
+		enemy_data = _normalize_creature_moves(enemy_data)
+		enemy_passive_id = PASSIVES.default_for_creature(enemy_data)
 		enemy_switched_this_turn = true
 		lines.append("%s wysyła %s Lv.%d!" % [trainer_name, next_name, enemy_level])
 		queue_redraw()
