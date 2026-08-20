@@ -3,7 +3,11 @@ extends SceneTree
 const DB = preload("res://scripts/data/monster_db.gd")
 const ZONES = preload("res://scripts/data/zone_db.gd")
 const NPCS = preload("res://scripts/data/alpha1_npc_db.gd")
+const PICKUPS = preload("res://scripts/data/alpha1_pickup_db.gd")
+const ITEMS = preload("res://scripts/data/item_db.gd")
 const ENCOUNTERS = preload("res://scripts/data/alpha1_encounter_db.gd")
+const STATE = preload("res://scripts/core/game_state.gd")
+const GAME = preload("res://scripts/game.gd")
 const TILE_ART = preload("res://scripts/world/vela_tile_art.gd")
 const CHARACTER_ART = preload("res://scripts/world/alpha1_character_art.gd")
 const MONSTER_ART = preload("res://scripts/data/monster_art_alpha.gd")
@@ -60,6 +64,35 @@ func _initialize() -> void:
 	_expect(CHARACTER_ART.player_texture(Vector2i.DOWN, false, 0) != null, "player character sprite atlas failed to load", errors)
 	_expect(CHARACTER_ART.player_texture(Vector2i.UP, true, 1) != null, "player walk animation frame failed to load", errors)
 	_expect(CHARACTER_ART.npc_texture("mira") != null, "NPC character sprite atlas failed to load", errors)
+
+	_expect(PICKUPS.count() == 12, "Alpha 1 Vela must contain twelve authored world pickups", errors)
+	var pickup_ids: Dictionary = {}
+	for zone_id: String in expected:
+		for pickup: Dictionary in PICKUPS.in_zone(zone_id):
+			var pickup_id: String = str(pickup.get("id", ""))
+			var tile: Vector2i = PICKUPS.tile_of(pickup)
+			_expect(not pickup_id.is_empty(), "pickup without id in " + zone_id, errors)
+			_expect(not pickup_ids.has(pickup_id), "duplicate pickup id: " + pickup_id, errors)
+			pickup_ids[pickup_id] = true
+			_expect(tile.x >= 0 and tile.x < 15 and tile.y >= 0 and tile.y < 23, "pickup out of bounds: " + pickup_id, errors)
+			var rows: Array[String] = ZONES.map_rows(zone_id)
+			var code: String = rows[tile.y].substr(tile.x, 1)
+			_expect(code in ["P", "G"], "pickup is not on a walkable exploration tile: " + pickup_id, errors)
+			_expect(NPCS.at(zone_id, tile).is_empty(), "pickup overlaps NPC: " + pickup_id, errors)
+			_expect(ITEMS.ids().has(str(pickup.get("item", ""))), "pickup references unknown item: " + pickup_id, errors)
+			_expect(int(pickup.get("amount", 0)) > 0, "pickup has invalid amount: " + pickup_id, errors)
+
+	var game: Control = GAME.new()
+	game.profile = STATE.new_profile("Luzik")
+	var before_inventory: Dictionary = (game.profile.get("inventory", {}) as Dictionary).duplicate(true)
+	game._on_pickup_requested("outskirts_regen_stone")
+	var once_inventory: Dictionary = (game.profile.get("inventory", {}) as Dictionary).duplicate(true)
+	game._on_pickup_requested("outskirts_regen_stone")
+	var twice_inventory: Dictionary = game.profile.get("inventory", {}) as Dictionary
+	_expect(int(once_inventory.get("regenerators", 0)) == int(before_inventory.get("regenerators", 0)) + 1, "pickup did not grant configured reward", errors)
+	_expect(int(twice_inventory.get("regenerators", 0)) == int(once_inventory.get("regenerators", 0)), "pickup reward can be collected twice", errors)
+	_expect(bool((game.profile.get("dialogue_flags", {}) as Dictionary).get(PICKUPS.flag_id("outskirts_regen_stone"), false)), "pickup persistent flag was not stored", errors)
+	game.free()
 
 	_expect(DB.all_names().size() >= 11, "Alpha 1 active monster database has fewer than eleven species", errors)
 	var wild_species: Array[String] = ENCOUNTERS.all_species()
