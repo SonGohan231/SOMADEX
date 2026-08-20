@@ -1,11 +1,13 @@
 ; Engine configuration file.
-; SOMADEX mobile portrait build
+; SOMADEX Core v0.2 - portrait Android build
 
 config_version=5
 
 [application]
 
 config/name="SOMADEX"
+config/description="Retro collection RPG - Kroniki Rezonansu"
+config/version="0.2.0"
 run/main_scene="res://scenes/Main.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
