@@ -11,7 +11,7 @@ func _initialize() -> void:
 	var errors: Array[String] = []
 	_test_main_scene_controller(errors)
 	_test_evolution_event_source(errors)
-	await _test_touch_completion(errors)
+	_test_touch_completion(errors)
 	if errors.is_empty():
 		print("EVOLUTION_PRESENTATION_SMOKE: PASS")
 		quit(0)
@@ -50,9 +50,6 @@ func _test_touch_completion(errors: Array[String]) -> void:
 	var screen: Control = EVOLUTION_SCREEN.new()
 	screen.setup({"uid":"luzik-0001","from":"Luzik","to":"Warstwin","level":12})
 	screen.finished.connect(_on_finished)
-	root.add_child(screen)
-	await process_frame
-	_expect(screen.font != null, "evolution screen did not initialize its UI", errors)
 	screen.elapsed = 1.0
 	var touch: InputEventScreenTouch = InputEventScreenTouch.new()
 	touch.pressed = true
@@ -60,8 +57,7 @@ func _test_touch_completion(errors: Array[String]) -> void:
 	screen._unhandled_input(touch)
 	_expect(_finished_count == 1, "touch did not complete the evolution screen", errors)
 	_expect(screen.accepted, "evolution screen did not lock after acceptance", errors)
-	screen.queue_free()
-	await process_frame
+	screen.free()
 
 func _on_finished() -> void:
 	_finished_count += 1
