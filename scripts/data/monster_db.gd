@@ -19,10 +19,10 @@ static var _MONSTERS: Dictionary = {
 		"accent": Color("55e8de"),
 		"description": "Stabilizuje pole i wzmacnia kolejne ruchy drużyny.",
 		"moves": [
-			{"name": "Impuls Warstwowy", "power": 7, "kind": "attack", "accuracy": 0.96, "priority": 0, "cost": 1, "status": "", "note": "Pewny atak rezonansowy."},
-			{"name": "Mikroślizg", "power": 5, "kind": "attack", "accuracy": 1.00, "priority": 1, "cost": 1, "status": "", "note": "Szybki, precyzyjny ruch."},
-			{"name": "Synchronizacja", "power": 6, "kind": "heal", "accuracy": 1.00, "priority": 0, "cost": 1, "status": "stabilny", "note": "Odzyskuje HP i stabilizuje rytm."},
-			{"name": "Osłona Fazowa", "power": 0, "kind": "guard", "accuracy": 1.00, "priority": 1, "cost": 1, "status": "guard", "note": "Zmniejsza następne obrażenia."}
+			{"name": "Impuls Warstwowy", "power": 7, "kind": "attack", "move_type": "REZONANS", "accuracy": 0.96, "priority": 0, "cost": 1, "status": "unstable", "status_chance": 0.35, "note": "Może destabilizować pole przeciwnika."},
+			{"name": "Mikroślizg", "power": 5, "kind": "attack", "move_type": "PHYSICAL", "accuracy": 1.00, "priority": 1, "cost": 1, "status": "armor_break", "status_chance": 0.20, "note": "Szybki ruch mogący naruszyć osłonę."},
+			{"name": "Synchronizacja", "power": 6, "kind": "heal", "move_type": "SUPPORT", "accuracy": 1.00, "priority": 0, "cost": 1, "status": "stabilny", "status_chance": 1.00, "note": "Odzyskuje HP i usuwa destabilizację."},
+			{"name": "Osłona Fazowa", "power": 0, "kind": "guard", "move_type": "SUPPORT", "accuracy": 1.00, "priority": 1, "cost": 1, "status": "guard", "status_chance": 1.00, "note": "Zmniejsza następne obrażenia."}
 		]
 	},
 	"Bocznik": {
@@ -43,10 +43,10 @@ static var _MONSTERS: Dictionary = {
 		"accent": Color("f0c967"),
 		"description": "Pracuje na zmianie kierunku, szybkości i kontrach.",
 		"moves": [
-			{"name": "Cięcie Styczne", "power": 9, "kind": "attack", "accuracy": 0.88, "priority": 0, "cost": 1, "status": "", "note": "Mocny atak kontaktowy."},
-			{"name": "Boczny Skok", "power": 6, "kind": "attack", "accuracy": 0.96, "priority": 1, "cost": 1, "status": "", "note": "Szybki atak z flanki."},
-			{"name": "Przeniesienie", "power": 5, "kind": "heal", "accuracy": 1.00, "priority": 0, "cost": 1, "status": "", "note": "Odzyskuje część HP."},
-			{"name": "Kontra Ścinająca", "power": 0, "kind": "guard", "accuracy": 1.00, "priority": 2, "cost": 1, "status": "guard", "note": "Redukuje kolejne obrażenia."}
+			{"name": "Cięcie Styczne", "power": 9, "kind": "attack", "move_type": "PHYSICAL", "accuracy": 0.88, "priority": 0, "cost": 1, "status": "armor_break", "status_chance": 0.35, "note": "Mocny atak z szansą przełamania osłony."},
+			{"name": "Boczny Skok", "power": 6, "kind": "attack", "move_type": "PHYSICAL", "accuracy": 0.96, "priority": 1, "cost": 1, "status": "stagger", "status_chance": 0.25, "note": "Szybki atak z flanki."},
+			{"name": "Przeniesienie", "power": 5, "kind": "heal", "move_type": "SUPPORT", "accuracy": 1.00, "priority": 0, "cost": 1, "status": "regen", "status_chance": 1.00, "note": "Odzyskuje część HP i uruchamia regenerację."},
+			{"name": "Kontra Ścinająca", "power": 0, "kind": "guard", "move_type": "SUPPORT", "accuracy": 1.00, "priority": 2, "cost": 1, "status": "guard", "status_chance": 1.00, "note": "Redukuje kolejne obrażenia."}
 		]
 	},
 	"Wahlik": {
@@ -67,10 +67,10 @@ static var _MONSTERS: Dictionary = {
 		"accent": Color("7ad56f"),
 		"description": "Reaguje na ruch i łatwo wpada w serię oscylacji.",
 		"moves": [
-			{"name": "Oscylo-Cios", "power": 6, "kind": "attack", "accuracy": 0.94, "priority": 0, "cost": 1, "status": "", "note": "Podstawowy ruch Wahlików."},
-			{"name": "Wahnięcie", "power": 5, "kind": "attack", "accuracy": 0.98, "priority": 1, "cost": 1, "status": "", "note": "Krótki skok fazowy."},
-			{"name": "Drżenie", "power": 7, "kind": "attack", "accuracy": 0.84, "priority": 0, "cost": 1, "status": "", "note": "Nieregularny impuls."},
-			{"name": "Zastój", "power": 0, "kind": "guard", "accuracy": 1.00, "priority": 1, "cost": 1, "status": "guard", "note": "Chwilowa ochrona."}
+			{"name": "Oscylo-Cios", "power": 6, "kind": "attack", "move_type": "OSC", "accuracy": 0.94, "priority": 0, "cost": 1, "status": "unstable", "status_chance": 0.20, "note": "Podstawowy ruch oscylacyjny."},
+			{"name": "Wahnięcie", "power": 5, "kind": "attack", "move_type": "OSC", "accuracy": 0.98, "priority": 1, "cost": 1, "status": "stagger", "status_chance": 0.20, "note": "Krótki skok fazowy."},
+			{"name": "Drżenie", "power": 7, "kind": "attack", "move_type": "REZONANS", "accuracy": 0.84, "priority": 0, "cost": 1, "status": "unstable", "status_chance": 0.45, "note": "Nieregularny impuls destabilizujący."},
+			{"name": "Zastój", "power": 0, "kind": "guard", "move_type": "SUPPORT", "accuracy": 1.00, "priority": 1, "cost": 1, "status": "guard", "status_chance": 1.00, "note": "Chwilowa ochrona."}
 		]
 	},
 	"Nucik": {
@@ -91,10 +91,10 @@ static var _MONSTERS: Dictionary = {
 		"accent": Color("b997ff"),
 		"description": "Buduje kombinacje na rytmie, fali i zmianie fazy.",
 		"moves": [
-			{"name": "Ton Rezonansu", "power": 8, "kind": "attack", "accuracy": 0.92, "priority": 0, "cost": 1, "status": "", "note": "Fala o wysokiej stabilności."},
-			{"name": "Echo Mantry", "power": 7, "kind": "attack", "accuracy": 0.96, "priority": 0, "cost": 1, "status": "", "note": "Powtarzalny impuls falowy."},
-			{"name": "Dostrojenie", "power": 6, "kind": "heal", "accuracy": 1.00, "priority": 0, "cost": 1, "status": "stabilny", "note": "Przywraca HP przez synchronizację."},
-			{"name": "Cisza Międzyfazowa", "power": 0, "kind": "guard", "accuracy": 1.00, "priority": 1, "cost": 1, "status": "guard", "note": "Ogranicza siłę następnego trafienia."}
+			{"name": "Ton Rezonansu", "power": 8, "kind": "attack", "move_type": "WAVE", "accuracy": 0.92, "priority": 0, "cost": 1, "status": "soaked", "status_chance": 0.35, "note": "Fala może nasycić pole i przygotować reakcję."},
+			{"name": "Echo Mantry", "power": 7, "kind": "attack", "move_type": "REZONANS", "accuracy": 0.96, "priority": 0, "cost": 1, "status": "charged", "status_chance": 0.25, "note": "Powtarzalny impuls wzbudzający pole."},
+			{"name": "Dostrojenie", "power": 6, "kind": "heal", "move_type": "SUPPORT", "accuracy": 1.00, "priority": 0, "cost": 1, "status": "stabilny", "status_chance": 1.00, "note": "Przywraca HP i usuwa zakłócenia."},
+			{"name": "Cisza Międzyfazowa", "power": 0, "kind": "guard", "move_type": "SUPPORT", "accuracy": 1.00, "priority": 1, "cost": 1, "status": "guard", "status_chance": 1.00, "note": "Ogranicza siłę następnego trafienia."}
 		]
 	}
 }
@@ -118,7 +118,9 @@ static func all_names() -> Array[String]:
 	var names: Array[String] = []
 	for key: Variant in _MONSTERS.keys():
 		names.append(str(key))
-	names.sort_custom(func(a: String, b: String) -> bool: return int((_MONSTERS[a] as Dictionary)["id"]) < int((_MONSTERS[b] as Dictionary)["id"]))
+	names.sort_custom(func(a: String, b: String) -> bool:
+		return int((_MONSTERS[a] as Dictionary)["id"]) < int((_MONSTERS[b] as Dictionary)["id"])
+	)
 	return names
 
 static func starters() -> Array[String]:

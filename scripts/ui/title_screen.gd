@@ -54,7 +54,7 @@ func _draw_brand() -> void:
 	draw_string(font, Vector2(20, 88), "SOMADEX", HORIZONTAL_ALIGNMENT_CENTER, 320, 38, Color(0.28, 0.95, 0.91, glow))
 	draw_string(font, Vector2(20, 119), "KRONIKI REZONANSU", HORIZONTAL_ALIGNMENT_CENTER, 320, 14, Color("b9d9d7"))
 	draw_line(Vector2(46, 138), Vector2(314, 138), Color("2c8e90"), 2.0)
-	draw_string(font, Vector2(50, 158), "FOUNDATION v0.8 · retro collection RPG", HORIZONTAL_ALIGNMENT_CENTER, 260, 10, Color("6e9297"))
+	draw_string(font, Vector2(50, 158), "FOUNDATION 1.0 · retro collection RPG", HORIZONTAL_ALIGNMENT_CENTER, 260, 10, Color("6e9297"))
 
 func _draw_hero() -> void:
 	var card: Rect2 = Rect2(40, 184, 280, 212)
@@ -85,7 +85,7 @@ func _draw_buttons() -> void:
 		if i == 1 and not has_save:
 			draw_string(font, Vector2(rect.end.x - 98, rect.position.y + 32), "brak zapisu", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("586870"))
 	if selected == 2:
-		draw_string(font, Vector2(25, 690), "profil v8 · drużyna · questy · 5 drzewek · strefy", HORIZONTAL_ALIGNMENT_CENTER, 310, 10, Color("789aa0"))
+		draw_string(font, Vector2(25, 690), "profil v10 · drużyna · sprzęt · statusy · REZONANS · strefy", HORIZONTAL_ALIGNMENT_CENTER, 310, 9, Color("789aa0"))
 	else:
 		draw_string(font, Vector2(25, 690), "Dotknij opcji lub użyj strzałek", HORIZONTAL_ALIGNMENT_CENTER, 310, 11, Color("789aa0"))
 
@@ -93,7 +93,7 @@ func _draw_notice() -> void:
 	var r: Rect2 = Rect2(38, 714, 284, 52)
 	draw_rect(r, Color("1b3138"))
 	draw_rect(r, Color("47d9d2"), false, 2.0)
-	draw_string(font, Vector2(50, 746), notice, HORIZONTAL_ALIGNMENT_CENTER, 260, 12, Color("eafffc"))
+	draw_string(font, Vector2(50, 746), notice, HORIZONTAL_ALIGNMENT_CENTER, 260, 11, Color("eafffc"))
 
 func _button_rect(index: int) -> Rect2:
 	return Rect2(46, 438 + index * 70, 268, 54)
@@ -130,6 +130,6 @@ func _activate_selected() -> void:
 				notice = "Brak zapisu gry"
 				notice_until = Time.get_ticks_msec() + 2400
 		2:
-			notice = "SOMADEX 0.8 · kolekcja · rozwój trenera · rezonans"
+			notice = "Foundation 1.0 · party · sprzęt · statusy · 5 akcji trenera"
 			notice_until = Time.get_ticks_msec() + 3200
 	queue_redraw()
