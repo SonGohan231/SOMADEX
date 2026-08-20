@@ -118,6 +118,10 @@ jobs:
         shell: bash
         run: godot --headless --path . --script res://scripts/tests/mobile_input_smoke.gd
 
+      - name: Validate 50-family creature catalog
+        shell: bash
+        run: godot --headless --path . --script res://scripts/tests/creature_catalog_smoke.gd
+
       - name: Export debug APK
         shell: bash
         run: |
@@ -129,7 +133,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SOMADEX-Foundation-1.0-Android-debug
+          name: SOMADEX-Alpha1-Android-debug
           path: build/SOMADEX-debug.apk
           if-no-files-found: error
           retention-days: 14
