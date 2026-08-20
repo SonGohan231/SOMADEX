@@ -2,7 +2,7 @@ extends "res://scripts/game_art.gd"
 
 const ANIM_STATE = preload("res://scripts/core/game_state.gd")
 const ANIM_ENCOUNTERS = preload("res://scripts/data/alpha1_encounter_db.gd")
-const ANIM_BATTLE_SCREEN = preload("res://scripts/battle/animated_battle_screen.gd")
+const ANIM_BATTLE_SCREEN = preload("res://scripts/battle/rpg_battle_screen.gd")
 
 func _start_battle(tile: Vector2i) -> void:
 	ANIM_STATE.set_player_tile(profile, tile)
