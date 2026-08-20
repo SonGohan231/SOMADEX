@@ -6,6 +6,8 @@ const DB = preload("res://scripts/data/monster_db.gd")
 const PROGRESSION = preload("res://scripts/data/progression_db.gd")
 const ZONES = preload("res://scripts/data/zone_db.gd")
 const ENCOUNTERS = preload("res://scripts/data/alpha1_encounter_db.gd")
+const TRAINERS = preload("res://scripts/data/alpha1_trainer_db.gd")
+const ALPHA_QUESTS = preload("res://scripts/data/alpha1_quest_db.gd")
 const EQUIPMENT = preload("res://scripts/data/equipment_db.gd")
 const TITLE_SCREEN = preload("res://scripts/ui/title_screen.gd")
 const INTRO_SCREEN = preload("res://scripts/ui/intro_screen.gd")
@@ -13,6 +15,7 @@ const STARTER_SCREEN = preload("res://scripts/ui/starter_screen.gd")
 const WORLD_SCREEN = preload("res://scripts/world/alpha1_world_screen.gd")
 const PAUSE_MENU = preload("res://scripts/ui/pause_menu.gd")
 const BATTLE_SCREEN = preload("res://scripts/battle/battle_screen.gd")
+const TRAINER_BATTLE_SCREEN = preload("res://scripts/battle/alpha1_trainer_battle_screen.gd")
 
 var current_screen: Control
 var profile: Dictionary = STATE.new_profile()
@@ -70,13 +73,16 @@ func _show_world() -> void:
 		STATE.set_player_tile(profile, ZONES.spawn_tile(zone_id))
 	var screen: Control = WORLD_SCREEN.new()
 	var quest_stage: int = int(profile.get("quest_stage", 0))
+	var quest_short: String = PROGRESSION.quest_short(quest_stage)
+	if quest_stage >= 5:
+		quest_short = ALPHA_QUESTS.short(quest_stage)
 	screen.setup(
 		STATE.active_name(profile),
 		STATE.player_tile(profile),
 		int(profile.get("trainer_level", 1)),
 		bool(profile.get("haptics", true)),
 		zone_id,
-		PROGRESSION.quest_short(quest_stage),
+		quest_short,
 		profile.get("dialogue_flags", {}) as Dictionary
 	)
 	screen.menu_requested.connect(_open_menu)
@@ -84,6 +90,7 @@ func _show_world() -> void:
 	screen.station_requested.connect(_on_station_requested)
 	screen.zone_change_requested.connect(_on_zone_change_requested)
 	screen.dialogue_flag_requested.connect(_on_dialogue_flag_requested)
+	screen.trainer_battle_requested.connect(_start_trainer_battle)
 	_switch_to(screen)
 
 func _open_menu(tile: Vector2i) -> void:
@@ -162,6 +169,47 @@ func _start_battle(tile: Vector2i) -> void:
 	screen.finished.connect(_on_battle_finished)
 	_switch_to(screen)
 
+func _start_trainer_battle(trainer_id: String, tile: Vector2i) -> void:
+	if not TRAINERS.has(trainer_id):
+		return
+	var dialogue_flags: Dictionary = profile.get("dialogue_flags", {}) as Dictionary
+	if not TRAINERS.can_challenge(trainer_id, dialogue_flags):
+		return
+	STATE.set_player_tile(profile, tile)
+	for raw_member: Variant in TRAINERS.party(trainer_id):
+		var entry: Dictionary = raw_member as Dictionary
+		var enemy_name: String = str(entry.get("name", ""))
+		if not enemy_name.is_empty():
+			STATE.add_seen(profile, enemy_name)
+	var screen: Control = TRAINER_BATTLE_SCREEN.new()
+	screen.setup_trainer(
+		trainer_id,
+		profile.get("party", []) as Array,
+		STATE.active_index(profile),
+		int(profile.get("trainer_level", 1)),
+		profile.get("inventory", {}) as Dictionary,
+		profile.get("talents", {}) as Dictionary,
+		profile.get("equipment", {}) as Dictionary
+	)
+	screen.finished.connect(_on_trainer_battle_finished)
+	_switch_to(screen)
+
+func _on_trainer_battle_finished(result: Dictionary) -> void:
+	var trainer_id: String = str(result.get("trainer_id", ""))
+	if str(result.get("outcome", "")) == "win" and TRAINERS.has(trainer_id):
+		STATE.set_dialogue_flag(profile, TRAINERS.defeated_flag(trainer_id))
+		_grant_trainer_rewards(trainer_id)
+		_refresh_alpha_quest_stage()
+	_on_battle_finished(result)
+
+func _grant_trainer_rewards(trainer_id: String) -> void:
+	var inventory: Dictionary = profile.get("inventory", {}) as Dictionary
+	var rewards: Dictionary = TRAINERS.reward_items(trainer_id)
+	for raw_item: Variant in rewards.keys():
+		var item_id: String = str(raw_item)
+		inventory[item_id] = maxi(0, int(inventory.get(item_id, 0))) + maxi(0, int(rewards[raw_item]))
+	profile["inventory"] = inventory
+
 func _on_battle_finished(result: Dictionary) -> void:
 	var returned_party: Variant = result.get("party", [])
 	if typeof(returned_party) == TYPE_ARRAY:
@@ -232,13 +280,21 @@ func _on_zone_change_requested(target_zone: String, spawn_tile: Vector2i) -> voi
 		flags["route_entered"] = true
 		if int(profile.get("quest_stage", 0)) == 4:
 			profile["quest_stage"] = 5
+	if target_zone in ["whispering_grove", "tideglass_coast", "echo_cave", "north_gate"]:
+		flags["visited_%s" % target_zone] = true
 	profile["flags"] = flags
+	_refresh_alpha_quest_stage()
 	_save_game()
 	_show_world()
 
 func _on_dialogue_flag_requested(flag_id: String) -> void:
 	STATE.set_dialogue_flag(profile, flag_id)
 	_save_game()
+
+func _refresh_alpha_quest_stage() -> void:
+	var world_flags: Dictionary = profile.get("flags", {}) as Dictionary
+	var dialogue_flags: Dictionary = profile.get("dialogue_flags", {}) as Dictionary
+	profile["quest_stage"] = ALPHA_QUESTS.stage_for(world_flags, dialogue_flags, int(profile.get("quest_stage", 0)))
 
 func _save_game() -> bool:
 	var party: Array = profile.get("party", []) as Array
@@ -264,6 +320,7 @@ func _load_game() -> void:
 		STATE.set_player_tile(profile, ZONES.spawn_tile("vela"))
 	if int(profile.get("quest_stage", 0)) == 0:
 		profile["quest_stage"] = 1
+	_refresh_alpha_quest_stage()
 	var party: Array = profile.get("party", []) as Array
 	var any_alive: bool = false
 	for value: Variant in party:
