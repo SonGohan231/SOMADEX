@@ -12,6 +12,7 @@ var notice_until: int = 0
 var elapsed: float = 0.0
 var font: Font
 var hero_texture: Texture2D
+var touch_buttons: Array[Button] = []
 
 func setup(save_exists: bool, message: String = "") -> void:
 	has_save = save_exists
@@ -21,6 +22,7 @@ func setup(save_exists: bool, message: String = "") -> void:
 func _ready() -> void:
 	font = ThemeDB.fallback_font
 	hero_texture = ART.texture_for("Luzik")
+	_build_touch_buttons()
 	set_process(true)
 	queue_redraw()
 
@@ -54,7 +56,7 @@ func _draw_brand() -> void:
 	draw_string(font, Vector2(20, 88), "SOMADEX", HORIZONTAL_ALIGNMENT_CENTER, 320, 38, Color(0.28, 0.95, 0.91, glow))
 	draw_string(font, Vector2(20, 119), "KRONIKI REZONANSU", HORIZONTAL_ALIGNMENT_CENTER, 320, 14, Color("b9d9d7"))
 	draw_line(Vector2(46, 138), Vector2(314, 138), Color("2c8e90"), 2.0)
-	draw_string(font, Vector2(50, 158), "FOUNDATION 1.0 · retro collection RPG", HORIZONTAL_ALIGNMENT_CENTER, 260, 10, Color("6e9297"))
+	draw_string(font, Vector2(50, 158), "ALPHA 1 · engine migration", HORIZONTAL_ALIGNMENT_CENTER, 260, 10, Color("6e9297"))
 
 func _draw_hero() -> void:
 	var card: Rect2 = Rect2(40, 184, 280, 212)
@@ -85,7 +87,7 @@ func _draw_buttons() -> void:
 		if i == 1 and not has_save:
 			draw_string(font, Vector2(rect.end.x - 98, rect.position.y + 32), "brak zapisu", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("586870"))
 	if selected == 2:
-		draw_string(font, Vector2(25, 690), "profil v10 · drużyna · sprzęt · statusy · REZONANS · strefy", HORIZONTAL_ALIGNMENT_CENTER, 310, 9, Color("789aa0"))
+		draw_string(font, Vector2(25, 690), "silnik: akcje wejścia · battle manager · data-driven", HORIZONTAL_ALIGNMENT_CENTER, 310, 9, Color("789aa0"))
 	else:
 		draw_string(font, Vector2(25, 690), "Dotknij opcji lub użyj strzałek", HORIZONTAL_ALIGNMENT_CENTER, 310, 11, Color("789aa0"))
 
@@ -98,6 +100,29 @@ func _draw_notice() -> void:
 func _button_rect(index: int) -> Rect2:
 	return Rect2(46, 438 + index * 70, 268, 54)
 
+func _build_touch_buttons() -> void:
+	for old_button: Button in touch_buttons:
+		if is_instance_valid(old_button):
+			old_button.queue_free()
+	touch_buttons.clear()
+	for i: int in range(3):
+		var hit_button := Button.new()
+		hit_button.name = "TouchHit%d" % i
+		hit_button.text = ""
+		hit_button.flat = true
+		hit_button.focus_mode = Control.FOCUS_NONE
+		hit_button.mouse_filter = Control.MOUSE_FILTER_STOP
+		var rect := _button_rect(i)
+		hit_button.position = rect.position
+		hit_button.size = rect.size
+		hit_button.pressed.connect(_on_touch_button_pressed.bind(i))
+		add_child(hit_button)
+		touch_buttons.append(hit_button)
+
+func _on_touch_button_pressed(index: int) -> void:
+	selected = index
+	_activate_selected()
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey:
 		var key_event: InputEventKey = event as InputEventKey
@@ -109,15 +134,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			selected = (selected + 1) % 3
 		elif key_event.keycode in [KEY_ENTER, KEY_SPACE, KEY_Z]:
 			_activate_selected()
-	elif event is InputEventScreenTouch:
-		var touch: InputEventScreenTouch = event as InputEventScreenTouch
-		if not touch.pressed:
-			return
-		for i: int in range(3):
-			if _button_rect(i).has_point(touch.position):
-				selected = i
-				_activate_selected()
-				return
+		queue_redraw()
 
 func _activate_selected() -> void:
 	match selected:
@@ -130,6 +147,6 @@ func _activate_selected() -> void:
 				notice = "Brak zapisu gry"
 				notice_until = Time.get_ticks_msec() + 2400
 		2:
-			notice = "Foundation 1.0 · party · sprzęt · statusy · 5 akcji trenera"
+			notice = "Alpha 1 · migracja na gotowy fundament monster-RPG"
 			notice_until = Time.get_ticks_msec() + 3200
 	queue_redraw()
