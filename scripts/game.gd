@@ -12,6 +12,7 @@ const STARTER_SCREEN = preload("res://scripts/ui/starter_screen.gd")
 const WORLD_SCREEN = preload("res://scripts/world/world_screen.gd")
 const PAUSE_MENU = preload("res://scripts/ui/pause_menu.gd")
 const BATTLE_SCREEN = preload("res://scripts/battle/battle_screen.gd")
+const TOUCH_PROXY = preload("res://scripts/ui/touch_proxy.gd")
 
 var current_screen: Control
 var profile: Dictionary = STATE.new_profile()
@@ -30,6 +31,17 @@ func _switch_to(screen: Control) -> void:
 	add_child(current_screen)
 	current_screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	current_screen.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_install_touch_proxy(current_screen)
+
+func _install_touch_proxy(screen: Control) -> void:
+	# Legacy SOMADEX screens draw their own controls and expect design-space
+	# coordinates. A GUI Control receives touch in its local coordinate system,
+	# so the proxy prevents physical Android resolution from breaking hit tests.
+	var proxy: Control = TOUCH_PROXY.new()
+	proxy.name = "TouchProxy"
+	proxy.setup(screen)
+	screen.add_child(proxy)
+	screen.move_child(proxy, 0)
 
 func _show_title(message: String = "") -> void:
 	var screen: Control = TITLE_SCREEN.new()
