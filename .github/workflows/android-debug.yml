@@ -103,6 +103,10 @@ jobs:
             exit 1
           fi
 
+      - name: Validate foundation v8 data systems
+        shell: bash
+        run: godot --headless --path . --script res://scripts/tests/foundation_smoke.gd
+
       - name: Export debug APK
         shell: bash
         run: |
