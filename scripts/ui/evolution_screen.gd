@@ -44,7 +44,6 @@ func _draw() -> void:
 
 	draw_string(font, Vector2(20, 54), "REZONANS EWOLUCYJNY", HORIZONTAL_ALIGNMENT_CENTER, 320, 20, Color("76e8e0"))
 	draw_string(font, Vector2(20, 82), "Lv.%d · rodzina %02d" % [level, EVOLUTION.family_id(to_name)], HORIZONTAL_ALIGNMENT_CENTER, 320, 10, Color("87a9ab"))
-
 	_draw_form_panel(Rect2(18, 124, 324, 210), from_name, from_data, from_tex, false, pulse)
 
 	var beam_alpha: float = 0.25 + pulse * 0.50
@@ -53,7 +52,6 @@ func _draw() -> void:
 	draw_string(font, Vector2(142, 385), "▼", HORIZONTAL_ALIGNMENT_CENTER, 76, 22, Color("aafaf4"))
 
 	_draw_form_panel(Rect2(18, 422, 324, 224), to_name, to_data, to_tex, true, pulse)
-
 	draw_string(font, Vector2(24, 686), "%s ewoluował w %s!" % [from_name, to_name], HORIZONTAL_ALIGNMENT_CENTER, 312, 15, Color("f1fbf8"))
 	var button: Rect2 = Rect2(78, 724, 204, 52)
 	draw_rect(button, Color("17464d"))
@@ -61,7 +59,7 @@ func _draw() -> void:
 	draw_string(font, button.position + Vector2(8, 33), "KONTYNUUJ", HORIZONTAL_ALIGNMENT_CENTER, button.size.x - 16, 14, Color("edfffc"))
 
 func _draw_form_panel(rect: Rect2, creature_name: String, data: Dictionary, texture: Texture2D, evolved: bool, pulse: float) -> void:
-	var accent: Color = data.get("accent", Color("5fcfc9")) as Color
+	var accent: Color = data.get("accent", Color("5fcfc9"))
 	var bg: Color = accent.darkened(0.72)
 	bg.a = 0.62
 	draw_rect(rect, bg)
