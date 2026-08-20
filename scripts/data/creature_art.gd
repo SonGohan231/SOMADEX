@@ -1,7 +1,7 @@
 extends RefCounted
 
 const VELA = preload("res://scripts/data/vela_portrait_art.gd")
-const LEGACY = preload("res://scripts/data/monster_art.gd")
+const LEGACY = preload("res://scripts/data/monster_art_legacy.gd")
 
 static func texture_for(creature_name: String) -> Texture2D:
 	var portrait: Texture2D = VELA.texture_for(creature_name)
