@@ -198,17 +198,20 @@ func _on_trainer_battle_finished(result: Dictionary) -> void:
 	var trainer_id: String = str(result.get("trainer_id", ""))
 	if str(result.get("outcome", "")) == "win" and TRAINERS.has(trainer_id):
 		STATE.set_dialogue_flag(profile, TRAINERS.defeated_flag(trainer_id))
-		_grant_trainer_rewards(trainer_id)
+		_merge_trainer_rewards_into_result(result, trainer_id)
 		_refresh_alpha_quest_stage()
 	_on_battle_finished(result)
 
-func _grant_trainer_rewards(trainer_id: String) -> void:
-	var inventory: Dictionary = profile.get("inventory", {}) as Dictionary
+func _merge_trainer_rewards_into_result(result: Dictionary, trainer_id: String) -> void:
+	var inventory: Dictionary = {}
+	var raw_inventory: Variant = result.get("inventory", {})
+	if typeof(raw_inventory) == TYPE_DICTIONARY:
+		inventory = (raw_inventory as Dictionary).duplicate(true)
 	var rewards: Dictionary = TRAINERS.reward_items(trainer_id)
 	for raw_item: Variant in rewards.keys():
 		var item_id: String = str(raw_item)
 		inventory[item_id] = maxi(0, int(inventory.get(item_id, 0))) + maxi(0, int(rewards[raw_item]))
-	profile["inventory"] = inventory
+	result["inventory"] = inventory
 
 func _on_battle_finished(result: Dictionary) -> void:
 	var returned_party: Variant = result.get("party", [])
