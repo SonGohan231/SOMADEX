@@ -8,6 +8,7 @@ signal dialogue_flag_requested(flag_id: String)
 
 const ZONES = preload("res://scripts/data/zone_db.gd")
 const DIALOGUE = preload("res://scripts/data/dialogue_db.gd")
+const TILE_ART = preload("res://scripts/world/vela_tile_art.gd")
 
 const TILE: int = 24
 const WORLD_TOP: int = 56
@@ -82,12 +83,7 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	draw_rect(Rect2(0, 0, 360, 56), Color("0a1f28"))
-	draw_line(Vector2(0, 55), Vector2(360, 55), Color("3bd4cd"), 2.0)
-	draw_string(font, Vector2(15, 22), ZONES.zone_name(zone_id).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 205, 11, Color("dff8f4"))
-	draw_string(font, Vector2(15, 42), quest_short, HORIZONTAL_ALIGNMENT_LEFT, 220, 8, Color("6d9da0"))
-	draw_string(font, Vector2(254, 22), "TR Lv.%d" % trainer_level, HORIZONTAL_ALIGNMENT_RIGHT, 92, 10, Color("61d9d4"))
-	draw_string(font, Vector2(254, 42), partner_name, HORIZONTAL_ALIGNMENT_RIGHT, 92, 9, Color("bcd3d4"))
+	_draw_header()
 	for y: int in range(ROWS):
 		for x: int in range(COLS):
 			_draw_tile(Vector2i(x, y), _tile_code(Vector2i(x, y)))
@@ -96,65 +92,56 @@ func _draw() -> void:
 	if not dialog.is_empty():
 		_draw_dialog()
 
+func _draw_header() -> void:
+	draw_rect(Rect2(0, 0, 360, 56), Color("081820"))
+	draw_rect(Rect2(0, 52, 360, 4), Color("1b746f"))
+	draw_string(font, Vector2(14, 21), ZONES.zone_name(zone_id).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 210, 12, Color("e8fffb"))
+	draw_string(font, Vector2(14, 40), ZONES.biome(zone_id), HORIZONTAL_ALIGNMENT_LEFT, 210, 8, Color("769fa1"))
+	draw_string(font, Vector2(234, 20), "TR Lv.%d" % trainer_level, HORIZONTAL_ALIGNMENT_RIGHT, 112, 9, Color("68ddd6"))
+	draw_string(font, Vector2(234, 39), partner_name, HORIZONTAL_ALIGNMENT_RIGHT, 112, 8, Color("b7d1d2"))
+	if not quest_short.is_empty():
+		draw_string(font, Vector2(14, 51), quest_short, HORIZONTAL_ALIGNMENT_LEFT, 320, 6, Color("8cb7b6"))
+
 func _draw_tile(tile: Vector2i, code: String) -> void:
 	var p: Vector2 = Vector2(tile.x * TILE, WORLD_TOP + tile.y * TILE)
 	var r: Rect2 = Rect2(p, Vector2(TILE, TILE))
-	match code:
-		"P":
-			draw_rect(r, Color("bda66e"))
-			draw_rect(Rect2(p + Vector2(4, 5), Vector2(3, 2)), Color("9b8355"))
-			draw_rect(Rect2(p + Vector2(15, 16), Vector2(4, 2)), Color("d5c486"))
-		"G":
-			draw_rect(r, Color("4d9459"))
-			var seed: int = tile.x * 31 + tile.y * 17
-			draw_line(p + Vector2(5 + seed % 5, 18), p + Vector2(8 + seed % 5, 13), Color("83c76f"), 1.0)
-			draw_line(p + Vector2(15, 19), p + Vector2(13, 15), Color("347744"), 1.0)
-		"W":
-			draw_rect(r, Color("347f9c"))
-			var drift: int = int(elapsed * 10.0 + float(tile.y * 3)) % 8
-			draw_line(p + Vector2(drift, 7), p + Vector2(mini(23, drift + 9), 7), Color("6fc1ca"), 1.0)
-			draw_line(p + Vector2(9, 17), p + Vector2(20, 17), Color("286a85"), 1.0)
-		"T":
-			draw_rect(r, Color("315f42"))
-			draw_rect(Rect2(p + Vector2(10, 15), Vector2(5, 9)), Color("655239"))
-			draw_circle(p + Vector2(12, 10), 9.0, Color("2a7248"))
-			draw_circle(p + Vector2(7, 11), 5.0, Color("3b8752"))
-		"H":
-			draw_rect(r, Color("6f5b4b"))
-			draw_rect(Rect2(p + Vector2(2, 4), Vector2(20, 18)), Color("d0b778"))
-			draw_rect(Rect2(p + Vector2(0, 2), Vector2(24, 5)), Color("9a5447"))
-		"C":
-			draw_rect(r, Color("315f42"))
-			draw_rect(Rect2(p + Vector2(1, 4), Vector2(22, 19)), Color("d6e5df"))
-			draw_rect(Rect2(p + Vector2(4, 0), Vector2(16, 6)), Color("45cfc7"))
-			draw_rect(Rect2(p + Vector2(9, 13), Vector2(6, 10)), Color("2b6771"))
-		"N":
-			draw_rect(r, Color("4d9459"))
-			draw_circle(p + Vector2(12, 8), 5.0, Color("e5c6a0"))
-			draw_rect(Rect2(p + Vector2(7, 13), Vector2(10, 9)), Color("804f9a"))
-		"S":
-			draw_rect(r, Color("4d9459"))
-			draw_rect(Rect2(p + Vector2(10, 11), Vector2(4, 12)), Color("6d4f31"))
-			draw_rect(Rect2(p + Vector2(4, 4), Vector2(16, 10)), Color("d6bd73"))
-		"E":
-			draw_rect(r, Color("bda66e"))
-			draw_rect(Rect2(p + Vector2(5, 0), Vector2(14, 24)), Color("4bd5ce"))
-			draw_rect(Rect2(p + Vector2(8, 0), Vector2(8, 24)), Color("173c46"))
-			draw_string(font, p + Vector2(4, 16), "⇅", HORIZONTAL_ALIGNMENT_CENTER, 16, 12, Color("eafffc"))
-		_:
-			draw_rect(r, Color("4d9459"))
+	var base_code: String = code
+	if code == "N":
+		base_code = "G"
+	var texture: Texture2D = TILE_ART.texture_for(base_code)
+	if texture != null:
+		draw_texture_rect(texture, r, false)
+	else:
+		draw_rect(r, Color("4f9b5f"))
+	if code == "N":
+		_draw_npc(p)
+	elif code == "F":
+		var pulse: float = 0.65 + 0.25 * sin(elapsed * 2.0 + float(tile.x + tile.y))
+		draw_circle(p + Vector2(18, 7), 1.0, Color(0.95, 0.84, 0.46, pulse))
+
+func _draw_npc(p: Vector2) -> void:
+	draw_rect(Rect2(p + Vector2(8, 4), Vector2(8, 7)), Color("e5bc97"))
+	draw_rect(Rect2(p + Vector2(6, 11), Vector2(12, 9)), Color("824f98"))
+	draw_rect(Rect2(p + Vector2(7, 2), Vector2(10, 4)), Color("4e345e"))
+	draw_rect(Rect2(p + Vector2(7, 20), Vector2(4, 4)), Color("28313e"))
+	draw_rect(Rect2(p + Vector2(13, 20), Vector2(4, 4)), Color("28313e"))
 
 func _draw_player() -> void:
 	var bob: float = 1.0 if moving and int(Time.get_ticks_msec() / 100) % 2 == 0 else 0.0
 	var p: Vector2 = player_px + Vector2(3, 1 - bob)
 	_draw_pixel_shadow(p + Vector2(9, 20))
-	draw_rect(Rect2(p + Vector2(5, 2), Vector2(8, 7)), Color("efc09a"))
-	draw_rect(Rect2(p + Vector2(4, 0), Vector2(10, 4)), Color("28c9c4"))
+	draw_rect(Rect2(p + Vector2(5, 3), Vector2(8, 6)), Color("efc09a"))
+	draw_rect(Rect2(p + Vector2(4, 0), Vector2(10, 4)), Color("31c9c2"))
 	draw_rect(Rect2(p + Vector2(3, 9), Vector2(12, 8)), Color("173b55"))
-	draw_rect(Rect2(p + Vector2(4, 17), Vector2(4, 5)), Color("222c3a"))
-	draw_rect(Rect2(p + Vector2(10, 17), Vector2(4, 5)), Color("222c3a"))
-	var center: Vector2 = p + Vector2(9, 11)
-	draw_circle(center + Vector2(facing) * 5.0, 1.5, Color("f5e16d"))
+	draw_rect(Rect2(p + Vector2(4, 17), Vector2(4, 5)), Color("202b38"))
+	draw_rect(Rect2(p + Vector2(10, 17), Vector2(4, 5)), Color("202b38"))
+	if moving:
+		if int(Time.get_ticks_msec() / 90) % 2 == 0:
+			draw_rect(Rect2(p + Vector2(3, 19), Vector2(4, 3)), Color("121922"))
+		else:
+			draw_rect(Rect2(p + Vector2(11, 19), Vector2(4, 3)), Color("121922"))
+	var eye: Vector2 = p + Vector2(9, 7) + Vector2(facing) * 2.0
+	draw_rect(Rect2(eye, Vector2(1, 1)), Color("1c2934"))
 
 func _draw_pixel_shadow(center: Vector2) -> void:
 	var c: Color = Color(0.02, 0.08, 0.09, 0.35)
@@ -162,15 +149,15 @@ func _draw_pixel_shadow(center: Vector2) -> void:
 	draw_rect(Rect2(center - Vector2(6, 2), Vector2(12, 4)), c)
 
 func _draw_controls() -> void:
-	draw_rect(Rect2(0, 608, 360, 192), Color("07171e"))
-	draw_line(Vector2(0, 608), Vector2(360, 608), Color("1c4c56"), 2.0)
+	draw_rect(Rect2(0, 608, 360, 192), Color("06151c"))
+	draw_line(Vector2(0, 608), Vector2(360, 608), Color("1d555d"), 2.0)
 	var keys: Array[String] = ["up", "left", "down", "right"]
 	var arrows: Dictionary = {"up": "▲", "left": "◀", "down": "▼", "right": "▶"}
 	for key: String in keys:
 		var rr: Rect2 = _dpad_rect(key)
-		draw_rect(rr, Color("16313b"))
-		draw_rect(rr, Color("2a5660"), false, 2.0)
-		draw_string(font, rr.position + Vector2(7, 26), str(arrows[key]), HORIZONTAL_ALIGNMENT_CENTER, 26, 15, Color("9ac6c7"))
+		draw_rect(rr, Color("132d36"))
+		draw_rect(rr, Color("2b5b64"), false, 2.0)
+		draw_string(font, rr.position + Vector2(7, 26), str(arrows[key]), HORIZONTAL_ALIGNMENT_CENTER, 26, 15, Color("a6cece"))
 	var a: Rect2 = _a_rect()
 	draw_circle(a.get_center(), 34.0, Color("174b50"))
 	draw_circle(a.get_center(), 34.0, Color("51ddd6"), false, 2.0)
@@ -215,7 +202,7 @@ func _tile_code(tile: Vector2i) -> String:
 	return map_rows[tile.y].substr(tile.x, 1)
 
 func _walkable(tile: Vector2i) -> bool:
-	return _tile_code(tile) in ["P", "G", "E"]
+	return _tile_code(tile) in ["P", "G", "F", "D", "E", "B", "A"]
 
 func _request_move(dir: Vector2i) -> void:
 	if moving or not dialog.is_empty():
@@ -233,11 +220,11 @@ func _request_move(dir: Vector2i) -> void:
 func _after_step() -> void:
 	var exit_data: Dictionary = ZONES.exit_at(zone_id, player_tile)
 	if not exit_data.is_empty():
-		var target_zone: String = str(exit_data.get("zone_id", "vela"))
-		zone_change_requested.emit(target_zone, ZONES.exit_spawn(exit_data))
+		zone_change_requested.emit(str(exit_data.get("zone_id", "vela")), ZONES.exit_spawn(exit_data))
 		return
 	steps_since_encounter += 1
-	if _tile_code(player_tile) == "G" and steps_since_encounter >= 4 and rng.randf() < 0.18:
+	var code: String = _tile_code(player_tile)
+	if code in ["G", "F"] and steps_since_encounter >= 4 and rng.randf() < 0.18:
 		steps_since_encounter = 0
 		battle_requested.emit(player_tile)
 
