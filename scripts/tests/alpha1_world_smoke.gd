@@ -1,7 +1,9 @@
 extends SceneTree
 
+const DB = preload("res://scripts/data/monster_db.gd")
 const ZONES = preload("res://scripts/data/zone_db.gd")
 const NPCS = preload("res://scripts/data/alpha1_npc_db.gd")
+const ENCOUNTERS = preload("res://scripts/data/alpha1_encounter_db.gd")
 const TILE_ART = preload("res://scripts/world/vela_tile_art.gd")
 const MONSTER_ART = preload("res://scripts/data/monster_art_alpha.gd")
 
@@ -53,6 +55,14 @@ func _initialize() -> void:
 			_expect(tile.x >= 0 and tile.x < 15 and tile.y >= 0 and tile.y < 23, "NPC out of bounds: " + str(npc.get("id", "?")), errors)
 			_expect(not str(npc.get("name", "")).is_empty(), "NPC missing name", errors)
 			_expect(not str(npc.get("first", "")).is_empty(), "NPC missing first dialogue: " + str(npc.get("id", "?")), errors)
+
+	_expect(DB.all_names().size() >= 11, "Alpha 1 active monster database has fewer than eleven species", errors)
+	var wild_species: Array[String] = ENCOUNTERS.all_species()
+	_expect(wild_species.size() == 8, "Alpha 1 Vela must expose eight distinct wild species in biome pools", errors)
+	for monster_name: String in wild_species:
+		_expect(DB.has_monster(monster_name), "encounter pool references unknown species: " + monster_name, errors)
+	for zone_id: String in ["vela_outskirts", "resonance_route", "whispering_grove", "tideglass_coast", "echo_cave"]:
+		_expect(ENCOUNTERS.species(zone_id).size() >= 4, zone_id + " has insufficient encounter diversity", errors)
 
 	var remastered: Array[String] = MONSTER_ART.remastered_names()
 	_expect(remastered.size() == 10, "first Alpha portrait batch must contain ten Somaskans", errors)
