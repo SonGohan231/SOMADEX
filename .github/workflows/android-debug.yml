@@ -115,12 +115,17 @@ jobs:
         shell: bash
         run: godot --headless --path . --script res://scripts/tests/alpha1_world_smoke.gd
 
+      - name: Validate Alpha 1 trainer battles and chapter graph
+        shell: bash
+        run: godot --headless --path . --script res://scripts/tests/alpha1_trainer_smoke.gd
+
       - name: Validate Alpha 1 build metadata
         shell: bash
         run: |
           grep -q 'version/name="1.1.0-alpha1-vela"' export_presets.cfg
           grep -q 'version/code=11' export_presets.cfg
           test -s assets/world/vela_tiles_24.png
+          test -s assets/monsters/alpha1/somaskan_001_010_strip.webp
 
       - name: Export debug APK
         shell: bash
