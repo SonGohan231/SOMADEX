@@ -88,8 +88,8 @@ jobs:
         run: |
           set -o pipefail
           godot --headless --path . --import --quit 2>&1 | tee godot-import.log
-          if grep -E "SCRIPT ERROR:|Parse Error:|Compile Error:|Failed to load script" godot-import.log; then
-            echo "GDScript compilation failed"
+          if grep -E "SCRIPT ERROR:|Parse Error:|Compile Error:|Failed to load script|Error importing|Failed decoding .* image" godot-import.log; then
+            echo "Godot import or compilation failed"
             exit 1
           fi
 
