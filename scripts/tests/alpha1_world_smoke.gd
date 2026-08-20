@@ -1,7 +1,9 @@
 extends SceneTree
 
 const ZONES = preload("res://scripts/data/zone_db.gd")
+const NPCS = preload("res://scripts/data/alpha1_npc_db.gd")
 const TILE_ART = preload("res://scripts/world/vela_tile_art.gd")
+const MONSTER_ART = preload("res://scripts/data/monster_art_alpha.gd")
 
 func _initialize() -> void:
 	var errors: Array[String] = []
@@ -42,6 +44,19 @@ func _initialize() -> void:
 	_expect(str(ZONES.exit_at("resonance_route", Vector2i(0, 10)).get("zone_id", "")) == "echo_cave", "route -> cave exit is broken", errors)
 	_expect(str(ZONES.exit_at("resonance_route", Vector2i(14, 10)).get("zone_id", "")) == "tideglass_coast", "route -> coast exit is broken", errors)
 	_expect(str(ZONES.exit_at("whispering_grove", Vector2i(7, 0)).get("zone_id", "")) == "north_gate", "grove -> north gate exit is broken", errors)
+
+	_expect(NPCS.count() >= 12, "Alpha 1 Vela has fewer than twelve authored NPCs", errors)
+	_expect(NPCS.trainer_ids().size() >= 4, "Alpha 1 Vela has fewer than four authored trainer encounters", errors)
+	for zone_id: String in expected:
+		for npc: Dictionary in NPCS.in_zone(zone_id):
+			var tile: Vector2i = NPCS.tile_of(npc)
+			_expect(tile.x >= 0 and tile.x < 15 and tile.y >= 0 and tile.y < 23, "NPC out of bounds: " + str(npc.get("id", "?")), errors)
+			_expect(not str(npc.get("name", "")).is_empty(), "NPC missing name", errors)
+			_expect(not str(npc.get("first", "")).is_empty(), "NPC missing first dialogue: " + str(npc.get("id", "?")), errors)
+
+	var remastered: Array[String] = MONSTER_ART.remastered_names()
+	_expect(remastered.size() == 10, "first Alpha portrait batch must contain ten Somaskans", errors)
+	_expect(remastered.has("Luzik") and remastered.has("Bocznik") and remastered.has("Wahlik"), "core Alpha monsters are missing from remastered portrait batch", errors)
 
 	if errors.is_empty():
 		print("ALPHA1_VELA_WORLD: PASS")
