@@ -2,6 +2,9 @@ extends Control
 
 signal menu_requested(tile: Vector2i)
 signal battle_requested(tile: Vector2i)
+signal station_requested(tile: Vector2i)
+
+const ZONES = preload("res://scripts/data/zone_db.gd")
 
 const TILE: int = 24
 const WORLD_TOP: int = 56
@@ -49,12 +52,16 @@ var dialog: String = ""
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var haptics: bool = true
 var elapsed: float = 0.0
+var zone_id: String = "vela"
+var objective: String = "Znajdź dzikiego Somaskana"
 
-func setup(starter_name: String, start_tile: Vector2i, level: int, use_haptics: bool) -> void:
+func setup(starter_name: String, start_tile: Vector2i, level: int, use_haptics: bool, world_zone_id: String = "vela", quest_objective: String = "") -> void:
 	starter = starter_name
 	player_tile = start_tile
 	trainer_level = level
 	haptics = use_haptics
+	zone_id = world_zone_id if ZONES.has_zone(world_zone_id) else "vela"
+	objective = quest_objective
 
 func _ready() -> void:
 	font = ThemeDB.fallback_font
@@ -62,6 +69,7 @@ func _ready() -> void:
 	player_px = _tile_to_px(player_tile)
 	from_px = player_px
 	to_px = player_px
+	set_process(true)
 	queue_redraw()
 
 func get_player_tile() -> Vector2i:
@@ -84,10 +92,12 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	draw_rect(Rect2(0, 0, 360, 56), Color("0a1f28"))
 	draw_line(Vector2(0, 55), Vector2(360, 55), Color("3bd4cd"), 2.0)
-	draw_string(font, Vector2(15, 23), "VELA · MIASTECZKO", HORIZONTAL_ALIGNMENT_LEFT, 190, 12, Color("dff8f4"))
-	draw_string(font, Vector2(15, 43), "Rezonans lokalny: stabilny", HORIZONTAL_ALIGNMENT_LEFT, 200, 9, Color("6d9da0"))
-	draw_string(font, Vector2(256, 23), "TR Lv.%d" % trainer_level, HORIZONTAL_ALIGNMENT_RIGHT, 90, 11, Color("61d9d4"))
-	draw_string(font, Vector2(256, 43), starter, HORIZONTAL_ALIGNMENT_RIGHT, 90, 10, Color("bcd3d4"))
+	var zone_label: String = ZONES.zone_name(zone_id).to_upper()
+	draw_string(font, Vector2(12, 21), zone_label, HORIZONTAL_ALIGNMENT_LEFT, 190, 11, Color("dff8f4"))
+	var short_objective: String = "CEL: " + objective
+	draw_string(font, Vector2(12, 42), short_objective, HORIZONTAL_ALIGNMENT_LEFT, 218, 8, Color("70a8aa"))
+	draw_string(font, Vector2(256, 21), "TR Lv.%d" % trainer_level, HORIZONTAL_ALIGNMENT_RIGHT, 90, 10, Color("61d9d4"))
+	draw_string(font, Vector2(256, 42), starter, HORIZONTAL_ALIGNMENT_RIGHT, 90, 9, Color("bcd3d4"))
 	for y: int in range(ROWS):
 		for x: int in range(COLS):
 			_draw_tile(Vector2i(x, y), _tile_code(Vector2i(x, y)))
@@ -152,29 +162,30 @@ func _draw_player() -> void:
 	draw_circle(center + Vector2(facing) * 5.0, 1.5, Color("f5e16d"))
 
 func _draw_pixel_shadow(center: Vector2) -> void:
-	var c: Color = Color(0.02, 0.08, 0.09, 0.35)
-	draw_rect(Rect2(center - Vector2(8, 1), Vector2(16, 2)), c)
-	draw_rect(Rect2(center - Vector2(6, 2), Vector2(12, 4)), c)
+	var shadow: Color = Color(0.02, 0.08, 0.09, 0.35)
+	draw_rect(Rect2(center - Vector2(8, 1), Vector2(16, 2)), shadow)
+	draw_rect(Rect2(center - Vector2(6, 2), Vector2(12, 4)), shadow)
 
 func _draw_controls() -> void:
 	draw_rect(Rect2(0, 608, 360, 192), Color("07171e"))
 	draw_line(Vector2(0, 608), Vector2(360, 608), Color("1c4c56"), 2.0)
-	var keys: Array[String] = ["up", "left", "down", "right"]
+	for p: Vector2 in [Vector2(72, 634), Vector2(32, 674), Vector2(72, 714), Vector2(112, 674)]:
+		var r: Rect2 = Rect2(p, Vector2(40, 40))
+		draw_rect(r, Color("16313b"))
+		draw_rect(r, Color("2a5660"), false, 2.0)
 	var arrows: Dictionary = {"up": "▲", "left": "◀", "down": "▼", "right": "▶"}
-	for key: String in keys:
-		var rr: Rect2 = _dpad_rect(key)
-		draw_rect(rr, Color("16313b"))
-		draw_rect(rr, Color("2a5660"), false, 2.0)
+	for key: Variant in arrows.keys():
+		var rr: Rect2 = _dpad_rect(str(key))
 		draw_string(font, rr.position + Vector2(7, 26), str(arrows[key]), HORIZONTAL_ALIGNMENT_CENTER, 26, 15, Color("9ac6c7"))
-	var a: Rect2 = _a_rect()
-	draw_circle(a.get_center(), 34.0, Color("174b50"))
-	draw_circle(a.get_center(), 34.0, Color("51ddd6"), false, 2.0)
-	draw_string(font, a.get_center() + Vector2(-26, 6), "A", HORIZONTAL_ALIGNMENT_CENTER, 52, 20, Color("eafffc"))
+	var action_rect: Rect2 = _a_rect()
+	draw_circle(action_rect.get_center(), 34, Color("174b50"))
+	draw_circle(action_rect.get_center(), 34, Color("51ddd6"), false, 2.0)
+	draw_string(font, action_rect.get_center() + Vector2(-26, 6), "A", HORIZONTAL_ALIGNMENT_CENTER, 52, 20, Color("eafffc"))
 	draw_string(font, Vector2(242, 758), "AKCJA", HORIZONTAL_ALIGNMENT_CENTER, 80, 9, Color("6c9699"))
-	var m: Rect2 = _menu_rect()
-	draw_rect(m, Color("152f39"))
-	draw_rect(m, Color("315d67"), false, 2.0)
-	draw_string(font, m.position + Vector2(4, 27), "MENU", HORIZONTAL_ALIGNMENT_CENTER, m.size.x - 8, 11, Color("d5e9e8"))
+	var menu_rect: Rect2 = _menu_rect()
+	draw_rect(menu_rect, Color("152f39"))
+	draw_rect(menu_rect, Color("315d67"), false, 2.0)
+	draw_string(font, Vector2(menu_rect.position.x + 4, menu_rect.position.y + 27), "MENU", HORIZONTAL_ALIGNMENT_CENTER, menu_rect.size.x - 8, 11, Color("d5e9e8"))
 
 func _draw_dialog() -> void:
 	var r: Rect2 = Rect2(16, 498, 328, 104)
@@ -182,7 +193,7 @@ func _draw_dialog() -> void:
 	draw_rect(r, Color("5be3dc"), false, 2.0)
 	var lines: PackedStringArray = dialog.split("\n")
 	for i: int in range(mini(3, lines.size())):
-		draw_string(font, Vector2(30, 530 + i * 22), lines[i], HORIZONTAL_ALIGNMENT_LEFT, 300, 12, Color("e4f4f1"))
+		draw_string(font, Vector2(30, 530 + i * 22), str(lines[i]), HORIZONTAL_ALIGNMENT_LEFT, 300, 12, Color("e4f4f1"))
 	draw_string(font, Vector2(310, 588), "▼", HORIZONTAL_ALIGNMENT_CENTER, 20, 10, Color("6ddbd5"))
 
 func _dpad_rect(which: String) -> Rect2:
@@ -212,11 +223,11 @@ func _tile_code(tile: Vector2i) -> String:
 func _walkable(tile: Vector2i) -> bool:
 	return _tile_code(tile) in ["P", "G"]
 
-func _request_move(dir: Vector2i) -> void:
+func _request_move(direction: Vector2i) -> void:
 	if moving or not dialog.is_empty():
 		return
-	facing = dir
-	var target: Vector2i = player_tile + dir
+	facing = direction
+	var target: Vector2i = player_tile + direction
 	if not _walkable(target):
 		return
 	from_px = _tile_to_px(player_tile)
@@ -236,10 +247,12 @@ func _interact() -> void:
 		return
 	var target: Vector2i = player_tile + facing
 	match _tile_code(target):
-		"N": dialog = "Mira: W trawie pojawiają się dzikie Somaskany.\nŁącz ruchy i obserwuj rytm przeciwnika."
+		"N": dialog = "Mira: W trawie pojawiają się dzikie Somaskany.\nOsłab je, a potem użyj Modułu Chwytu."
 		"S": dialog = "TABLICA: VELA\n↑ Stacja Somaskan     ← Staw Odbić\n→ Szlak Rezonansu"
-		"C": dialog = "STACJA VELA\nSystem regeneracji uruchomi się wraz z kolejnym modułem fabuły."
-		"H": dialog = "Dom jest zamknięty. Na drzwiach widnieje znak Gildii Techników."
+		"C":
+			dialog = "STACJA VELA\nRezonans partnera został w pełni odnowiony.\nBaza SOMADEX zsynchronizowana."
+			station_requested.emit(player_tile)
+		"H": dialog = "Dom jest zamknięty. Na drzwiach widnieje znak\nGildii Techników i symbol nieaktywnego modułu."
 		_: dialog = ""
 	queue_redraw()
 
@@ -249,7 +262,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		if not key_event.pressed or key_event.echo:
 			return
 		if not dialog.is_empty():
-			if key_event.keycode in [KEY_ENTER, KEY_SPACE, KEY_Z, KEY_ESCAPE, KEY_X]: dialog = ""
+			if key_event.keycode in [KEY_ENTER, KEY_SPACE, KEY_Z, KEY_ESCAPE, KEY_X]:
+				dialog = ""
 			return
 		if key_event.keycode in [KEY_UP, KEY_W]: _request_move(Vector2i.UP)
 		elif key_event.keycode in [KEY_DOWN, KEY_S]: _request_move(Vector2i.DOWN)

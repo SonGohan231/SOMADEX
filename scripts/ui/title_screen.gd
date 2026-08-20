@@ -5,11 +5,11 @@ signal load_requested
 
 const ART = preload("res://scripts/data/monster_art.gd")
 
-var selected := 0
-var has_save := false
-var notice := ""
-var notice_until := 0
-var time := 0.0
+var selected: int = 0
+var has_save: bool = false
+var notice: String = ""
+var notice_until: int = 0
+var elapsed: float = 0.0
 var font: Font
 var hero_texture: Texture2D
 
@@ -25,7 +25,7 @@ func _ready() -> void:
 	queue_redraw()
 
 func _process(delta: float) -> void:
-	time += delta
+	elapsed += delta
 	queue_redraw()
 
 func _draw() -> void:
@@ -38,27 +38,27 @@ func _draw() -> void:
 
 func _draw_background() -> void:
 	draw_rect(Rect2(0, 0, 360, 800), Color("08151d"))
-	for i in range(11):
-		var shade := Color(0.04 + i * 0.003, 0.11 + i * 0.005, 0.15 + i * 0.006, 1.0)
+	for i: int in range(11):
+		var shade: Color = Color(0.04 + i * 0.003, 0.11 + i * 0.005, 0.15 + i * 0.006, 1.0)
 		draw_rect(Rect2(0, i * 72, 360, 74), shade)
-	for i in range(16):
-		var x := float((i * 47 + 31) % 360)
-		var y := float((i * 83 + 50) % 360)
-		var pulse := 0.45 + 0.25 * sin(time * 1.7 + i)
+	for i: int in range(16):
+		var x: float = float((i * 47 + 31) % 360)
+		var y: float = float((i * 83 + 50) % 360)
+		var pulse: float = 0.45 + 0.25 * sin(elapsed * 1.7 + float(i))
 		draw_circle(Vector2(x, y), 1.5 + float(i % 2), Color(0.28, 0.9, 0.86, pulse))
-	for y in range(520, 800, 8):
+	for y: int in range(520, 800, 8):
 		draw_line(Vector2(0, y), Vector2(360, y), Color(0.15, 0.45, 0.48, 0.06), 1.0)
 
 func _draw_brand() -> void:
-	var glow := 0.75 + 0.2 * sin(time * 2.2)
+	var glow: float = 0.75 + 0.2 * sin(elapsed * 2.2)
 	draw_string(font, Vector2(20, 88), "SOMADEX", HORIZONTAL_ALIGNMENT_CENTER, 320, 38, Color(0.28, 0.95, 0.91, glow))
 	draw_string(font, Vector2(20, 119), "KRONIKI REZONANSU", HORIZONTAL_ALIGNMENT_CENTER, 320, 14, Color("b9d9d7"))
 	draw_line(Vector2(46, 138), Vector2(314, 138), Color("2c8e90"), 2.0)
-	draw_string(font, Vector2(50, 158), "retro collection RPG", HORIZONTAL_ALIGNMENT_CENTER, 260, 11, Color("6e9297"))
+	draw_string(font, Vector2(50, 158), "FOUNDATION v0.8 · retro collection RPG", HORIZONTAL_ALIGNMENT_CENTER, 260, 10, Color("6e9297"))
 
 func _draw_hero() -> void:
-	var card := Rect2(40, 184, 280, 212)
-	draw_rect(Rect2(card.position - Vector2(4,4), card.size + Vector2(8,8)), Color("13313c"))
+	var card: Rect2 = Rect2(40, 184, 280, 212)
+	draw_rect(Rect2(card.position - Vector2(4, 4), card.size + Vector2(8, 8)), Color("13313c"))
 	draw_rect(card, Color("0b2029"))
 	if hero_texture != null:
 		draw_texture_rect(hero_texture, Rect2(48, 192, 264, 198), false)
@@ -67,12 +67,12 @@ func _draw_hero() -> void:
 	draw_string(font, Vector2(68, 363), "SOMASKAN 001 · LUZIK", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("d8fffb"))
 
 func _draw_buttons() -> void:
-	var labels := ["NOWA GRA", "KONTYNUUJ", "INFORMACJE"]
-	for i in range(3):
-		var rect := _button_rect(i)
-		var active := i == selected
-		var fill := Color("173d48") if active else Color("102630")
-		var border := Color("4fe7df") if active else Color("285361")
+	var labels: Array[String] = ["NOWA GRA", "KONTYNUUJ", "INFORMACJE"]
+	for i: int in range(3):
+		var rect: Rect2 = _button_rect(i)
+		var active: bool = i == selected
+		var fill: Color = Color("173d48") if active else Color("102630")
+		var border: Color = Color("4fe7df") if active else Color("285361")
 		if i == 1 and not has_save:
 			fill = Color("121d23")
 			border = Color("26343a")
@@ -80,35 +80,41 @@ func _draw_buttons() -> void:
 		draw_rect(rect, border, false, 2.0)
 		if active:
 			draw_rect(Rect2(rect.position, Vector2(6, rect.size.y)), Color("4fe7df"))
-		var text_color := Color("eafffc") if (i != 1 or has_save) else Color("596970")
+		var text_color: Color = Color("eafffc") if (i != 1 or has_save) else Color("596970")
 		draw_string(font, Vector2(rect.position.x + 18, rect.position.y + 34), labels[i], HORIZONTAL_ALIGNMENT_LEFT, -1, 16, text_color)
 		if i == 1 and not has_save:
 			draw_string(font, Vector2(rect.end.x - 98, rect.position.y + 32), "brak zapisu", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("586870"))
 	if selected == 2:
-		draw_string(font, Vector2(25, 690), "SOMADEX v0.2 · przebudowany rdzeń", HORIZONTAL_ALIGNMENT_CENTER, 310, 11, Color("789aa0"))
+		draw_string(font, Vector2(25, 690), "profil v8 · drużyna · questy · 5 drzewek · strefy", HORIZONTAL_ALIGNMENT_CENTER, 310, 10, Color("789aa0"))
 	else:
 		draw_string(font, Vector2(25, 690), "Dotknij opcji lub użyj strzałek", HORIZONTAL_ALIGNMENT_CENTER, 310, 11, Color("789aa0"))
 
 func _draw_notice() -> void:
-	var r := Rect2(38, 714, 284, 52)
+	var r: Rect2 = Rect2(38, 714, 284, 52)
 	draw_rect(r, Color("1b3138"))
 	draw_rect(r, Color("47d9d2"), false, 2.0)
-	draw_string(font, Vector2(50, 746), notice, HORIZONTAL_ALIGNMENT_CENTER, 260, 13, Color("eafffc"))
+	draw_string(font, Vector2(50, 746), notice, HORIZONTAL_ALIGNMENT_CENTER, 260, 12, Color("eafffc"))
 
 func _button_rect(index: int) -> Rect2:
 	return Rect2(46, 438 + index * 70, 268, 54)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode in [KEY_UP, KEY_W]:
+	if event is InputEventKey:
+		var key_event: InputEventKey = event as InputEventKey
+		if not key_event.pressed or key_event.echo:
+			return
+		if key_event.keycode in [KEY_UP, KEY_W]:
 			selected = (selected + 2) % 3
-		elif event.keycode in [KEY_DOWN, KEY_S]:
+		elif key_event.keycode in [KEY_DOWN, KEY_S]:
 			selected = (selected + 1) % 3
-		elif event.keycode in [KEY_ENTER, KEY_SPACE, KEY_Z]:
+		elif key_event.keycode in [KEY_ENTER, KEY_SPACE, KEY_Z]:
 			_activate_selected()
-	elif event is InputEventScreenTouch and event.pressed:
-		for i in range(3):
-			if _button_rect(i).has_point(event.position):
+	elif event is InputEventScreenTouch:
+		var touch: InputEventScreenTouch = event as InputEventScreenTouch
+		if not touch.pressed:
+			return
+		for i: int in range(3):
+			if _button_rect(i).has_point(touch.position):
 				selected = i
 				_activate_selected()
 				return
@@ -118,8 +124,12 @@ func _activate_selected() -> void:
 		0:
 			new_game_requested.emit()
 		1:
-			load_requested.emit()
+			if has_save:
+				load_requested.emit()
+			else:
+				notice = "Brak zapisu gry"
+				notice_until = Time.get_ticks_msec() + 2400
 		2:
-			notice = "Pełna gra kolekcjonerska · rozwój trenera · rezonans"
+			notice = "SOMADEX 0.8 · kolekcja · rozwój trenera · rezonans"
 			notice_until = Time.get_ticks_msec() + 3200
 	queue_redraw()
