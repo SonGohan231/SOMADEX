@@ -8,6 +8,7 @@ const ZONES = preload("res://scripts/data/zone_db.gd")
 const ENCOUNTERS = preload("res://scripts/data/alpha1_encounter_db.gd")
 const TRAINERS = preload("res://scripts/data/alpha1_trainer_db.gd")
 const PICKUPS = preload("res://scripts/data/alpha1_pickup_db.gd")
+const SIDEQUESTS = preload("res://scripts/data/alpha1_sidequest_db.gd")
 const ALPHA_QUESTS = preload("res://scripts/data/alpha1_quest_db.gd")
 const EQUIPMENT = preload("res://scripts/data/equipment_db.gd")
 const TITLE_SCREEN = preload("res://scripts/ui/title_screen.gd")
@@ -294,6 +295,7 @@ func _on_zone_change_requested(target_zone: String, spawn_tile: Vector2i) -> voi
 
 func _on_dialogue_flag_requested(flag_id: String) -> void:
 	STATE.set_dialogue_flag(profile, flag_id)
+	_resolve_sidequests()
 	_save_game()
 
 func _on_pickup_requested(pickup_id: String) -> void:
@@ -310,7 +312,22 @@ func _on_pickup_requested(pickup_id: String) -> void:
 	inventory[item_id] = maxi(0, int(inventory.get(item_id, 0))) + amount
 	profile["inventory"] = inventory
 	STATE.set_dialogue_flag(profile, flag_id)
+	_resolve_sidequests()
 	_save_game()
+
+func _resolve_sidequests() -> void:
+	var flags: Dictionary = profile.get("dialogue_flags", {}) as Dictionary
+	var inventory: Dictionary = profile.get("inventory", {}) as Dictionary
+	for quest_id: String in SIDEQUESTS.ids():
+		if not SIDEQUESTS.can_complete(quest_id, flags):
+			continue
+		var rewards: Dictionary = SIDEQUESTS.reward(quest_id)
+		for raw_item: Variant in rewards.keys():
+			var item_id: String = str(raw_item)
+			inventory[item_id] = maxi(0, int(inventory.get(item_id, 0))) + maxi(0, int(rewards[raw_item]))
+		flags[SIDEQUESTS.complete_flag(quest_id)] = true
+	profile["dialogue_flags"] = flags
+	profile["inventory"] = inventory
 
 func _refresh_alpha_quest_stage() -> void:
 	var world_flags: Dictionary = profile.get("flags", {}) as Dictionary
@@ -341,6 +358,7 @@ func _load_game() -> void:
 		STATE.set_player_tile(profile, ZONES.spawn_tile("vela"))
 	if int(profile.get("quest_stage", 0)) == 0:
 		profile["quest_stage"] = 1
+	_resolve_sidequests()
 	_refresh_alpha_quest_stage()
 	var party: Array = profile.get("party", []) as Array
 	var any_alive: bool = false
