@@ -28,7 +28,7 @@ func tick(delta: float) -> bool:
 		if _queue.is_empty():
 			return false
 		_advance()
-	_elapsed += maxi(delta, 0.0)
+	_elapsed += maxf(delta, 0.0)
 	if _elapsed >= float(_active.get("duration", 0.1)):
 		_advance()
 	return not _active.is_empty() or not _queue.is_empty()
@@ -59,7 +59,7 @@ func magnitude_for(actor: String) -> float:
 func progress_for(actor: String) -> float:
 	if str(_active.get("actor", "")) != actor:
 		return 0.0
-	var duration: float = maxi(0.001, float(_active.get("duration", 0.1)))
+	var duration: float = maxf(0.001, float(_active.get("duration", 0.1)))
 	return clampf(_elapsed / duration, 0.0, 1.0)
 
 func pending_count() -> int:
