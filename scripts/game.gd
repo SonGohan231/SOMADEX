@@ -5,6 +5,7 @@ const STATE = preload("res://scripts/core/game_state.gd")
 const DB = preload("res://scripts/data/monster_db.gd")
 const PROGRESSION = preload("res://scripts/data/progression_db.gd")
 const ZONES = preload("res://scripts/data/zone_db.gd")
+const ENCOUNTERS = preload("res://scripts/data/alpha1_encounter_db.gd")
 const EQUIPMENT = preload("res://scripts/data/equipment_db.gd")
 const TITLE_SCREEN = preload("res://scripts/ui/title_screen.gd")
 const INTRO_SCREEN = preload("res://scripts/ui/intro_screen.gd")
@@ -142,7 +143,7 @@ func _on_talent_spend_requested(path_id: String, menu_screen: Control) -> void:
 func _start_battle(tile: Vector2i) -> void:
 	STATE.set_player_tile(profile, tile)
 	var zone_id: String = str(profile.get("zone_id", "vela"))
-	var encounter: Dictionary = ZONES.roll_encounter(zone_id, rng)
+	var encounter: Dictionary = ENCOUNTERS.roll(zone_id, rng)
 	var enemy_name: String = str(encounter.get("name", "Wahlik"))
 	STATE.add_seen(profile, enemy_name)
 	if int(profile.get("quest_stage", 0)) == 1:
