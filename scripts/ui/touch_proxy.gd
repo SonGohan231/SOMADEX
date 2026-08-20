@@ -16,15 +16,12 @@ func _ready() -> void:
 	focus_mode = Control.FOCUS_NONE
 
 func _gui_input(event: InputEvent) -> void:
+	# Handle the native/emulated touch event only. With mouse-from-touch enabled,
+	# also reacting to InputEventMouseButton would execute one tap twice on Android.
 	if event is InputEventScreenTouch:
 		var touch := event as InputEventScreenTouch
 		if touch.pressed:
 			_forward_pressed(touch.position)
-			accept_event()
-	elif event is InputEventMouseButton:
-		var mouse := event as InputEventMouseButton
-		if mouse.button_index == MOUSE_BUTTON_LEFT and mouse.pressed:
-			_forward_pressed(mouse.position)
 			accept_event()
 
 func _forward_pressed(local_position: Vector2) -> void:
