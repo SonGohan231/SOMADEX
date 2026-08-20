@@ -3,7 +3,7 @@ extends Control
 signal new_game_requested
 signal load_requested
 
-const ART = preload("res://scripts/data/monster_art.gd")
+const ART = preload("res://scripts/data/monster_art_alpha.gd")
 
 var selected: int = 0
 var has_save: bool = false
