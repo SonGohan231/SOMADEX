@@ -37,34 +37,35 @@ func _draw() -> void:
 		_draw_notice()
 
 func _draw_background() -> void:
-	draw_rect(Rect2(0, 0, 360, 800), Color("08151d"))
+	draw_rect(Rect2(0, 0, 360, 800), Color("07151d"))
 	for i: int in range(11):
-		var shade: Color = Color(0.04 + i * 0.003, 0.11 + i * 0.005, 0.15 + i * 0.006, 1.0)
+		var shade: Color = Color(0.035 + i * 0.003, 0.105 + i * 0.005, 0.145 + i * 0.006, 1.0)
 		draw_rect(Rect2(0, i * 72, 360, 74), shade)
-	for i: int in range(16):
+	for i: int in range(18):
 		var x: float = float((i * 47 + 31) % 360)
-		var y: float = float((i * 83 + 50) % 360)
-		var pulse: float = 0.45 + 0.25 * sin(elapsed * 1.7 + float(i))
+		var y: float = float((i * 83 + 50) % 390)
+		var pulse: float = 0.42 + 0.28 * sin(elapsed * 1.7 + float(i))
 		draw_circle(Vector2(x, y), 1.5 + float(i % 2), Color(0.28, 0.9, 0.86, pulse))
 	for y: int in range(520, 800, 8):
 		draw_line(Vector2(0, y), Vector2(360, y), Color(0.15, 0.45, 0.48, 0.06), 1.0)
 
 func _draw_brand() -> void:
 	var glow: float = 0.75 + 0.2 * sin(elapsed * 2.2)
-	draw_string(font, Vector2(20, 88), "SOMADEX", HORIZONTAL_ALIGNMENT_CENTER, 320, 38, Color(0.28, 0.95, 0.91, glow))
-	draw_string(font, Vector2(20, 119), "KRONIKI REZONANSU", HORIZONTAL_ALIGNMENT_CENTER, 320, 14, Color("b9d9d7"))
-	draw_line(Vector2(46, 138), Vector2(314, 138), Color("2c8e90"), 2.0)
-	draw_string(font, Vector2(50, 158), "FOUNDATION 1.0 · retro collection RPG", HORIZONTAL_ALIGNMENT_CENTER, 260, 10, Color("6e9297"))
+	draw_string(font, Vector2(20, 82), "SOMADEX", HORIZONTAL_ALIGNMENT_CENTER, 320, 38, Color(0.28, 0.95, 0.91, glow))
+	draw_string(font, Vector2(20, 113), "KRONIKI REZONANSU", HORIZONTAL_ALIGNMENT_CENTER, 320, 14, Color("b9d9d7"))
+	draw_line(Vector2(46, 132), Vector2(314, 132), Color("2c8e90"), 2.0)
+	draw_string(font, Vector2(50, 153), "ALPHA 1 · VELA", HORIZONTAL_ALIGNMENT_CENTER, 260, 13, Color("79e5df"))
+	draw_string(font, Vector2(50, 170), "pierwszy pełny rozdział regionu", HORIZONTAL_ALIGNMENT_CENTER, 260, 8, Color("6e9297"))
 
 func _draw_hero() -> void:
-	var card: Rect2 = Rect2(40, 184, 280, 212)
+	var card: Rect2 = Rect2(40, 190, 280, 206)
 	draw_rect(Rect2(card.position - Vector2(4, 4), card.size + Vector2(8, 8)), Color("13313c"))
 	draw_rect(card, Color("0b2029"))
 	if hero_texture != null:
-		draw_texture_rect(hero_texture, Rect2(48, 192, 264, 198), false)
-	draw_rect(Rect2(48, 192, 264, 198), Color(0.25, 0.95, 0.9, 0.35), false, 2.0)
-	draw_rect(Rect2(58, 344, 126, 27), Color(0.03, 0.10, 0.14, 0.82))
-	draw_string(font, Vector2(68, 363), "SOMASKAN 001 · LUZIK", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("d8fffb"))
+		draw_texture_rect(hero_texture, Rect2(48, 198, 264, 190), false)
+	draw_rect(Rect2(48, 198, 264, 190), Color(0.25, 0.95, 0.9, 0.35), false, 2.0)
+	draw_rect(Rect2(58, 350, 126, 27), Color(0.03, 0.10, 0.14, 0.82))
+	draw_string(font, Vector2(68, 369), "SOMASKAN 001 · LUZIK", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("d8fffb"))
 
 func _draw_buttons() -> void:
 	var labels: Array[String] = ["NOWA GRA", "KONTYNUUJ", "INFORMACJE"]
@@ -85,9 +86,9 @@ func _draw_buttons() -> void:
 		if i == 1 and not has_save:
 			draw_string(font, Vector2(rect.end.x - 98, rect.position.y + 32), "brak zapisu", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("586870"))
 	if selected == 2:
-		draw_string(font, Vector2(25, 690), "profil v10 · drużyna · sprzęt · statusy · REZONANS · strefy", HORIZONTAL_ALIGNMENT_CENTER, 310, 9, Color("789aa0"))
+		draw_string(font, Vector2(25, 690), "7 lokacji · nowy pixel-art · Foundation 1.0", HORIZONTAL_ALIGNMENT_CENTER, 310, 9, Color("789aa0"))
 	else:
-		draw_string(font, Vector2(25, 690), "Dotknij opcji lub użyj strzałek", HORIZONTAL_ALIGNMENT_CENTER, 310, 11, Color("789aa0"))
+		draw_string(font, Vector2(25, 690), "VELA · ALPHA BUILD 1.1.0", HORIZONTAL_ALIGNMENT_CENTER, 310, 10, Color("789aa0"))
 
 func _draw_notice() -> void:
 	var r: Rect2 = Rect2(38, 714, 284, 52)
@@ -130,6 +131,6 @@ func _activate_selected() -> void:
 				notice = "Brak zapisu gry"
 				notice_until = Time.get_ticks_msec() + 2400
 		2:
-			notice = "Foundation 1.0 · party · sprzęt · statusy · 5 akcji trenera"
+			notice = "Alpha 1 · pełna Vela · świat, fabuła i wymiana grafiki"
 			notice_until = Time.get_ticks_msec() + 3200
 	queue_redraw()
