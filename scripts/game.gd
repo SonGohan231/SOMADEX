@@ -7,6 +7,7 @@ const PROGRESSION = preload("res://scripts/data/progression_db.gd")
 const ZONES = preload("res://scripts/data/zone_db.gd")
 const ENCOUNTERS = preload("res://scripts/data/alpha1_encounter_db.gd")
 const TRAINERS = preload("res://scripts/data/alpha1_trainer_db.gd")
+const PICKUPS = preload("res://scripts/data/alpha1_pickup_db.gd")
 const ALPHA_QUESTS = preload("res://scripts/data/alpha1_quest_db.gd")
 const EQUIPMENT = preload("res://scripts/data/equipment_db.gd")
 const TITLE_SCREEN = preload("res://scripts/ui/title_screen.gd")
@@ -91,6 +92,7 @@ func _show_world() -> void:
 	screen.zone_change_requested.connect(_on_zone_change_requested)
 	screen.dialogue_flag_requested.connect(_on_dialogue_flag_requested)
 	screen.trainer_battle_requested.connect(_start_trainer_battle)
+	screen.pickup_requested.connect(_on_pickup_requested)
 	_switch_to(screen)
 
 func _open_menu(tile: Vector2i) -> void:
@@ -291,6 +293,22 @@ func _on_zone_change_requested(target_zone: String, spawn_tile: Vector2i) -> voi
 	_show_world()
 
 func _on_dialogue_flag_requested(flag_id: String) -> void:
+	STATE.set_dialogue_flag(profile, flag_id)
+	_save_game()
+
+func _on_pickup_requested(pickup_id: String) -> void:
+	var pickup: Dictionary = PICKUPS.by_id(pickup_id)
+	if pickup.is_empty():
+		return
+	var flag_id: String = PICKUPS.flag_id(pickup_id)
+	var dialogue_flags: Dictionary = profile.get("dialogue_flags", {}) as Dictionary
+	if bool(dialogue_flags.get(flag_id, false)):
+		return
+	var item_id: String = str(pickup.get("item", ""))
+	var amount: int = maxi(1, int(pickup.get("amount", 1)))
+	var inventory: Dictionary = profile.get("inventory", {}) as Dictionary
+	inventory[item_id] = maxi(0, int(inventory.get(item_id, 0))) + amount
+	profile["inventory"] = inventory
 	STATE.set_dialogue_flag(profile, flag_id)
 	_save_game()
 
