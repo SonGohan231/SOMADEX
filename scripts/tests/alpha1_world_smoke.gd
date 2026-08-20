@@ -5,6 +5,7 @@ const ZONES = preload("res://scripts/data/zone_db.gd")
 const NPCS = preload("res://scripts/data/alpha1_npc_db.gd")
 const ENCOUNTERS = preload("res://scripts/data/alpha1_encounter_db.gd")
 const TILE_ART = preload("res://scripts/world/vela_tile_art.gd")
+const CHARACTER_ART = preload("res://scripts/world/alpha1_character_art.gd")
 const MONSTER_ART = preload("res://scripts/data/monster_art_alpha.gd")
 
 func _initialize() -> void:
@@ -55,6 +56,10 @@ func _initialize() -> void:
 			_expect(tile.x >= 0 and tile.x < 15 and tile.y >= 0 and tile.y < 23, "NPC out of bounds: " + str(npc.get("id", "?")), errors)
 			_expect(not str(npc.get("name", "")).is_empty(), "NPC missing name", errors)
 			_expect(not str(npc.get("first", "")).is_empty(), "NPC missing first dialogue: " + str(npc.get("id", "?")), errors)
+
+	_expect(CHARACTER_ART.player_texture(Vector2i.DOWN, false, 0) != null, "player character sprite atlas failed to load", errors)
+	_expect(CHARACTER_ART.player_texture(Vector2i.UP, true, 1) != null, "player walk animation frame failed to load", errors)
+	_expect(CHARACTER_ART.npc_texture("mira") != null, "NPC character sprite atlas failed to load", errors)
 
 	_expect(DB.all_names().size() >= 11, "Alpha 1 active monster database has fewer than eleven species", errors)
 	var wild_species: Array[String] = ENCOUNTERS.all_species()
