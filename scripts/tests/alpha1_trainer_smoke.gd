@@ -4,6 +4,7 @@ const TRAINERS = preload("res://scripts/data/alpha1_trainer_db.gd")
 const QUESTS = preload("res://scripts/data/alpha1_quest_db.gd")
 const MONSTERS = preload("res://scripts/data/monster_db.gd")
 const STATE = preload("res://scripts/core/game_state.gd")
+const GAME = preload("res://scripts/game.gd")
 const TRAINER_BATTLE = preload("res://scripts/battle/alpha1_trainer_battle_screen.gd")
 
 func _initialize() -> void:
@@ -12,6 +13,7 @@ func _initialize() -> void:
 	_test_unlock_graph(errors)
 	_test_quest_graph(errors)
 	_test_trainer_battle_runtime(errors)
+	_test_reward_merge(errors)
 
 	if errors.is_empty():
 		print("ALPHA1_TRAINERS: PASS")
@@ -104,6 +106,22 @@ func _test_trainer_battle_runtime(errors: Array[String]) -> void:
 	_expect(str(battle.result_data.get("trainer_id", "")) == "karo", "trainer result missing trainer id", errors)
 	_expect(int(battle.result_data.get("xp", 0)) == TRAINERS.reward_xp("karo"), "trainer XP reward mismatch", errors)
 	battle.free()
+
+func _test_reward_merge(errors: Array[String]) -> void:
+	var game: Control = GAME.new()
+	var result: Dictionary = {
+		"inventory": {
+			"capture_modules": 5,
+			"regenerators": 3,
+			"sondas": 1,
+			"resonance_cells": 1
+		}
+	}
+	game._merge_trainer_rewards_into_result(result, "karo")
+	var inventory: Dictionary = result.get("inventory", {}) as Dictionary
+	_expect(int(inventory.get("regenerators", 0)) == 4, "Karo item reward was not merged into returned battle inventory", errors)
+	_expect(int(inventory.get("capture_modules", 0)) == 5, "reward merge changed unrelated inventory item", errors)
+	game.free()
 
 func _expect(condition: bool, message: String, errors: Array[String]) -> void:
 	if not condition:
