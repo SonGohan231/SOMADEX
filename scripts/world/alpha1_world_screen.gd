@@ -4,6 +4,7 @@ signal trainer_battle_requested(trainer_id: String, tile: Vector2i)
 
 const NPCS = preload("res://scripts/data/alpha1_npc_db.gd")
 const TRAINERS = preload("res://scripts/data/alpha1_trainer_db.gd")
+const CHAR_ART = preload("res://scripts/world/alpha1_character_art.gd")
 
 func _draw_tile(tile: Vector2i, code: String) -> void:
 	super._draw_tile(tile, code)
@@ -11,19 +12,28 @@ func _draw_tile(tile: Vector2i, code: String) -> void:
 	if not npc.is_empty():
 		_draw_authored_npc(tile, npc)
 
+func _draw_player() -> void:
+	var phase: int = int(Time.get_ticks_msec() / 120)
+	var texture: Texture2D = CHAR_ART.player_texture(facing, moving, phase)
+	if texture != null:
+		draw_texture_rect(texture, Rect2(player_px, Vector2(24, 24)), false)
+		return
+	super._draw_player()
+
 func _draw_authored_npc(tile: Vector2i, npc: Dictionary) -> void:
-	var p: Vector2 = _tile_to_px(tile) + Vector2(3, 1)
-	var body_color: Color = Color(str(npc.get("color", "6d7890")))
-	_draw_pixel_shadow(p + Vector2(9, 20))
-	draw_rect(Rect2(p + Vector2(5, 3), Vector2(8, 6)), Color("e8bd99"))
-	draw_rect(Rect2(p + Vector2(4, 0), Vector2(10, 4)), body_color.darkened(0.28))
-	draw_rect(Rect2(p + Vector2(3, 9), Vector2(12, 8)), body_color)
-	draw_rect(Rect2(p + Vector2(4, 17), Vector2(4, 5)), Color("25313c"))
-	draw_rect(Rect2(p + Vector2(10, 17), Vector2(4, 5)), Color("25313c"))
+	var p: Vector2 = _tile_to_px(tile)
+	var npc_id: String = str(npc.get("id", "npc"))
+	var texture: Texture2D = CHAR_ART.npc_texture(npc_id)
+	if texture != null:
+		draw_texture_rect(texture, Rect2(p, Vector2(24, 24)), false)
+	else:
+		var body_color: Color = Color(str(npc.get("color", "6d7890")))
+		_draw_pixel_shadow(p + Vector2(12, 21))
+		draw_rect(Rect2(p + Vector2(8, 4), Vector2(8, 6)), Color("e8bd99"))
+		draw_rect(Rect2(p + Vector2(6, 10), Vector2(12, 8)), body_color)
 	if bool(npc.get("trainer", false)):
-		var trainer_id: String = str(npc.get("id", ""))
-		var marker: Color = Color("58d98a") if TRAINERS.is_defeated(trainer_id, dialogue_flags) else Color("f2d25f")
-		draw_rect(Rect2(p + Vector2(15, 8), Vector2(3, 3)), marker)
+		var marker: Color = Color("58d98a") if TRAINERS.is_defeated(npc_id, dialogue_flags) else Color("f2d25f")
+		draw_rect(Rect2(p + Vector2(19, 4), Vector2(3, 3)), marker)
 
 func _walkable(tile: Vector2i) -> bool:
 	if not NPCS.at(zone_id, tile).is_empty():
