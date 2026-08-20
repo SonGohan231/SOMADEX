@@ -62,4 +62,4 @@ static func atlas_size() -> Vector2i:
 	_ensure_loaded()
 	if _atlas == null:
 		return Vector2i.ZERO
-	return _atlas.get_size()
+	return Vector2i(_atlas.get_size())
