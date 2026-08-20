@@ -2,10 +2,11 @@ extends "res://scripts/world/world_screen.gd"
 
 const NPCS = preload("res://scripts/data/alpha1_npc_db.gd")
 
-func _draw() -> void:
-	super._draw()
-	for npc: Dictionary in NPCS.in_zone(zone_id):
-		_draw_authored_npc(NPCS.tile_of(npc), npc)
+func _draw_tile(tile: Vector2i, code: String) -> void:
+	super._draw_tile(tile, code)
+	var npc: Dictionary = NPCS.at(zone_id, tile)
+	if not npc.is_empty():
+		_draw_authored_npc(tile, npc)
 
 func _draw_authored_npc(tile: Vector2i, npc: Dictionary) -> void:
 	var p: Vector2 = _tile_to_px(tile) + Vector2(3, 1)
