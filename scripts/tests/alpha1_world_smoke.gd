@@ -129,8 +129,10 @@ func _initialize() -> void:
 		_expect(ENCOUNTERS.species(zone_id).size() >= 4, zone_id + " has insufficient encounter diversity", errors)
 
 	var remastered: Array[String] = MONSTER_ART.remastered_names()
-	_expect(remastered.size() == 10, "first Alpha portrait batch must contain ten Somaskans", errors)
-	_expect(remastered.has("Luzik") and remastered.has("Bocznik") and remastered.has("Wahlik"), "core Alpha monsters are missing from remastered portrait batch", errors)
+	_expect(remastered.size() == 11, "all eleven active Alpha species must have remastered portraits", errors)
+	for monster_name: String in DB.all_names():
+		_expect(MONSTER_ART.has_remastered(monster_name), "active species lacks remastered portrait: " + monster_name, errors)
+	_expect(MONSTER_ART.texture_for("Nucik") != null, "Nucik remastered starter portrait failed to load", errors)
 
 	if errors.is_empty():
 		print("ALPHA1_VELA_WORLD: PASS")
