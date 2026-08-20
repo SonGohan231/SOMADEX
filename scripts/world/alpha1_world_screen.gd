@@ -6,6 +6,7 @@ signal pickup_requested(pickup_id: String)
 const NPCS = preload("res://scripts/data/alpha1_npc_db.gd")
 const TRAINERS = preload("res://scripts/data/alpha1_trainer_db.gd")
 const PICKUPS = preload("res://scripts/data/alpha1_pickup_db.gd")
+const SIDEQUESTS = preload("res://scripts/data/alpha1_sidequest_db.gd")
 const CHAR_ART = preload("res://scripts/world/alpha1_character_art.gd")
 
 func _draw_tile(tile: Vector2i, code: String) -> void:
@@ -62,6 +63,12 @@ func _interact() -> void:
 		if not PICKUPS.is_collected(pickup_id, dialogue_flags):
 			dialogue_flags[PICKUPS.flag_id(pickup_id)] = true
 			dialog = str(pickup.get("message", "Znaleziono przedmiot."))
+			var completed_titles: Array[String] = []
+			for quest_id: String in SIDEQUESTS.ids():
+				if SIDEQUESTS.can_complete(quest_id, dialogue_flags):
+					completed_titles.append(str(SIDEQUESTS.info(quest_id).get("title", quest_id)))
+			if not completed_titles.is_empty():
+				dialog += "\nZADANIE UKOŃCZONE: %s" % " / ".join(completed_titles)
 			pickup_requested.emit(pickup_id)
 			queue_redraw()
 			return
