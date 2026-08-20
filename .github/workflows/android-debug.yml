@@ -103,16 +103,24 @@ jobs:
             exit 1
           fi
 
-      - name: Validate Foundation 1.0 contracts
+      - name: Regression-test frozen Foundation 1.0 contracts
         shell: bash
-        run: |
-          godot --headless --path . --script res://scripts/tests/foundation_smoke.gd
-          grep -q 'version/name="1.0.0"' export_presets.cfg
-          grep -q 'version/code=10' export_presets.cfg
+        run: godot --headless --path . --script res://scripts/tests/foundation_smoke.gd
 
-      - name: Validate Foundation 1.0 screen integration
+      - name: Regression-test Foundation 1.0 screen integration
         shell: bash
         run: godot --headless --path . --script res://scripts/tests/foundation_integration.gd
+
+      - name: Validate Alpha 1 Vela world
+        shell: bash
+        run: godot --headless --path . --script res://scripts/tests/alpha1_world_smoke.gd
+
+      - name: Validate Alpha 1 build metadata
+        shell: bash
+        run: |
+          grep -q 'version/name="1.1.0-alpha1-vela"' export_presets.cfg
+          grep -q 'version/code=11' export_presets.cfg
+          test -s assets/world/vela_tiles_24.png
 
       - name: Export debug APK
         shell: bash
@@ -125,7 +133,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SOMADEX-Foundation-1.0-Android-debug
+          name: SOMADEX-Alpha1-Vela-Android-debug
           path: build/SOMADEX-debug.apk
           if-no-files-found: error
           retention-days: 14
