@@ -4,6 +4,7 @@ const DB = preload("res://scripts/data/monster_db.gd")
 const ZONES = preload("res://scripts/data/zone_db.gd")
 const NPCS = preload("res://scripts/data/alpha1_npc_db.gd")
 const PICKUPS = preload("res://scripts/data/alpha1_pickup_db.gd")
+const SIDEQUESTS = preload("res://scripts/data/alpha1_sidequest_db.gd")
 const ITEMS = preload("res://scripts/data/item_db.gd")
 const ENCOUNTERS = preload("res://scripts/data/alpha1_encounter_db.gd")
 const STATE = preload("res://scripts/core/game_state.gd")
@@ -82,6 +83,19 @@ func _initialize() -> void:
 			_expect(ITEMS.ids().has(str(pickup.get("item", ""))), "pickup references unknown item: " + pickup_id, errors)
 			_expect(int(pickup.get("amount", 0)) > 0, "pickup has invalid amount: " + pickup_id, errors)
 
+	_expect(SIDEQUESTS.ids().size() == 3, "Alpha 1 must contain three authored exploration side quests", errors)
+	for quest_id: String in SIDEQUESTS.ids():
+		var sidequest: Dictionary = SIDEQUESTS.info(quest_id)
+		_expect(not str(sidequest.get("title", "")).is_empty(), "side quest missing title: " + quest_id, errors)
+		_expect(not str(sidequest.get("start_flag", "")).is_empty(), "side quest missing start flag: " + quest_id, errors)
+		_expect(not str(sidequest.get("complete_flag", "")).is_empty(), "side quest missing completion flag: " + quest_id, errors)
+		var requirements: Array = sidequest.get("requirements", []) as Array
+		_expect(requirements.size() == 2, "side quest must have two exploration requirements: " + quest_id, errors)
+		for raw_required: Variant in requirements:
+			_expect(str(raw_required).begins_with("pickup_"), "side quest requirement is not a pickup flag: " + quest_id, errors)
+		for raw_item: Variant in SIDEQUESTS.reward(quest_id).keys():
+			_expect(ITEMS.ids().has(str(raw_item)), "side quest reward references unknown item: " + quest_id, errors)
+
 	var game: Control = GAME.new()
 	game.profile = STATE.new_profile("Luzik")
 	var before_inventory: Dictionary = (game.profile.get("inventory", {}) as Dictionary).duplicate(true)
@@ -92,6 +106,18 @@ func _initialize() -> void:
 	_expect(int(once_inventory.get("regenerators", 0)) == int(before_inventory.get("regenerators", 0)) + 1, "pickup did not grant configured reward", errors)
 	_expect(int(twice_inventory.get("regenerators", 0)) == int(once_inventory.get("regenerators", 0)), "pickup reward can be collected twice", errors)
 	_expect(bool((game.profile.get("dialogue_flags", {}) as Dictionary).get(PICKUPS.flag_id("outskirts_regen_stone"), false)), "pickup persistent flag was not stored", errors)
+
+	var flags: Dictionary = game.profile.get("dialogue_flags", {}) as Dictionary
+	flags["talked_sena"] = true
+	flags["pickup_outskirts_probe_crate"] = true
+	game.profile["dialogue_flags"] = flags
+	var modules_before_sidequest: int = int((game.profile.get("inventory", {}) as Dictionary).get("capture_modules", 0))
+	game._resolve_sidequests()
+	var modules_after_sidequest: int = int((game.profile.get("inventory", {}) as Dictionary).get("capture_modules", 0))
+	_expect(modules_after_sidequest == modules_before_sidequest + 2, "Sena side quest reward was not granted", errors)
+	_expect(bool((game.profile.get("dialogue_flags", {}) as Dictionary).get("sidequest_sena_complete", false)), "Sena side quest completion flag missing", errors)
+	game._resolve_sidequests()
+	_expect(int((game.profile.get("inventory", {}) as Dictionary).get("capture_modules", 0)) == modules_after_sidequest, "side quest reward can be granted twice", errors)
 	game.free()
 
 	_expect(DB.all_names().size() >= 11, "Alpha 1 active monster database has fewer than eleven species", errors)
