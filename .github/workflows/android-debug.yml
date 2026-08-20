@@ -114,6 +114,10 @@ jobs:
         shell: bash
         run: godot --headless --path . --script res://scripts/tests/foundation_integration.gd
 
+      - name: Validate Android/mobile title input
+        shell: bash
+        run: godot --headless --path . --script res://scripts/tests/mobile_input_smoke.gd
+
       - name: Export debug APK
         shell: bash
         run: |
