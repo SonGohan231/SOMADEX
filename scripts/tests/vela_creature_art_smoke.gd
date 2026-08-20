@@ -4,7 +4,7 @@ const ART = preload("res://scripts/data/monster_art.gd")
 const DB = preload("res://scripts/data/monster_db.gd")
 const STATE = preload("res://scripts/core/game_state.gd")
 const PAUSE_ART = preload("res://scripts/ui/alpha1_pause_menu_art.gd")
-const GAME_ART = preload("res://scripts/game_art.gd")
+const GAME_ANIMATIONS = preload("res://scripts/game_animations.gd")
 const MANIFEST_PATH: String = "res://data/creatures/vela_portraits_manifest.csv"
 
 func _initialize() -> void:
@@ -49,7 +49,7 @@ func _validate_screen_controller(errors: Array[String]) -> void:
 	if packed == null:
 		return
 	var node: Node = packed.instantiate()
-	_expect(node.get_script() == GAME_ART, "Main.tscn is not using the Vela art-aware controller", errors)
+	_expect(node.get_script() == GAME_ANIMATIONS, "Main.tscn is not using the Vela art + animation controller", errors)
 	node.free()
 
 func _validate_dex_navigation(errors: Array[String]) -> void:
