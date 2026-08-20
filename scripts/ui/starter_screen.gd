@@ -3,7 +3,7 @@ extends Control
 signal starter_chosen(name: String)
 
 const DB = preload("res://scripts/data/monster_db.gd")
-const ART = preload("res://scripts/data/monster_art.gd")
+const ART = preload("res://scripts/data/monster_art_alpha.gd")
 
 var selected := 0
 var font: Font
