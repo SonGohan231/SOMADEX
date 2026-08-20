@@ -188,19 +188,19 @@ func _draw_creature(name: String, center: Vector2, size: Vector2, modulate: Colo
 func _draw_tile(rect: Rect2, tile_index: int) -> void:
     if tileset == null:
         return
-    draw_texture_rect_region(rect, tileset, Rect2(tile_index * 24, 0, 24, 24))
+    draw_texture_rect_region(tileset, rect, Rect2(tile_index * 24, 0, 24, 24))
 
 func _draw_large_tile(rect: Rect2, tile_index: int) -> void:
     if tileset == null:
         return
-    draw_texture_rect_region(rect, tileset, Rect2(tile_index * 24, 0, 24, 24))
+    draw_texture_rect_region(tileset, rect, Rect2(tile_index * 24, 0, 24, 24))
 
 func _draw_npc(tile_rect: Rect2) -> void:
     if npc_sheet == null:
         return
     var frame := int(Time.get_ticks_msec() / 520) % 2
     var src := Rect2(frame * 24, 0, 24, 24)
-    draw_texture_rect_region(tile_rect, npc_sheet, src)
+    draw_texture_rect_region(npc_sheet, tile_rect, src)
 
 func _draw_trainer(main: Node) -> void:
     if trainer_sheet == null:
@@ -221,4 +221,4 @@ func _draw_trainer(main: Node) -> void:
     var src := Rect2(frame * 24, 0, 24, 24)
     var dst := Rect2(player_px.x, player_px.y - 3, 24, 24)
     draw_rect(Rect2(player_px.x + 2, player_px.y, 20, 22), Color(0, 0, 0, 0.04), true)
-    draw_texture_rect_region(dst, trainer_sheet, src)
+    draw_texture_rect_region(trainer_sheet, dst, src)
