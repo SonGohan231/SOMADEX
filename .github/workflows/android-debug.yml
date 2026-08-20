@@ -3,7 +3,7 @@ name: Build SOMADEX Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, "rebuild/core-v2"]
 
 jobs:
   build-android:
@@ -83,8 +83,11 @@ jobs:
 
       - name: Import Godot project
         shell: bash
-        run: |
-          godot --headless --path . --import --quit
+        run: godot --headless --path . --import --quit
+
+      - name: Smoke-test main scene
+        shell: bash
+        run: godot --headless --path . --quit-after 2
 
       - name: Export debug APK
         shell: bash
