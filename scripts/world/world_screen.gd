@@ -3,42 +3,20 @@ extends Control
 signal menu_requested(tile: Vector2i)
 signal battle_requested(tile: Vector2i)
 signal station_requested(tile: Vector2i)
+signal zone_change_requested(zone_id: String, spawn_tile: Vector2i)
+signal dialogue_flag_requested(flag_id: String)
 
 const ZONES = preload("res://scripts/data/zone_db.gd")
+const DIALOGUE = preload("res://scripts/data/dialogue_db.gd")
 
 const TILE: int = 24
 const WORLD_TOP: int = 56
 const COLS: int = 15
 const ROWS: int = 23
 
-var map_rows: Array[String] = [
-	"TTTTTTTTTTTTTTT",
-	"TGGGGGGCGGGGGGT",
-	"TGGGGGPPPGGGGGT",
-	"TGGGGGPPPGGGGGT",
-	"TGGHHGPPPGGGGGT",
-	"TGGHHNPPPGGGGGT",
-	"TGGGGGPPPGGGGGT",
-	"TGGGGGPPPGGGGGT",
-	"TGGGGGPPPGGGGGT",
-	"TGGGGGPPPGGGGGT",
-	"TWWWWGPPPGGGGGT",
-	"TWWWWGPPPGGGGGT",
-	"TWWWWGPPPGGGGGT",
-	"TGGGGGPPPGGGGGT",
-	"TGGGPPPPPPPGGGT",
-	"TGGGPGGGGPGGGGT",
-	"TGGGPGGGGPGGGGT",
-	"TGGGPPPPPPPGGGT",
-	"TGGGGGPPPSGGGGT",
-	"TGGGGGPPPGGGGGT",
-	"TGGGGGPPPGGGGGT",
-	"TGGGGGPPPGGGGGT",
-	"TTTTTTTTTTTTTTT"
-]
-
+var map_rows: Array[String] = []
 var font: Font
-var starter: String = "Luzik"
+var partner_name: String = "Luzik"
 var trainer_level: int = 1
 var player_tile: Vector2i = Vector2i(7, 20)
 var facing: Vector2i = Vector2i.UP
@@ -53,23 +31,37 @@ var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var haptics: bool = true
 var elapsed: float = 0.0
 var zone_id: String = "vela"
-var objective: String = "Znajdź dzikiego Somaskana"
+var quest_short: String = ""
+var dialogue_flags: Dictionary = {}
 
-func setup(starter_name: String, start_tile: Vector2i, level: int, use_haptics: bool, world_zone_id: String = "vela", quest_objective: String = "") -> void:
-	starter = starter_name
+func setup(
+	active_partner: String,
+	start_tile: Vector2i,
+	level: int,
+	use_haptics: bool,
+	current_zone: String,
+	current_quest: String,
+	flags: Dictionary = {}
+) -> void:
+	partner_name = active_partner
 	player_tile = start_tile
-	trainer_level = level
+	trainer_level = maxi(1, level)
 	haptics = use_haptics
-	zone_id = world_zone_id if ZONES.has_zone(world_zone_id) else "vela"
-	objective = quest_objective
+	zone_id = current_zone if ZONES.has_zone(current_zone) else "vela"
+	quest_short = current_quest
+	dialogue_flags = flags.duplicate(true)
+	map_rows = ZONES.map_rows(zone_id)
+	if map_rows.size() != ROWS:
+		map_rows = ZONES.map_rows("vela")
 
 func _ready() -> void:
 	font = ThemeDB.fallback_font
 	rng.randomize()
+	if map_rows.is_empty():
+		map_rows = ZONES.map_rows(zone_id)
 	player_px = _tile_to_px(player_tile)
 	from_px = player_px
 	to_px = player_px
-	set_process(true)
 	queue_redraw()
 
 func get_player_tile() -> Vector2i:
@@ -92,12 +84,10 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	draw_rect(Rect2(0, 0, 360, 56), Color("0a1f28"))
 	draw_line(Vector2(0, 55), Vector2(360, 55), Color("3bd4cd"), 2.0)
-	var zone_label: String = ZONES.zone_name(zone_id).to_upper()
-	draw_string(font, Vector2(12, 21), zone_label, HORIZONTAL_ALIGNMENT_LEFT, 190, 11, Color("dff8f4"))
-	var short_objective: String = "CEL: " + objective
-	draw_string(font, Vector2(12, 42), short_objective, HORIZONTAL_ALIGNMENT_LEFT, 218, 8, Color("70a8aa"))
-	draw_string(font, Vector2(256, 21), "TR Lv.%d" % trainer_level, HORIZONTAL_ALIGNMENT_RIGHT, 90, 10, Color("61d9d4"))
-	draw_string(font, Vector2(256, 42), starter, HORIZONTAL_ALIGNMENT_RIGHT, 90, 9, Color("bcd3d4"))
+	draw_string(font, Vector2(15, 22), ZONES.zone_name(zone_id).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 205, 11, Color("dff8f4"))
+	draw_string(font, Vector2(15, 42), quest_short, HORIZONTAL_ALIGNMENT_LEFT, 220, 8, Color("6d9da0"))
+	draw_string(font, Vector2(254, 22), "TR Lv.%d" % trainer_level, HORIZONTAL_ALIGNMENT_RIGHT, 92, 10, Color("61d9d4"))
+	draw_string(font, Vector2(254, 42), partner_name, HORIZONTAL_ALIGNMENT_RIGHT, 92, 9, Color("bcd3d4"))
 	for y: int in range(ROWS):
 		for x: int in range(COLS):
 			_draw_tile(Vector2i(x, y), _tile_code(Vector2i(x, y)))
@@ -121,7 +111,7 @@ func _draw_tile(tile: Vector2i, code: String) -> void:
 			draw_line(p + Vector2(15, 19), p + Vector2(13, 15), Color("347744"), 1.0)
 		"W":
 			draw_rect(r, Color("347f9c"))
-			var drift: int = int(elapsed * 10.0 + tile.y * 3) % 8
+			var drift: int = int(elapsed * 10.0 + float(tile.y * 3)) % 8
 			draw_line(p + Vector2(drift, 7), p + Vector2(mini(23, drift + 9), 7), Color("6fc1ca"), 1.0)
 			draw_line(p + Vector2(9, 17), p + Vector2(20, 17), Color("286a85"), 1.0)
 		"T":
@@ -146,6 +136,11 @@ func _draw_tile(tile: Vector2i, code: String) -> void:
 			draw_rect(r, Color("4d9459"))
 			draw_rect(Rect2(p + Vector2(10, 11), Vector2(4, 12)), Color("6d4f31"))
 			draw_rect(Rect2(p + Vector2(4, 4), Vector2(16, 10)), Color("d6bd73"))
+		"E":
+			draw_rect(r, Color("bda66e"))
+			draw_rect(Rect2(p + Vector2(5, 0), Vector2(14, 24)), Color("4bd5ce"))
+			draw_rect(Rect2(p + Vector2(8, 0), Vector2(8, 24)), Color("173c46"))
+			draw_string(font, p + Vector2(4, 16), "⇅", HORIZONTAL_ALIGNMENT_CENTER, 16, 12, Color("eafffc"))
 		_:
 			draw_rect(r, Color("4d9459"))
 
@@ -162,39 +157,38 @@ func _draw_player() -> void:
 	draw_circle(center + Vector2(facing) * 5.0, 1.5, Color("f5e16d"))
 
 func _draw_pixel_shadow(center: Vector2) -> void:
-	var shadow: Color = Color(0.02, 0.08, 0.09, 0.35)
-	draw_rect(Rect2(center - Vector2(8, 1), Vector2(16, 2)), shadow)
-	draw_rect(Rect2(center - Vector2(6, 2), Vector2(12, 4)), shadow)
+	var c: Color = Color(0.02, 0.08, 0.09, 0.35)
+	draw_rect(Rect2(center - Vector2(8, 1), Vector2(16, 2)), c)
+	draw_rect(Rect2(center - Vector2(6, 2), Vector2(12, 4)), c)
 
 func _draw_controls() -> void:
 	draw_rect(Rect2(0, 608, 360, 192), Color("07171e"))
 	draw_line(Vector2(0, 608), Vector2(360, 608), Color("1c4c56"), 2.0)
-	for p: Vector2 in [Vector2(72, 634), Vector2(32, 674), Vector2(72, 714), Vector2(112, 674)]:
-		var r: Rect2 = Rect2(p, Vector2(40, 40))
-		draw_rect(r, Color("16313b"))
-		draw_rect(r, Color("2a5660"), false, 2.0)
+	var keys: Array[String] = ["up", "left", "down", "right"]
 	var arrows: Dictionary = {"up": "▲", "left": "◀", "down": "▼", "right": "▶"}
-	for key: Variant in arrows.keys():
-		var rr: Rect2 = _dpad_rect(str(key))
+	for key: String in keys:
+		var rr: Rect2 = _dpad_rect(key)
+		draw_rect(rr, Color("16313b"))
+		draw_rect(rr, Color("2a5660"), false, 2.0)
 		draw_string(font, rr.position + Vector2(7, 26), str(arrows[key]), HORIZONTAL_ALIGNMENT_CENTER, 26, 15, Color("9ac6c7"))
-	var action_rect: Rect2 = _a_rect()
-	draw_circle(action_rect.get_center(), 34, Color("174b50"))
-	draw_circle(action_rect.get_center(), 34, Color("51ddd6"), false, 2.0)
-	draw_string(font, action_rect.get_center() + Vector2(-26, 6), "A", HORIZONTAL_ALIGNMENT_CENTER, 52, 20, Color("eafffc"))
+	var a: Rect2 = _a_rect()
+	draw_circle(a.get_center(), 34.0, Color("174b50"))
+	draw_circle(a.get_center(), 34.0, Color("51ddd6"), false, 2.0)
+	draw_string(font, a.get_center() + Vector2(-26, 6), "A", HORIZONTAL_ALIGNMENT_CENTER, 52, 20, Color("eafffc"))
 	draw_string(font, Vector2(242, 758), "AKCJA", HORIZONTAL_ALIGNMENT_CENTER, 80, 9, Color("6c9699"))
-	var menu_rect: Rect2 = _menu_rect()
-	draw_rect(menu_rect, Color("152f39"))
-	draw_rect(menu_rect, Color("315d67"), false, 2.0)
-	draw_string(font, Vector2(menu_rect.position.x + 4, menu_rect.position.y + 27), "MENU", HORIZONTAL_ALIGNMENT_CENTER, menu_rect.size.x - 8, 11, Color("d5e9e8"))
+	var m: Rect2 = _menu_rect()
+	draw_rect(m, Color("152f39"))
+	draw_rect(m, Color("315d67"), false, 2.0)
+	draw_string(font, m.position + Vector2(4, 27), "MENU", HORIZONTAL_ALIGNMENT_CENTER, m.size.x - 8, 11, Color("d5e9e8"))
 
 func _draw_dialog() -> void:
-	var r: Rect2 = Rect2(16, 498, 328, 104)
+	var r: Rect2 = Rect2(16, 494, 328, 110)
 	draw_rect(r, Color("081c24"))
 	draw_rect(r, Color("5be3dc"), false, 2.0)
-	var lines: PackedStringArray = dialog.split("\n")
-	for i: int in range(mini(3, lines.size())):
-		draw_string(font, Vector2(30, 530 + i * 22), str(lines[i]), HORIZONTAL_ALIGNMENT_LEFT, 300, 12, Color("e4f4f1"))
-	draw_string(font, Vector2(310, 588), "▼", HORIZONTAL_ALIGNMENT_CENTER, 20, 10, Color("6ddbd5"))
+	var lines: Array[String] = _wrap(dialog, 43)
+	for i: int in range(mini(4, lines.size())):
+		draw_string(font, Vector2(30, 523 + i * 19), lines[i], HORIZONTAL_ALIGNMENT_LEFT, 300, 10, Color("e4f4f1"))
+	draw_string(font, Vector2(310, 590), "▼", HORIZONTAL_ALIGNMENT_CENTER, 20, 10, Color("6ddbd5"))
 
 func _dpad_rect(which: String) -> Rect2:
 	match which:
@@ -221,13 +215,13 @@ func _tile_code(tile: Vector2i) -> String:
 	return map_rows[tile.y].substr(tile.x, 1)
 
 func _walkable(tile: Vector2i) -> bool:
-	return _tile_code(tile) in ["P", "G"]
+	return _tile_code(tile) in ["P", "G", "E"]
 
-func _request_move(direction: Vector2i) -> void:
+func _request_move(dir: Vector2i) -> void:
 	if moving or not dialog.is_empty():
 		return
-	facing = direction
-	var target: Vector2i = player_tile + direction
+	facing = dir
+	var target: Vector2i = player_tile + dir
 	if not _walkable(target):
 		return
 	from_px = _tile_to_px(player_tile)
@@ -237,6 +231,11 @@ func _request_move(direction: Vector2i) -> void:
 	_haptic(8)
 
 func _after_step() -> void:
+	var exit_data: Dictionary = ZONES.exit_at(zone_id, player_tile)
+	if not exit_data.is_empty():
+		var target_zone: String = str(exit_data.get("zone_id", "vela"))
+		zone_change_requested.emit(target_zone, ZONES.exit_spawn(exit_data))
+		return
 	steps_since_encounter += 1
 	if _tile_code(player_tile) == "G" and steps_since_encounter >= 4 and rng.randf() < 0.18:
 		steps_since_encounter = 0
@@ -246,15 +245,32 @@ func _interact() -> void:
 	if moving:
 		return
 	var target: Vector2i = player_tile + facing
-	match _tile_code(target):
-		"N": dialog = "Mira: W trawie pojawiają się dzikie Somaskany.\nOsłab je, a potem użyj Modułu Chwytu."
-		"S": dialog = "TABLICA: VELA\n↑ Stacja Somaskan     ← Staw Odbić\n→ Szlak Rezonansu"
-		"C":
-			dialog = "STACJA VELA\nRezonans partnera został w pełni odnowiony.\nBaza SOMADEX zsynchronizowana."
-			station_requested.emit(player_tile)
-		"H": dialog = "Dom jest zamknięty. Na drzwiach widnieje znak\nGildii Techników i symbol nieaktywnego modułu."
-		_: dialog = ""
+	var code: String = _tile_code(target)
+	if code == "C":
+		station_requested.emit(player_tile)
+	var text: String = DIALOGUE.text(zone_id, code, dialogue_flags)
+	if not text.is_empty():
+		dialog = text
+		var flag_id: String = DIALOGUE.flag_for(zone_id, code)
+		if not flag_id.is_empty():
+			dialogue_flags[flag_id] = true
+			dialogue_flag_requested.emit(flag_id)
 	queue_redraw()
+
+func _wrap(text: String, width: int) -> Array[String]:
+	var out: Array[String] = []
+	for paragraph: String in text.split("\n"):
+		var current: String = ""
+		for word: String in paragraph.split(" "):
+			var candidate: String = word if current.is_empty() else current + " " + word
+			if candidate.length() > width and not current.is_empty():
+				out.append(current)
+				current = word
+			else:
+				current = candidate
+		if not current.is_empty():
+			out.append(current)
+	return out
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey:

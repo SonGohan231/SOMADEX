@@ -5,6 +5,35 @@ static var _ZONES: Dictionary = {
 		"name": "Vela i Obrzeża",
 		"biome": "łąki / miasteczko",
 		"recommended_level": 2,
+		"spawn": [7, 20],
+		"map_rows": [
+			"TTTTTTTETTTTTTT",
+			"TGGGGGGCGGGGGGT",
+			"TGGGGGPPPGGGGGT",
+			"TGGGGGPPPGGGGGT",
+			"TGGHHGPPPGGGGGT",
+			"TGGHHNPPPGGGGGT",
+			"TGGGGGPPPGGGGGT",
+			"TGGGGGPPPGGGGGT",
+			"TGGGGGPPPGGGGGT",
+			"TGGGGGPPPGGGGGT",
+			"TWWWWGPPPGGGGGT",
+			"TWWWWGPPPGGGGGT",
+			"TWWWWGPPPGGGGGT",
+			"TGGGGGPPPGGGGGT",
+			"TGGGPPPPPPPGGGT",
+			"TGGGPGGGGPGGGGT",
+			"TGGGPGGGGPGGGGT",
+			"TGGGPPPPPPPGGGT",
+			"TGGGGGPPPSGGGGT",
+			"TGGGGGPPPGGGGGT",
+			"TGGGGGPPPGGGGGT",
+			"TGGGGGPPPGGGGGT",
+			"TTTTTTTTTTTTTTT"
+		],
+		"exits": {
+			"7,0": {"zone_id": "resonance_route", "spawn": [7, 21]}
+		},
 		"encounters": [
 			{"name": "Wahlik", "weight": 100, "min_level": 2, "max_level": 4}
 		]
@@ -13,11 +42,47 @@ static var _ZONES: Dictionary = {
 		"name": "Szlak Rezonansu",
 		"biome": "łąki / zagajniki",
 		"recommended_level": 4,
+		"spawn": [7, 21],
+		"map_rows": [
+			"TTTTTTTTTTTTTTT",
+			"TGGGGGGPGGGGGGT",
+			"TGGGGGGPGGGGGGT",
+			"TGGGGPPPPPGGGGT",
+			"TGGGGPGGGPGGGGT",
+			"TGGNGPGGGPGGGGT",
+			"TGGGGPGGGPGGGGT",
+			"TGGGGPPPPPGGGGT",
+			"TGGGGGGPGGGGGGT",
+			"TGGGGGGPGGGGGGT",
+			"TGGGGGGPGGGGGGT",
+			"TGGGPPPPPPPGGGT",
+			"TGGGPGGGGPGGGGT",
+			"TGGGPGGGGPGGGGT",
+			"TGGGPPPPPPPGGGT",
+			"TGGGGGGPGGGGGGT",
+			"TGGGGGGPGGGGGGT",
+			"TGGGGPPPPPGGGGT",
+			"TGGGGGGPGGGGGGT",
+			"TGGGGGGPGGGGGGT",
+			"TGGGGGGPGGGGGGT",
+			"TGGGGGGPGGGGGGT",
+			"TTTTTTTETTTTTTT"
+		],
+		"exits": {
+			"7,22": {"zone_id": "vela", "spawn": [7, 1]}
+		},
 		"encounters": [
 			{"name": "Wahlik", "weight": 100, "min_level": 3, "max_level": 6}
 		]
 	}
 }
+
+static func ids() -> Array[String]:
+	var result: Array[String] = []
+	for key: Variant in _ZONES.keys():
+		result.append(str(key))
+	result.sort()
+	return result
 
 static func has_zone(zone_id: String) -> bool:
 	return _ZONES.has(zone_id)
@@ -29,6 +94,44 @@ static func zone_info(zone_id: String) -> Dictionary:
 
 static func zone_name(zone_id: String) -> String:
 	return str(zone_info(zone_id).get("name", "Vela"))
+
+static func biome(zone_id: String) -> String:
+	return str(zone_info(zone_id).get("biome", ""))
+
+static func map_rows(zone_id: String) -> Array[String]:
+	var result: Array[String] = []
+	var raw_rows: Variant = zone_info(zone_id).get("map_rows", [])
+	if typeof(raw_rows) != TYPE_ARRAY:
+		return result
+	for value: Variant in raw_rows as Array:
+		result.append(str(value))
+	return result
+
+static func spawn_tile(zone_id: String) -> Vector2i:
+	var raw_spawn: Variant = zone_info(zone_id).get("spawn", [7, 20])
+	if typeof(raw_spawn) == TYPE_ARRAY:
+		var arr: Array = raw_spawn as Array
+		if arr.size() >= 2:
+			return Vector2i(int(arr[0]), int(arr[1]))
+	return Vector2i(7, 20)
+
+static func exit_at(zone_id: String, tile: Vector2i) -> Dictionary:
+	var raw_exits: Variant = zone_info(zone_id).get("exits", {})
+	if typeof(raw_exits) != TYPE_DICTIONARY:
+		return {}
+	var exits: Dictionary = raw_exits as Dictionary
+	var key: String = "%d,%d" % [tile.x, tile.y]
+	if not exits.has(key):
+		return {}
+	return (exits[key] as Dictionary).duplicate(true)
+
+static func exit_spawn(exit_data: Dictionary) -> Vector2i:
+	var raw_spawn: Variant = exit_data.get("spawn", [7, 20])
+	if typeof(raw_spawn) == TYPE_ARRAY:
+		var arr: Array = raw_spawn as Array
+		if arr.size() >= 2:
+			return Vector2i(int(arr[0]), int(arr[1]))
+	return Vector2i(7, 20)
 
 static func roll_encounter(zone_id: String, rng: RandomNumberGenerator) -> Dictionary:
 	var info: Dictionary = zone_info(zone_id)

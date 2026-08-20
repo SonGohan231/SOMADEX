@@ -11,31 +11,41 @@ static var _PATHS: Dictionary = {
 		"name": "TAKTYK",
 		"max_rank": 5,
 		"description": "+1 obrażenie ruchów ofensywnych / rangę",
-		"bonus_key": "attack_bonus"
+		"bonus_key": "attack_bonus",
+		"action_name": "ROZKAZ: NATARCIE",
+		"action_description": "Wzmacnia ruch partnera w tej rundzie."
 	},
 	PATH_GUARDIAN: {
 		"name": "OPIEKUN",
 		"max_rank": 5,
 		"description": "+2 HP leczenia i +2 maks. HP / rangę",
-		"bonus_key": "heal_bonus"
+		"bonus_key": "heal_bonus",
+		"action_name": "DOSTROJENIE",
+		"action_description": "Leczy aktywnego partnera przed jego ruchem."
 	},
 	PATH_RESEARCHER: {
 		"name": "BADACZ",
 		"max_rank": 5,
 		"description": "+4% szansy synchronizacji chwytu / rangę",
-		"bonus_key": "capture_bonus"
+		"bonus_key": "capture_bonus",
+		"action_name": "SKAN SŁABOŚCI",
+		"action_description": "Nadaje status OZNACZONY i ułatwia chwyt."
 	},
 	PATH_TECHNICIAN: {
 		"name": "TECHNIK",
 		"max_rank": 5,
 		"description": "+2 HP skuteczności Regeneratora / rangę",
-		"bonus_key": "item_heal_bonus"
+		"bonus_key": "item_heal_bonus",
+		"action_name": "IMPULS ZAKŁÓCAJĄCY",
+		"action_description": "Osłabia następną odpowiedź przeciwnika."
 	},
 	PATH_VANGUARD: {
 		"name": "AWANGARDZISTA",
 		"max_rank": 5,
 		"description": "+4% szansy bezpiecznego odwrotu / rangę",
-		"bonus_key": "escape_bonus"
+		"bonus_key": "escape_bonus",
+		"action_name": "PRZECHWYT",
+		"action_description": "Trener osłania partnera przed odpowiedzią."
 	}
 }
 
@@ -90,6 +100,28 @@ static func bonuses(talents: Dictionary) -> Dictionary:
 		"escape_bonus": float(vanguard) * 0.04
 	}
 
+static func trainer_action_count() -> int:
+	return 5
+
+static func trainer_action_path(index: int) -> String:
+	var paths: Array[String] = path_ids()
+	if index < 0 or index >= paths.size():
+		return ""
+	return paths[index]
+
+static func trainer_action_info(index: int, talents: Dictionary) -> Dictionary:
+	var path_id: String = trainer_action_path(index)
+	if path_id.is_empty():
+		return {}
+	var data: Dictionary = path_info(path_id)
+	return {
+		"path_id": path_id,
+		"name": str(data.get("action_name", path_name(path_id))),
+		"description": str(data.get("action_description", "")),
+		"rank": rank(talents, path_id),
+		"focus_cost": 1
+	}
+
 static func xp_to_next_level(level: int) -> int:
 	return 18 + maxi(1, level) * 7
 
@@ -99,7 +131,8 @@ static func quest_title(stage: int) -> String:
 		1: return "WYJŚCIE W TEREN"
 		2: return "SYNCHRONIZACJA"
 		3: return "POWRÓT DO VELA"
-		_: return "SZLAK REZONANSU"
+		4: return "SZLAK REZONANSU"
+		_: return "FUNDAMENT REGIONU"
 
 static func quest_objective(stage: int) -> String:
 	match stage:
@@ -107,7 +140,8 @@ static func quest_objective(stage: int) -> String:
 		1: return "Wejdź w wysoką trawę i znajdź dzikiego Somaskana."
 		2: return "Osłab dzikiego Somaskana i użyj Modułu Chwytu."
 		3: return "Wróć do Stacji Vela i zsynchronizuj bazę."
-		_: return "Fundament regionu gotowy — Szlak Rezonansu jest aktywny."
+		4: return "Przejdź północnym wyjściem na Szlak Rezonansu."
+		_: return "Fundament systemów jest aktywny. Dalsza produkcja rozszerza już zawartość regionu."
 
 static func quest_short(stage: int) -> String:
 	match stage:
@@ -115,4 +149,5 @@ static func quest_short(stage: int) -> String:
 		1: return "Znajdź dzikiego Somaskana"
 		2: return "Spróbuj chwytu"
 		3: return "Wróć do Stacji Vela"
-		_: return "Szlak Rezonansu aktywny"
+		4: return "Wejdź na Szlak Rezonansu"
+		_: return "Fundament aktywny"
