@@ -13,8 +13,8 @@ const TITLE_SCREEN = preload("res://scripts/ui/title_screen.gd")
 const INTRO_SCREEN = preload("res://scripts/ui/intro_screen.gd")
 const STARTER_SCREEN = preload("res://scripts/ui/starter_screen.gd")
 const WORLD_SCREEN = preload("res://scripts/world/alpha1_world_screen.gd")
-const PAUSE_MENU = preload("res://scripts/ui/pause_menu.gd")
-const BATTLE_SCREEN = preload("res://scripts/battle/battle_screen.gd")
+const PAUSE_MENU = preload("res://scripts/ui/alpha1_pause_menu.gd")
+const BATTLE_SCREEN = preload("res://scripts/battle/alpha1_battle_screen.gd")
 const TRAINER_BATTLE_SCREEN = preload("res://scripts/battle/alpha1_trainer_battle_screen.gd")
 
 var current_screen: Control
