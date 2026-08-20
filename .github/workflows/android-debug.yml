@@ -125,7 +125,9 @@ jobs:
           grep -q 'version/name="1.1.0-alpha1-vela"' export_presets.cfg
           grep -q 'version/code=11' export_presets.cfg
           test -s assets/world/vela_tiles_24.png
+          test -s assets/world/alpha1_characters_24.png
           test -s assets/monsters/alpha1/somaskan_001_010_strip.webp
+          test -s scripts/data/alpha1_sidequest_db.gd
 
       - name: Export debug APK
         shell: bash
