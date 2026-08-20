@@ -2,6 +2,7 @@ extends RefCounted
 
 const PROGRESSION = preload("res://scripts/data/progression_db.gd")
 const DB = preload("res://scripts/data/monster_db.gd")
+const EVOLUTION = preload("res://scripts/data/evolution_db.gd")
 const ITEMS = preload("res://scripts/data/item_db.gd")
 const EQUIPMENT = preload("res://scripts/data/equipment_db.gd")
 const RULES = preload("res://scripts/battle/battle_rules.gd")
@@ -34,6 +35,7 @@ static func new_profile(starter_name: String = "") -> Dictionary:
 		"zone_id": "vela",
 		"flags": {},
 		"dialogue_flags": {},
+		"last_evolutions": [],
 		"haptics": true
 	}
 	if not starter_name.is_empty():
@@ -45,10 +47,13 @@ static func new_profile(starter_name: String = "") -> Dictionary:
 	return profile
 
 static func make_member(monster_name: String, level: int, serial: int, hp: int = -1) -> Dictionary:
+	var safe_name: String = EVOLUTION.canonical_name(monster_name)
+	if safe_name.is_empty():
+		safe_name = monster_name
 	var safe_level: int = maxi(1, level)
 	var member: Dictionary = {
-		"uid": "%s-%04d" % [monster_name.to_lower(), maxi(1, serial)],
-		"name": monster_name,
+		"uid": "%s-%04d" % [safe_name.to_lower(), maxi(1, serial)],
+		"name": safe_name,
 		"level": safe_level,
 		"xp": 0,
 		"hp": 1,
@@ -160,6 +165,7 @@ static func migrate(raw: Dictionary) -> Dictionary:
 		_add_unique(profile["seen"] as Array, name)
 		_add_unique(profile["caught"] as Array, name)
 
+	profile["last_evolutions"] = []
 	if not str(profile.get("zone_id", "")).is_empty():
 		profile["version"] = SAVE_VERSION
 	return profile
@@ -212,17 +218,18 @@ static func replace_party(profile: Dictionary, party: Array, new_active_index: i
 
 static func add_seen(profile: Dictionary, monster_name: String) -> void:
 	var seen: Array = profile.get("seen", []) as Array
-	_add_unique(seen, monster_name)
+	_add_unique(seen, EVOLUTION.canonical_name(monster_name))
 	profile["seen"] = seen
 
 static func add_caught(profile: Dictionary, monster_name: String, level: int = 1) -> Dictionary:
-	add_seen(profile, monster_name)
+	var canonical: String = EVOLUTION.canonical_name(monster_name)
+	add_seen(profile, canonical)
 	var caught: Array = profile.get("caught", []) as Array
-	_add_unique(caught, monster_name)
+	_add_unique(caught, canonical)
 	profile["caught"] = caught
 
 	var serial: int = maxi(1, int(profile.get("next_member_id", 1)))
-	var member: Dictionary = make_member(monster_name, level, serial)
+	var member: Dictionary = make_member(canonical, level, serial)
 	profile["next_member_id"] = serial + 1
 	var party: Array = profile.get("party", []) as Array
 	if party.size() < PARTY_LIMIT:
@@ -246,9 +253,11 @@ static func heal_party(profile: Dictionary) -> void:
 
 static func add_member_exp(profile: Dictionary, index: int, amount: int) -> int:
 	var party: Array = profile.get("party", []) as Array
+	profile["last_evolutions"] = []
 	if index < 0 or index >= party.size() or amount <= 0:
 		return 0
 	var member: Dictionary = party[index] as Dictionary
+	var old_name: String = str(member.get("name", "Luzik"))
 	var old_level: int = maxi(1, int(member.get("level", 1)))
 	var level: int = old_level
 	var xp: int = maxi(0, int(member.get("xp", 0))) + amount
@@ -259,11 +268,31 @@ static func add_member_exp(profile: Dictionary, index: int, amount: int) -> int:
 		threshold = RULES.creature_xp_to_next(level)
 	member["level"] = level
 	member["xp"] = xp
+	var talents: Dictionary = profile.get("talents", PROGRESSION.default_talents()) as Dictionary
+	var loadout: Dictionary = profile.get("equipment", EQUIPMENT.default_loadout()) as Dictionary
 	if level > old_level:
 		member["hp"] = int(member.get("hp", 1)) + RULES.level_hp_growth(old_level, level)
-		var talents: Dictionary = profile.get("talents", PROGRESSION.default_talents()) as Dictionary
-		var loadout: Dictionary = profile.get("equipment", EQUIPMENT.default_loadout()) as Dictionary
 		member["hp"] = mini(int(member["hp"]), member_max_hp(member, talents, loadout))
+
+	var resolved_name: String = EVOLUTION.resolve_name(old_name, level)
+	if not resolved_name.is_empty() and resolved_name != old_name:
+		var old_max_hp: int = member_max_hp(member, talents, loadout)
+		member["name"] = resolved_name
+		var new_max_hp: int = member_max_hp(member, talents, loadout)
+		member["hp"] = clampi(int(member.get("hp", 1)) + maxi(1, new_max_hp - old_max_hp), 0, new_max_hp)
+		var seen: Array = profile.get("seen", []) as Array
+		var caught: Array = profile.get("caught", []) as Array
+		_add_unique(seen, resolved_name)
+		_add_unique(caught, resolved_name)
+		profile["seen"] = seen
+		profile["caught"] = caught
+		profile["last_evolutions"] = [{
+			"uid": str(member.get("uid", "")),
+			"from": old_name,
+			"to": resolved_name,
+			"level": level
+		}]
+
 	party[index] = member
 	profile["party"] = party
 	return level - old_level
@@ -301,14 +330,14 @@ static func _clamp_party_hp(profile: Dictionary) -> void:
 
 static func _normalize_member(value: Variant, serial: int) -> Dictionary:
 	if typeof(value) == TYPE_STRING:
-		var name_from_string: String = str(value)
+		var name_from_string: String = EVOLUTION.canonical_name(str(value))
 		if name_from_string.is_empty() or not DB.has_monster(name_from_string):
 			return {}
 		return make_member(name_from_string, STARTER_LEVEL, serial)
 	if typeof(value) != TYPE_DICTIONARY:
 		return {}
 	var incoming: Dictionary = value as Dictionary
-	var name: String = str(incoming.get("name", incoming.get("monster", "")))
+	var name: String = EVOLUTION.canonical_name(str(incoming.get("name", incoming.get("monster", ""))))
 	if name.is_empty() or not DB.has_monster(name):
 		return {}
 	var level: int = maxi(1, int(incoming.get("level", STARTER_LEVEL)))
