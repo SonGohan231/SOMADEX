@@ -26,6 +26,11 @@ func _test_title_buttons(errors: Array[String]) -> void:
 	title.setup(false)
 	title.new_game_requested.connect(_on_new_game)
 	get_root().add_child(title)
+	# SceneTree scripts launched from _initialize() may not receive _ready()
+	# before the first assertion. Exercise the exact production builder explicitly
+	# when needed so this test validates wiring rather than frame timing.
+	if title.touch_buttons.is_empty():
+		title._build_touch_buttons()
 	_expect(title.touch_buttons.size() == 3, "title screen must expose three real touch buttons", errors)
 	if title.touch_buttons.size() == 3:
 		for i: int in range(3):
