@@ -24,6 +24,7 @@ const FRAME_H: int = 128
 static var _strip_cache: Dictionary = {}
 static var _frame_cache: Dictionary = {}
 static var _missing_cache: Dictionary = {}
+static var _safe_fallback_cache: Dictionary = {}
 
 static func _authored_families() -> Array:
 	return [REVERSE15,REVERSE10,REVERSE09,REVERSE08,REVERSE07,REVERSE06,REVERSE05,REVERSE04,REVERSE03,REVERSE02]
@@ -88,7 +89,11 @@ static func frame_texture(creature_name: String, action: String, frame: int) -> 
 	if atlas_frame!=null: return atlas_frame
 	var seed: Texture2D=SEEDS.texture_for(creature_name)
 	if seed!=null: return seed
-	return ART.texture_for(creature_name)
+	var portrait: Texture2D=ART.texture_for(creature_name)
+	if portrait!=null: return portrait
+	# QA-blocked atlas forms must never expose the rejected source image, but the
+	# battle renderer still needs a valid state for all 150 logical forms.
+	return _safe_fallback_texture(creature_name,action,frame)
 
 static func source_kind(creature_name: String) -> String:
 	if not has_animation(creature_name): return "fallback"
@@ -98,7 +103,8 @@ static func source_kind(creature_name: String) -> String:
 	if count>0: return "sprite-strip-partial"
 	if ARCHETYPE_RUNTIME.has_animation(creature_name): return "sprite-archetype-generated"
 	if SEEDS.has_seed(creature_name): return "authored-seed-archetype"
-	return "portrait-procedural"
+	if ART.texture_for(creature_name)!=null: return "portrait-procedural"
+	return "qa-safe-fallback"
 
 static func archetype(creature_name: String) -> String:
 	if SEED_ATLAS.has_name(creature_name): return SEED_ATLAS.archetype(creature_name)
@@ -129,6 +135,49 @@ static func _load_strip(creature_name: String, action: String) -> Texture2D:
 	var expected:=Vector2i(FRAME_W*frame_count(action),FRAME_H)
 	if Vector2i(image.get_size())!=expected: _missing_cache[cache_key]=true; return null
 	var texture: Texture2D=ImageTexture.create_from_image(image); _strip_cache[cache_key]=texture; return texture
+
+static func _safe_fallback_texture(creature_name: String, action: String, frame: int) -> Texture2D:
+	var safe_frame: int=clampi(frame,0,frame_count(action)-1)
+	var key: String="%s|%s|%d" % [creature_name.to_lower(),action,safe_frame]
+	if _safe_fallback_cache.has(key): return _safe_fallback_cache[key] as Texture2D
+	var offset:=Vector2i.ZERO
+	var alpha: float=1.0
+	match action:
+		"idle": offset.y=[0,-2,0,2][safe_frame]
+		"attack": offset.x=[0,5,12,18,9,1][safe_frame]
+		"hurt": offset.x=[-5,5,0][safe_frame]
+		"faint":
+			offset.y=[0,5,11,19,28][safe_frame]
+			alpha=[1.0,0.92,0.78,0.58,0.34][safe_frame]
+		"special": offset.y=[0,-2,-5,-5,-2,0][safe_frame]
+	var image:=Image.create(FRAME_W,FRAME_H,false,Image.FORMAT_RGBA8)
+	image.fill(Color(0,0,0,0))
+	var h: int=abs(creature_name.hash())
+	var body:=Color(0.42+float(h%17)/100.0,0.46+float((h/17)%13)/100.0,0.56+float((h/221)%11)/100.0,alpha)
+	var edge:=Color(0.14,0.16,0.22,alpha)
+	var glow:=Color(0.72,0.86,0.92,alpha)
+	var center:=Vector2i(64+offset.x,76+offset.y)
+	var rx: int=24+(h%6); var ry: int=18+((h/7)%5)
+	for y: int in range(center.y-ry-2,center.y+ry+3):
+		for x: int in range(center.x-rx-2,center.x+rx+3):
+			if x<0 or x>=FRAME_W or y<0 or y>=FRAME_H: continue
+			var px: float=float(x-center.x)/float(rx); var py: float=float(y-center.y)/float(ry)
+			var d: float=px*px+py*py
+			if d<=1.0: image.set_pixel(x,y,body)
+			elif d<=1.18: image.set_pixel(x,y,edge)
+	for eye_x: int in [center.x-8,center.x+8]:
+		for yy: int in range(center.y-5,center.y):
+			for xx: int in range(eye_x-2,eye_x+3):
+				if xx>=0 and xx<FRAME_W and yy>=0 and yy<FRAME_H: image.set_pixel(xx,yy,glow)
+	# A small diamond marks this explicitly as a temporary QA-safe visual.
+	for dy: int in range(-6,7):
+		var span: int=6-abs(dy)
+		for dx: int in range(-span,span+1):
+			var px2: int=center.x+dx; var py2: int=center.y+ry+8+dy
+			if px2>=0 and px2<FRAME_W and py2>=0 and py2<FRAME_H: image.set_pixel(px2,py2,edge)
+	var texture: Texture2D=ImageTexture.create_from_image(image)
+	_safe_fallback_cache[key]=texture
+	return texture
 
 static func _strip_path(creature_name: String, action: String) -> String:
 	return "res://data/creatures/battle_sprites/%s/%s.b64.txt" % [_slug(creature_name),action]
