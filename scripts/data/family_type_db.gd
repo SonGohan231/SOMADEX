@@ -18,11 +18,33 @@ const FAMILY_TYPES: Dictionary = {
 	46:"REZONANS", 47:"WAVE", 48:"STABIL", 49:"FIRE", 50:"REZONANS"
 }
 
+const TYPE_STATUS: Dictionary = {
+	"REZONANS":"unstable",
+	"ŚLIZG":"stagger",
+	"NAPIĘCIE":"rooted",
+	"OSC":"confused",
+	"KIERUNEK":"marked",
+	"TORSJA":"armor_break",
+	"STABIL":"disrupted",
+	"CZUCIE":"vulnerable",
+	"WAVE":"soaked",
+	"ELECTRIC":"paralyzed",
+	"ICE":"chilled",
+	"FIRE":"burn",
+	"PHYSICAL":"stagger"
+}
+
 static func type_for_family(family_id: int) -> String:
 	return str(FAMILY_TYPES.get(family_id, "REZONANS"))
 
 static func has_family(family_id: int) -> bool:
 	return FAMILY_TYPES.has(family_id)
+
+static func status_for_type(type_id: String) -> String:
+	return str(TYPE_STATUS.get(type_id, "unstable"))
+
+static func status_for_family(family_id: int) -> String:
+	return status_for_type(type_for_family(family_id))
 
 static func families_for_type(type_id: String) -> Array[int]:
 	var result: Array[int] = []
@@ -41,4 +63,6 @@ static func validate() -> Array[String]:
 		var type_id: String = str(FAMILY_TYPES[family_id])
 		if type_id not in CORE_TYPES:
 			errors.append("family %d uses unknown type %s" % [family_id, type_id])
+		if not TYPE_STATUS.has(type_id):
+			errors.append("type %s has no tactical status" % type_id)
 	return errors
