@@ -29,15 +29,33 @@ func _initialize() -> void:
 		_expect(SPRITES.source_kind(creature_name) in ["authored-seed-archetype", "sprite-strip-partial", "sprite-strip"], "%s still uses portrait placeholder" % creature_name, errors)
 		_expect(SPRITES.archetype(creature_name) == "glide", "%s family archetype mismatch" % creature_name, errors)
 
+	_test_reverse_family15(errors)
 	_validate_seed_manifest(errors)
 
 	if errors.is_empty():
-		print("CREATURE_SPRITE_RUNTIME_SMOKE: PASS · idle4 attack6 hurt3 faint5 special6 · family001 approved · 50-family/150-form production manifest · staged fallback safe")
+		print("CREATURE_SPRITE_RUNTIME_SMOKE: PASS · idle4 attack6 hurt3 faint5 special6 · family001 seed approved · family015 full animation approved · 50-family/150-form production manifest")
 		quit(0)
 		return
 	for text: String in errors:
 		printerr("CREATURE_SPRITE_RUNTIME_SMOKE: " + text)
 	quit(1)
+
+func _test_reverse_family15(errors: Array[String]) -> void:
+	_expect(SPRITES.authored_full_animation_count() >= 3, "reverse pass must contain three fully animated family015 forms", errors)
+	for creature_name: String in ["Nucik", "Wibrospiew", "Rezonar"]:
+		_expect(SPRITES.has_authored_full_animation(creature_name), "%s full reverse-pass animation missing" % creature_name, errors)
+		_expect(SPRITES.source_kind(creature_name) == "sprite-strip-authored-runtime", "%s still routes through a placeholder source" % creature_name, errors)
+		for action: String in SPRITES.ACTIONS:
+			var first: Texture2D = SPRITES.frame_texture(creature_name, action, 0)
+			var last: Texture2D = SPRITES.frame_texture(creature_name, action, SPRITES.frame_count(action) - 1)
+			_expect(first != null and Vector2i(first.get_size()) == Vector2i(128, 128), "%s %s first frame contract failed" % [creature_name, action], errors)
+			_expect(last != null and Vector2i(last.get_size()) == Vector2i(128, 128), "%s %s last frame contract failed" % [creature_name, action], errors)
+			if first != null and last != null and SPRITES.frame_count(action) > 1:
+				var first_image: Image = first.get_image()
+				var last_image: Image = last.get_image()
+				_expect(first_image != null and last_image != null, "%s %s frame images unavailable" % [creature_name, action], errors)
+				if first_image != null and last_image != null:
+					_expect(first_image.get_data() != last_image.get_data(), "%s %s still repeats one static frame" % [creature_name, action], errors)
 
 func _validate_seed_manifest(errors: Array[String]) -> void:
 	var file := FileAccess.open(SEED_MANIFEST, FileAccess.READ)
