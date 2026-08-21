@@ -158,6 +158,14 @@ jobs:
         shell: bash
         run: godot --headless --path . --script res://scripts/tests/full_region_campaign_smoke.gd
 
+      - name: Deterministic full campaign playthrough and softlock scan
+        shell: bash
+        run: godot --headless --path . --script res://scripts/tests/campaign_playthrough_smoke.gd
+
+      - name: Validate Region 1 progression and economy balance bands
+        shell: bash
+        run: godot --headless --path . --script res://scripts/tests/campaign_balance_smoke.gd
+
       - name: Validate world and NPC pixel sprites
         shell: bash
         run: godot --headless --path . --script res://scripts/tests/world_sprite_art_smoke.gd
