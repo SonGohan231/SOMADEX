@@ -1,6 +1,7 @@
 extends RefCounted
 
 const FAMILY_TYPES = preload("res://scripts/data/family_type_db.gd")
+const CATALOG = preload("res://scripts/data/creature_catalog.gd")
 
 const STRONG: float = 1.20
 const RESIST: float = 0.85
@@ -41,6 +42,8 @@ static func multiplier(move_type: String, target_types: Array) -> float:
 	var row: Dictionary = MATCHUPS[move] as Dictionary
 	for raw_target: Variant in target_types:
 		var target: String = normalize_type(str(raw_target))
+		if target.is_empty():
+			continue
 		total *= float(row.get(target, 1.0))
 	return clampf(total, MIN_MULT, MAX_MULT)
 
@@ -54,17 +57,27 @@ static func label(move_type: String, target_types: Array) -> String:
 
 static func target_types(creature_data: Dictionary) -> Array:
 	var result: Array = []
+	var creature_name: String = str(creature_data.get("name", ""))
+	if not creature_name.is_empty() and CATALOG.has_form(creature_name):
+		var catalog_info: Dictionary = CATALOG.form(creature_name)
+		var family_id: int = int(catalog_info.get("family_id", 0))
+		if FAMILY_TYPES.has_family(family_id):
+			result.append(FAMILY_TYPES.type_for_family(family_id))
 	var raw_types: Variant = creature_data.get("types", [])
 	if typeof(raw_types) == TYPE_ARRAY:
 		for raw_type: Variant in raw_types as Array:
 			var normalized: String = normalize_type(str(raw_type))
-			if not normalized.is_empty() and not result.has(normalized):
+			if not normalized.is_empty() and normalized != "SUPPORT" and not result.has(normalized):
 				result.append(normalized)
 	if result.is_empty():
 		var fallback: String = normalize_type(str(creature_data.get("type", "REZONANS")))
 		if not fallback.is_empty():
 			result.append(fallback)
 	return result
+
+static func primary_type(creature_data: Dictionary) -> String:
+	var types: Array = target_types(creature_data)
+	return str(types[0]) if not types.is_empty() else "REZONANS"
 
 static func family_type(family_id: int) -> String:
 	return FAMILY_TYPES.type_for_family(family_id)
