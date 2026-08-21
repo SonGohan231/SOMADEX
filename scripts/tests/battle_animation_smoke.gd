@@ -21,13 +21,19 @@ func _initialize() -> void:
 
 func _test_sprite_catalog(errors: Array[String]) -> void:
 	_expect(SPRITES.animation_count() == 33, "expected 33 Vela forms with battle animation states", errors)
+	var authored_family: Array[String] = ["Luzik", "Warstwin", "Synkronaut"]
+	var allowed_sources: Array[String] = ["portrait-procedural", "authored-seed-archetype", "sprite-strip-partial", "sprite-strip"]
 	for name: String in ["Luzik", "Synkronaut", "Bocznik", "Falomamut", "Wahlik", "Kartografon", "Spiralion", "Labiryntaur", "Fundamentor", "Sensoryks", "Nucik", "Wibrospiew", "Rezonar"]:
 		_expect(SPRITES.has_animation(name), "missing battle animation mapping for %s" % name, errors)
-		_expect(SPRITES.source_kind(name) == "portrait-procedural", "wrong animation source for %s" % name, errors)
+		_expect(SPRITES.source_kind(name) in allowed_sources, "wrong animation source for %s" % name, errors)
+	for name: String in authored_family:
+		_expect(SPRITES.has_authored_seed(name), "%s must use an authored transparent seed" % name, errors)
+		_expect(SPRITES.source_kind(name) != "portrait-procedural", "%s regressed to portrait placeholder" % name, errors)
 
 func _test_visual_states(errors: Array[String]) -> void:
 	for action: String in SPRITES.ACTIONS:
-		for frame: int in range(SPRITES.FRAME_COUNT):
+		var count: int = SPRITES.frame_count(action)
+		for frame: int in range(count):
 			var tex: Texture2D = SPRITES.frame_texture("Luzik", action, frame)
 			_expect(tex != null, "Luzik %s frame state %d failed" % [action, frame], errors)
 
