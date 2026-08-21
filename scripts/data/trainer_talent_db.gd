@@ -94,12 +94,13 @@ static func aggregate(talents: Dictionary) -> Dictionary:
 			for raw_key: Variant in effects.keys():
 				var key: String = str(raw_key)
 				var value: Variant = effects.get(raw_key)
-				if not totals.has(key):
+				if totals.has(key):
+					if typeof(totals.get(key)) == TYPE_FLOAT or typeof(value) == TYPE_FLOAT:
+						totals[key] = float(totals.get(key, 0.0)) + float(value)
+					else:
+						totals[key] = int(totals.get(key, 0)) + int(value)
+				else:
 					totals[key] = value
-			elif typeof(totals.get(key)) == TYPE_FLOAT or typeof(value) == TYPE_FLOAT:
-					totals[key] = float(totals.get(key, 0.0)) + float(value)
-			else:
-					totals[key] = int(totals.get(key, 0)) + int(value)
 	return totals
 
 static func _effect_for(path_id: String, index: int) -> Dictionary:
@@ -178,8 +179,9 @@ static func _description(path_id: String, index: int, effects: Dictionary) -> St
 		var value: Variant = effects.get(raw_key)
 		if typeof(value) == TYPE_FLOAT:
 			parts.append("%s %+d%%" % [str(raw_key), int(round(float(value) * 100.0))])
-		elif int(value) != 0:
-			parts.append("%s %+d" % [str(raw_key), int(value)])
+		else:
+			if int(value) != 0:
+				parts.append("%s %+d" % [str(raw_key), int(value)])
 	var suffix: String = ""
 	if not parts.is_empty():
 		suffix = " " + ", ".join(parts)
