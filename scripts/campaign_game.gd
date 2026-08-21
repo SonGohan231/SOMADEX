@@ -13,6 +13,7 @@ const CAMPAIGN_ALPHA_QUESTS = preload("res://scripts/data/alpha1_quest_db.gd")
 const CAMPAIGN_SIDEQUESTS = preload("res://scripts/data/campaign_sidequest_db.gd")
 const CAMPAIGN_STORY_BEATS = preload("res://scripts/data/campaign_story_beat_db.gd")
 const CAMPAIGN_WORLD = preload("res://scripts/world/sprite_campaign_world_screen.gd")
+const CAMPAIGN_WILD_BATTLE = preload("res://scripts/battle/campaign_wild_battle_screen.gd")
 const CAMPAIGN_TRAINER_BATTLE = preload("res://scripts/battle/campaign_trainer_battle_screen.gd")
 const CAMPAIGN_EQUIPMENT = preload("res://scripts/data/equipment_db.gd")
 
@@ -63,7 +64,7 @@ func _start_battle(tile: Vector2i) -> void:
 	CAMPAIGN_STATE.add_seen(profile, enemy_name)
 	if int(profile.get("quest_stage", 0)) == 1:
 		profile["quest_stage"] = 2
-	var screen: Control = ANIM_BATTLE_SCREEN.new()
+	var screen: Control = CAMPAIGN_WILD_BATTLE.new()
 	screen.setup(
 		profile.get("party", []) as Array,
 		CAMPAIGN_STATE.active_index(profile),
@@ -156,7 +157,8 @@ func _on_battle_finished(result: Dictionary) -> void:
 	if str(result.get("outcome", "")) == "loss":
 		var checkpoint: Dictionary = CAMPAIGN_CHECKPOINT.resolve(profile)
 		profile["zone_id"] = str(checkpoint.get("zone_id", "vela"))
-		CAMPAIGN_STATE.set_player_tile(profile, checkpoint.get("tile", CAMPAIGN_STATE.START_TILE) as Vector2i)
+		var checkpoint_tile: Vector2i = checkpoint.get("tile", CAMPAIGN_STATE.START_TILE) as Vector2i
+		CAMPAIGN_STATE.set_player_tile(profile, checkpoint_tile)
 		CAMPAIGN_STATE.heal_party(profile)
 
 	_save_game()
