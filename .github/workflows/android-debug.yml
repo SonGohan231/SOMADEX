@@ -154,6 +154,10 @@ jobs:
         shell: bash
         run: godot --headless --path . --script res://scripts/tests/full_region_campaign_smoke.gd
 
+      - name: Validate world and NPC pixel sprites
+        shell: bash
+        run: godot --headless --path . --script res://scripts/tests/world_sprite_art_smoke.gd
+
       - name: Validate Vela creature art atlas
         shell: bash
         run: godot --headless --path . --script res://scripts/tests/vela_creature_art_smoke.gd
