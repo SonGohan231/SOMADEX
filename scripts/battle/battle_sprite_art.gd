@@ -6,6 +6,7 @@ const REVERSE15 = preload("res://scripts/battle/reverse_family15_sprite_db.gd")
 const REVERSE10 = preload("res://scripts/battle/reverse_family10_sprite_db.gd")
 const REVERSE09 = preload("res://scripts/battle/reverse_family09_sprite_db.gd")
 const REVERSE08 = preload("res://scripts/battle/reverse_family08_sprite_db.gd")
+const REVERSE07 = preload("res://scripts/battle/reverse_family07_sprite_db.gd")
 
 const ACTIONS: Array[String] = ["idle", "attack", "hurt", "faint", "special"]
 const ACTION_FRAME_COUNTS: Dictionary = {
@@ -55,10 +56,10 @@ static func has_authored_seed(creature_name: String) -> bool:
 	return SEEDS.has_seed(creature_name)
 
 static func authored_full_animation_count() -> int:
-	return REVERSE15.animation_count() + REVERSE10.animation_count() + REVERSE09.animation_count() + REVERSE08.animation_count()
+	return REVERSE15.animation_count() + REVERSE10.animation_count() + REVERSE09.animation_count() + REVERSE08.animation_count() + REVERSE07.animation_count()
 
 static func has_authored_full_animation(creature_name: String) -> bool:
-	return REVERSE15.has_animation(creature_name) or REVERSE10.has_animation(creature_name) or REVERSE09.has_animation(creature_name) or REVERSE08.has_animation(creature_name)
+	return REVERSE15.has_animation(creature_name) or REVERSE10.has_animation(creature_name) or REVERSE09.has_animation(creature_name) or REVERSE08.has_animation(creature_name) or REVERSE07.has_animation(creature_name)
 
 static func frame_count(action: String) -> int:
 	return maxi(1, int(ACTION_FRAME_COUNTS.get(action, 1)))
@@ -96,6 +97,10 @@ static func frame_texture(creature_name: String, action: String, frame: int) -> 
 		var family08: Texture2D = REVERSE08.frame_texture(creature_name, action, frame)
 		if family08 != null:
 			return family08
+	if REVERSE07.has_animation(creature_name):
+		var family07: Texture2D = REVERSE07.frame_texture(creature_name, action, frame)
+		if family07 != null:
+			return family07
 	var real_frame: Texture2D = _real_frame_texture(creature_name, action, frame)
 	if real_frame != null:
 		return real_frame
@@ -107,7 +112,7 @@ static func frame_texture(creature_name: String, action: String, frame: int) -> 
 static func source_kind(creature_name: String) -> String:
 	if not has_animation(creature_name):
 		return "fallback"
-	if REVERSE15.has_animation(creature_name) or REVERSE10.has_animation(creature_name) or REVERSE09.has_animation(creature_name) or REVERSE08.has_animation(creature_name):
+	if REVERSE15.has_animation(creature_name) or REVERSE10.has_animation(creature_name) or REVERSE09.has_animation(creature_name) or REVERSE08.has_animation(creature_name) or REVERSE07.has_animation(creature_name):
 		return "sprite-strip-authored-runtime"
 	var count: int = real_strip_count(creature_name)
 	if count >= ACTIONS.size():
