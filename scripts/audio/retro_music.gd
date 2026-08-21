@@ -18,7 +18,26 @@ const THEMES: Dictionary = {
 	"postgame":{"lead":[61,68,73,75,70,73,77,80,61,65,72,77,68,73,75,82],"bass":[37,37,32,32,41,41,36,36],"tempo":0.95},
 	"battle":{"lead":[52,59,64,61,55,62,67,64,52,64,69,66,55,62,71,67],"bass":[28,28,31,31,33,33,35,35],"tempo":1.20},
 	"trainer_battle":{"lead":[54,61,66,63,57,64,69,66,54,66,71,68,57,64,73,69],"bass":[30,30,33,33,35,35,37,37],"tempo":1.24},
-	"boss":{"lead":[48,55,61,58,51,58,64,61,48,60,65,63,51,58,67,64],"bass":[24,24,27,27,29,29,31,31],"tempo":1.28}
+	"boss":{"lead":[48,55,61,58,51,58,64,61,48,60,65,63,51,58,67,64],"bass":[24,24,27,27,29,29,31,31],"tempo":1.28},
+	"boss_eron":{"lead":[48,55,60,55,50,57,62,57,48,55,63,60,50,57,65,62],"bass":[24,24,31,31,26,26,29,29],"tempo":1.18},
+	"boss_sora":{"lead":[62,66,71,74,69,66,76,71,64,67,72,76,71,69,78,74],"bass":[38,38,43,43,35,35,40,40],"tempo":1.22},
+	"boss_ax7":{"lead":[46,58,53,65,48,60,55,67,46,62,57,69,50,60,65,72],"bass":[22,22,29,29,34,34,27,27],"tempo":1.34},
+	"boss_hail":{"lead":[50,57,61,64,52,59,62,66,48,55,60,63,50,57,61,67],"bass":[26,26,29,29,24,24,31,31],"tempo":1.10},
+	"boss_sol":{"lead":[57,64,60,67,62,69,65,72,55,62,67,71,59,66,69,74],"bass":[33,33,28,28,35,35,31,31],"tempo":1.17},
+	"boss_elow":{"lead":[53,60,65,69,57,64,67,72,52,59,64,67,55,62,69,71],"bass":[29,29,36,36,33,33,38,38],"tempo":1.15},
+	"boss_veya":{"lead":[59,66,71,74,62,69,73,78,57,64,69,76,61,68,74,80],"bass":[35,35,40,40,31,31,38,38],"tempo":1.30},
+	"boss_veyr":{"lead":[48,60,63,67,51,63,66,72,46,58,65,70,50,62,69,75],"bass":[24,24,27,27,21,21,29,29],"tempo":1.36}
+}
+
+const BOSS_THEME_IDS: Dictionary = {
+	"vela_trial":"boss_eron",
+	"marea_resonance":"boss_sora",
+	"ferrum_construct":"boss_ax7",
+	"nivra_guardian":"boss_hail",
+	"lumen_keeper":"boss_sol",
+	"aster_warden":"boss_elow",
+	"koral_tide":"boss_veya",
+	"zenith_final":"boss_veyr"
 }
 
 var player: AudioStreamPlayer = null
@@ -103,6 +122,9 @@ static func theme_for_zone(zone_id: String, biome: String = "", post_game: bool 
 	if "cave" in text or "echo" in text or "fault" in text or "jask" in text: return "cave"
 	if "vela" in text or "orin_gate" == zone_id: return "town"
 	return "route"
+
+static func boss_theme(boss_profile_id: String) -> String:
+	return str(BOSS_THEME_IDS.get(boss_profile_id, "boss"))
 
 static func theme_ids() -> Array[String]:
 	var result: Array[String] = []
