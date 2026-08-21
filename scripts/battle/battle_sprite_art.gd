@@ -1,6 +1,7 @@
 extends RefCounted
 
 const ART = preload("res://scripts/data/monster_art.gd")
+const SEEDS = preload("res://scripts/battle/creature_battle_seed_db.gd")
 
 const ACTIONS: Array[String] = ["idle", "attack", "hurt", "faint", "special"]
 const ACTION_FRAME_COUNTS: Dictionary = {
@@ -10,9 +11,9 @@ const ACTION_FRAME_COUNTS: Dictionary = {
 	"faint": 5,
 	"special": 6
 }
-# AnimatedBattleScreen currently advances a shared maximum frame clock. Real
-# strips are clamped per action here, so existing combat timing remains stable
-# while actions gain their authored frame counts.
+# AnimatedBattleScreen advances a shared maximum frame clock. Full authored
+# strips are clamped per action. Authored transparent seeds are animated by the
+# battle actor transform/effect archetype until a strip override is shipped.
 const FRAME_COUNT: int = 6
 const FRAME_W: int = 128
 const FRAME_H: int = 128
@@ -46,6 +47,12 @@ static func has_animation(creature_name: String) -> bool:
 static func animation_count() -> int:
 	return SPECIES.size()
 
+static func authored_seed_count() -> int:
+	return SEEDS.seed_count()
+
+static func has_authored_seed(creature_name: String) -> bool:
+	return SEEDS.has_seed(creature_name)
+
 static func frame_count(action: String) -> int:
 	return maxi(1, int(ACTION_FRAME_COUNTS.get(action, 1)))
 
@@ -66,11 +73,18 @@ static func frame_texture(creature_name: String, action: String, frame: int) -> 
 		return null
 	if action not in ACTIONS:
 		action = "idle"
+	# Highest-quality source wins. A full/partial strip can be dropped in at any
+	# time without touching battle code.
 	var real_frame: Texture2D = _real_frame_texture(creature_name, action, frame)
 	if real_frame != null:
 		return real_frame
-	# Portrait fallback intentionally remains until an authored strip for this
-	# action is shipped. This prevents blank combat art during the staged swap.
+	# Production seed keeps the creature silhouette/palette unique while the
+	# existing actor animation layer provides idle/attack/hurt/faint/special
+	# movement and FX. This replaces rectangular portrait placeholders.
+	var seed: Texture2D = SEEDS.texture_for(creature_name)
+	if seed != null:
+		return seed
+	# Final safety fallback while the remaining families are migrated.
 	return ART.texture_for(creature_name)
 
 static func source_kind(creature_name: String) -> String:
@@ -81,7 +95,12 @@ static func source_kind(creature_name: String) -> String:
 		return "sprite-strip"
 	if count > 0:
 		return "sprite-strip-partial"
+	if SEEDS.has_seed(creature_name):
+		return "authored-seed-archetype"
 	return "portrait-procedural"
+
+static func archetype(creature_name: String) -> String:
+	return SEEDS.archetype(creature_name)
 
 static func _real_frame_texture(creature_name: String, action: String, frame: int) -> Texture2D:
 	var strip: Texture2D = _load_strip(creature_name, action)
