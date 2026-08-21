@@ -2,8 +2,11 @@ extends RefCounted
 
 const VELA = preload("res://scripts/data/alpha1_encounter_db.gd")
 const CAMPAIGN = preload("res://scripts/data/campaign_encounter_db.gd")
+const OPTIONAL = preload("res://scripts/data/optional_encounter_db.gd")
 
 static func pool(zone_id: String) -> Array[Dictionary]:
+	if OPTIONAL.zone_ids().has(zone_id):
+		return OPTIONAL.pool(zone_id)
 	if CAMPAIGN.zone_ids().has(zone_id):
 		return CAMPAIGN.pool(zone_id)
 	return VELA.pool(zone_id)
@@ -21,10 +24,16 @@ static func all_species() -> Array[String]:
 	for name: String in CAMPAIGN.all_species():
 		if not result.has(name):
 			result.append(name)
+	for zone_id: String in OPTIONAL.zone_ids():
+		for name: String in OPTIONAL.rare_species(zone_id):
+			if not result.has(name):
+				result.append(name)
 	result.sort()
 	return result
 
 static func roll(zone_id: String, rng: RandomNumberGenerator) -> Dictionary:
+	if OPTIONAL.zone_ids().has(zone_id):
+		return OPTIONAL.roll(zone_id, rng)
 	if CAMPAIGN.zone_ids().has(zone_id):
 		return CAMPAIGN.roll(zone_id, rng)
 	return VELA.roll(zone_id, rng)

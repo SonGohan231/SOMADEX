@@ -50,6 +50,12 @@ static var _MOVES: Dictionary = {
 	"focused_breath": _m("focused_breath", "Skupiony Oddech", "heal", "SUPPORT", 4, 1.00, 1, 2, "focused", 1.00, "heal", "setup", ["focus"]),
 	"root_breaker": _m("root_breaker", "Łamacz Korzeni", "attack", "PHYSICAL", 10, 0.90, 2, 0, "stagger", 0.35, "impact", "conditional", ["rooted_combo"]),
 	"phase_counter": _m("phase_counter", "Kontra Fazowa", "guard", "SUPPORT", 0, 1.00, 2, 3, "guard", 1.00, "counter", "counter", ["counter","resonance"]),
+	"shear_dash": _m("shear_dash", "Ścinający Ślizg", "attack", "ŚLIZG", 7, 0.96, 1, 1, "stagger", 0.30, "dash", "direct", ["slide","priority"]),
+	"tension_bind": _m("tension_bind", "Węzeł Napięcia", "attack", "NAPIĘCIE", 8, 0.93, 1, 0, "rooted", 0.40, "anchor", "control", ["root","tension"]),
+	"vector_feint": _m("vector_feint", "Zwód Wektorowy", "attack", "KIERUNEK", 7, 0.97, 1, 1, "marked", 0.35, "vector", "setup", ["mark","direction"]),
+	"stability_crush": _m("stability_crush", "Docisk Stabilności", "attack", "STABIL", 8, 0.91, 2, 0, "unstable", 0.40, "impact", "conditional", ["stability","break"]),
+	"sensory_pulse": _m("sensory_pulse", "Impuls Czuciowy", "attack", "CZUCIE", 6, 0.99, 1, 1, "confused", 0.35, "sensor", "control", ["sensor","control"]),
+	"phase_ripple": _m("phase_ripple", "Fala Fazowa", "attack", "OSC", 7, 0.94, 1, 0, "charged", 0.30, "osc", "multi", ["osc","charge"]),
 	"final_harmonic": _m("final_harmonic", "Harmoniczny Finał", "attack", "REZONANS", 14, 0.78, 3, -2, "unstable", 0.60, "burst", "prepared", ["special","finisher"])
 }
 

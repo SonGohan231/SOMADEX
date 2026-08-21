@@ -2,6 +2,7 @@ extends RefCounted
 
 const BASE = preload("res://scripts/data/zone_db.gd")
 const PACK = preload("res://scripts/data/region_zone_pack.gd")
+const OPTIONAL = preload("res://scripts/data/optional_zone_pack.gd")
 
 static func ids() -> Array[String]:
 	var result: Array[String] = BASE.ids()
@@ -11,10 +12,23 @@ static func ids() -> Array[String]:
 	result.sort()
 	return result
 
+static func all_ids() -> Array[String]:
+	var result: Array[String] = ids()
+	for zone_id: String in OPTIONAL.ids():
+		if not result.has(zone_id):
+			result.append(zone_id)
+	result.sort()
+	return result
+
+static func optional_ids() -> Array[String]:
+	return OPTIONAL.ids()
+
 static func has_zone(zone_id: String) -> bool:
-	return BASE.has_zone(zone_id) or PACK.has_zone(zone_id)
+	return BASE.has_zone(zone_id) or PACK.has_zone(zone_id) or OPTIONAL.has_zone(zone_id)
 
 static func zone_info(zone_id: String) -> Dictionary:
+	if OPTIONAL.has_zone(zone_id):
+		return OPTIONAL.zone_info(zone_id)
 	if PACK.has_zone(zone_id):
 		return PACK.zone_info(zone_id)
 	return BASE.zone_info(zone_id)
@@ -30,14 +44,13 @@ static func recommended_level(zone_id: String) -> int:
 
 static func map_rows(zone_id: String) -> Array[String]:
 	var rows: Array[String] = []
-	if PACK.has_zone(zone_id):
+	if OPTIONAL.has_zone(zone_id):
+		rows = OPTIONAL.map_rows(zone_id)
+	elif PACK.has_zone(zone_id):
 		rows = PACK.map_rows(zone_id)
 	else:
 		rows = PACK.patch_base_rows(zone_id, BASE.map_rows(zone_id))
-	# In the authored Vela map the synchronization station sat directly below
-	# the north exit. Stations are interactable but intentionally non-walkable,
-	# so it sealed the only tile leading to Resonance Route. Keep the station
-	# beside the corridor and restore the corridor tile to P.
+	rows = OPTIONAL.patch_rows(zone_id, rows)
 	if zone_id == "vela" and rows.size() > 1:
 		rows[1] = _replace_char(rows[1], 7, "P")
 		rows[1] = _replace_char(rows[1], 6, "C")
@@ -52,6 +65,11 @@ static func spawn_tile(zone_id: String) -> Vector2i:
 	return Vector2i(7, 20)
 
 static func exit_at(zone_id: String, tile: Vector2i) -> Dictionary:
+	var optional_exit: Dictionary = OPTIONAL.extra_exit_from(zone_id, tile)
+	if not optional_exit.is_empty():
+		return optional_exit
+	if OPTIONAL.has_zone(zone_id):
+		return OPTIONAL.exit_at(zone_id, tile)
 	if zone_id == "north_gate":
 		var extra: Dictionary = PACK.north_gate_exit(tile)
 		if not extra.is_empty():

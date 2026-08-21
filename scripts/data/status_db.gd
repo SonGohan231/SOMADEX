@@ -53,25 +53,26 @@ static var _INTERACTIONS: Array[Dictionary] = [
 
 static func ids() -> Array[String]:
 	var result: Array[String] = []
-	for key: Variant in _STATUSES.keys():
-		result.append(str(key))
+	for key: Variant in _STATUSES.keys(): result.append(str(key))
 	result.sort()
 	return result
 
+static func _is_meta(key: Variant) -> bool:
+	return str(key).begins_with("__")
+
 static func info(status_id: String) -> Dictionary:
-	if not _STATUSES.has(status_id):
-		return {}
+	if not _STATUSES.has(status_id): return {}
 	return (_STATUSES[status_id] as Dictionary).duplicate(true)
 
 static func default_turns(status_id: String) -> int:
 	return maxi(1, int(info(status_id).get("default_turns", 1)))
 
 static func has_status(statuses: Dictionary, status_id: String) -> bool:
+	if _is_meta(status_id): return false
 	return int(statuses.get(status_id, 0)) > 0
 
 static func apply(statuses: Dictionary, status_id: String, turns: int = -1) -> void:
-	if status_id.is_empty() or not _STATUSES.has(status_id):
-		return
+	if status_id.is_empty() or not _STATUSES.has(status_id): return
 	var duration: int = default_turns(status_id) if turns < 0 else maxi(1, turns)
 	statuses[status_id] = maxi(int(statuses.get(status_id, 0)), duration)
 
@@ -79,72 +80,67 @@ static func remove(statuses: Dictionary, status_id: String) -> void:
 	statuses.erase(status_id)
 
 static func cleanse_stability(statuses: Dictionary) -> void:
-	for status_id: String in ["unstable","disrupted","stagger","silence","confused"]:
-		statuses.erase(status_id)
+	for status_id: String in ["unstable","disrupted","stagger","silence","confused"]: statuses.erase(status_id)
 
 static func tick(statuses: Dictionary) -> Dictionary:
 	var updated: Dictionary = {}
 	for key: Variant in statuses.keys():
 		var status_id: String = str(key)
+		if _is_meta(status_id):
+			updated[status_id] = statuses[key]
+			continue
 		var turns: int = maxi(0, int(statuses[key]) - 1)
-		if turns > 0:
-			updated[status_id] = turns
+		if turns > 0: updated[status_id] = turns
 	return updated
 
 static func tick_damage(statuses: Dictionary) -> int:
 	var total: int = 0
 	for key: Variant in statuses.keys():
+		if _is_meta(key): continue
 		total += maxi(0, int(info(str(key)).get("tick_damage", 0)))
 	return total
 
 static func tick_heal(statuses: Dictionary) -> int:
 	var total: int = 0
 	for key: Variant in statuses.keys():
+		if _is_meta(key): continue
 		total += maxi(0, int(info(str(key)).get("tick_heal", 0)))
 	return total
 
 static func outgoing_multiplier(statuses: Dictionary) -> float:
 	var result: float = 1.0
 	for key: Variant in statuses.keys():
+		if _is_meta(key): continue
 		result *= float(info(str(key)).get("outgoing_mult", 1.0))
 	return result
 
 static func damage_multiplier(move_type: String, target_statuses: Dictionary) -> float:
 	var result: float = 1.0
 	for interaction: Dictionary in _INTERACTIONS:
-		if str(interaction.get("move_type", "")) != move_type:
-			continue
+		if str(interaction.get("move_type", "")) != move_type: continue
 		var required: String = str(interaction.get("requires", ""))
-		if has_status(target_statuses, required):
-			result *= float(interaction.get("multiplier", 1.0))
+		if has_status(target_statuses, required): result *= float(interaction.get("multiplier", 1.0))
 	return result
 
 static func interaction_label(move_type: String, target_statuses: Dictionary) -> String:
 	var labels: Array[String] = []
 	for interaction: Dictionary in _INTERACTIONS:
-		if str(interaction.get("move_type", "")) != move_type:
-			continue
+		if str(interaction.get("move_type", "")) != move_type: continue
 		var required: String = str(interaction.get("requires", ""))
-		if has_status(target_statuses, required):
-			labels.append(str(interaction.get("label", "REAKCJA")))
+		if has_status(target_statuses, required): labels.append(str(interaction.get("label", "REAKCJA")))
 	var shown: Array[String] = []
-	for i: int in range(mini(2, labels.size())):
-		shown.append(labels[i])
+	for i: int in range(mini(2, labels.size())): shown.append(labels[i])
 	return " + ".join(shown)
 
 static func resolve_reaction(move_type: String, target_statuses: Dictionary) -> Dictionary:
 	for interaction: Dictionary in _INTERACTIONS:
-		if str(interaction.get("move_type", "")) != move_type:
-			continue
+		if str(interaction.get("move_type", "")) != move_type: continue
 		var required: String = str(interaction.get("requires", ""))
-		if not has_status(target_statuses, required):
-			continue
+		if not has_status(target_statuses, required): continue
 		var applied: String = str(interaction.get("apply", ""))
-		if not applied.is_empty():
-			apply(target_statuses, applied)
+		if not applied.is_empty(): apply(target_statuses, applied)
 		var consumed: String = str(interaction.get("consume", ""))
-		if not consumed.is_empty():
-			remove(target_statuses, consumed)
+		if not consumed.is_empty(): remove(target_statuses, consumed)
 		return {"label":str(interaction.get("label", "REAKCJA")),"applied":applied,"consumed":consumed,"multiplier":float(interaction.get("multiplier", 1.0))}
 	return {}
 
@@ -167,14 +163,11 @@ static func escape_modifier(statuses: Dictionary) -> float:
 static func summary(statuses: Dictionary, limit: int = 3) -> String:
 	var labels: Array[String] = []
 	for key: Variant in statuses.keys():
-		if labels.size() >= limit:
-			break
+		if _is_meta(key): continue
+		if labels.size() >= limit: break
 		var status_id: String = str(key)
 		labels.append(str(info(status_id).get("name", status_id.to_upper())))
 	return " · ".join(labels)
 
-static func interaction_count() -> int:
-	return _INTERACTIONS.size()
-
-static func interactions() -> Array[Dictionary]:
-	return _INTERACTIONS.duplicate(true)
+static func interaction_count() -> int: return _INTERACTIONS.size()
+static func interactions() -> Array[Dictionary]: return _INTERACTIONS.duplicate(true)

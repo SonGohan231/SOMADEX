@@ -13,6 +13,7 @@ const REVERSE04 = preload("res://scripts/battle/reverse_family04_sprite_db.gd")
 const REVERSE03 = preload("res://scripts/battle/reverse_family03_sprite_db.gd")
 const REVERSE02 = preload("res://scripts/battle/reverse_family02_sprite_db.gd")
 const REVERSE01 = preload("res://scripts/battle/reverse_family01_sprite_db.gd")
+const PRODUCTION_BATCH = preload("res://scripts/battle/production_family_animation_db.gd")
 const SEED_ATLAS = preload("res://scripts/battle/creature_seed_atlas_db.gd")
 const ARCHETYPE_RUNTIME = preload("res://scripts/battle/creature_archetype_animation_db.gd")
 
@@ -28,7 +29,7 @@ static var _missing_cache: Dictionary = {}
 static var _safe_fallback_cache: Dictionary = {}
 
 static func _authored_families() -> Array:
-	return [REVERSE15,REVERSE10,REVERSE09,REVERSE08,REVERSE07,REVERSE06,REVERSE05,REVERSE04,REVERSE03,REVERSE02,REVERSE01]
+	return [REVERSE15,REVERSE10,REVERSE09,REVERSE08,REVERSE07,REVERSE06,REVERSE05,REVERSE04,REVERSE03,REVERSE02,REVERSE01,PRODUCTION_BATCH]
 
 static func animated_names() -> Array[String]:
 	var names: Array[String] = []
@@ -37,17 +38,10 @@ static func animated_names() -> Array[String]:
 		if not names.has(creature_name): names.append(creature_name)
 	names.sort(); return names
 
-static func has_animation(creature_name: String) -> bool:
-	return SEED_ATLAS.has_name(creature_name)
-
-static func animation_count() -> int:
-	return SEED_ATLAS.form_count()
-
-static func authored_seed_count() -> int:
-	return SEEDS.seed_count()
-
-static func has_authored_seed(creature_name: String) -> bool:
-	return SEEDS.has_seed(creature_name)
+static func has_animation(creature_name: String) -> bool: return SEED_ATLAS.has_name(creature_name)
+static func animation_count() -> int: return SEED_ATLAS.form_count()
+static func authored_seed_count() -> int: return SEEDS.seed_count()
+static func has_authored_seed(creature_name: String) -> bool: return SEEDS.has_seed(creature_name)
 
 static func authored_full_animation_count() -> int:
 	var total: int=0
@@ -59,14 +53,9 @@ static func has_authored_full_animation(creature_name: String) -> bool:
 		if family.has_animation(creature_name): return true
 	return false
 
-static func production_atlas_approved_count() -> int:
-	return ARCHETYPE_RUNTIME.animation_count()
-
-static func production_atlas_is_approved(creature_name: String) -> bool:
-	return ARCHETYPE_RUNTIME.has_animation(creature_name)
-
-static func frame_count(action: String) -> int:
-	return maxi(1,int(ACTION_FRAME_COUNTS.get(action,1)))
+static func production_atlas_approved_count() -> int: return ARCHETYPE_RUNTIME.animation_count()
+static func production_atlas_is_approved(creature_name: String) -> bool: return ARCHETYPE_RUNTIME.has_animation(creature_name)
+static func frame_count(action: String) -> int: return maxi(1,int(ACTION_FRAME_COUNTS.get(action,1)))
 
 static func has_real_strip(creature_name: String, action: String) -> bool:
 	return has_animation(creature_name) and action in ACTIONS and FileAccess.file_exists(_strip_path(creature_name,action))
@@ -139,29 +128,20 @@ static func _safe_fallback_texture(creature_name: String, action: String, frame:
 	var safe_frame: int=clampi(frame,0,frame_count(action)-1)
 	var key: String="%s|%s|%d" % [creature_name.to_lower(),action,safe_frame]
 	if _safe_fallback_cache.has(key): return _safe_fallback_cache[key] as Texture2D
-	var offset:=Vector2i.ZERO
-	var alpha: float=1.0
+	var offset:=Vector2i.ZERO; var alpha: float=1.0
 	match action:
 		"idle": offset.y=[0,-2,0,2][safe_frame]
 		"attack": offset.x=[0,5,12,18,9,1][safe_frame]
 		"hurt": offset.x=[-5,5,0][safe_frame]
 		"faint":
-			offset.y=[0,5,11,19,28][safe_frame]
-			alpha=[1.0,0.92,0.78,0.58,0.34][safe_frame]
+			offset.y=[0,5,11,19,28][safe_frame]; alpha=[1.0,0.92,0.78,0.58,0.34][safe_frame]
 		"special": offset.y=[0,-2,-5,-5,-2,0][safe_frame]
-	var image:=Image.create(FRAME_W,FRAME_H,false,Image.FORMAT_RGBA8)
-	image.fill(Color(0,0,0,0))
-	var h: int=abs(creature_name.hash())
-	var body:=Color(0.42+float(h%17)/100.0,0.46+float((h/17)%13)/100.0,0.56+float((h/221)%11)/100.0,alpha)
-	var edge:=Color(0.14,0.16,0.22,alpha)
-	var glow:=Color(0.72,0.86,0.92,alpha)
-	var center:=Vector2i(64+offset.x,76+offset.y)
-	var rx: int=24+(h%6); var ry: int=18+((h/7)%5)
+	var image:=Image.create(FRAME_W,FRAME_H,false,Image.FORMAT_RGBA8); image.fill(Color(0,0,0,0))
+	var h: int=abs(creature_name.hash()); var body:=Color(0.42+float(h%17)/100.0,0.46+float((h/17)%13)/100.0,0.56+float((h/221)%11)/100.0,alpha); var edge:=Color(0.14,0.16,0.22,alpha); var glow:=Color(0.72,0.86,0.92,alpha); var center:=Vector2i(64+offset.x,76+offset.y); var rx: int=24+(h%6); var ry: int=18+((h/7)%5)
 	for y: int in range(center.y-ry-2,center.y+ry+3):
 		for x: int in range(center.x-rx-2,center.x+rx+3):
 			if x<0 or x>=FRAME_W or y<0 or y>=FRAME_H: continue
-			var px: float=float(x-center.x)/float(rx); var py: float=float(y-center.y)/float(ry)
-			var d: float=px*px+py*py
+			var px: float=float(x-center.x)/float(rx); var py: float=float(y-center.y)/float(ry); var d: float=px*px+py*py
 			if d<=1.0: image.set_pixel(x,y,body)
 			elif d<=1.18: image.set_pixel(x,y,edge)
 	for eye_x: int in [center.x-8,center.x+8]:
@@ -173,9 +153,7 @@ static func _safe_fallback_texture(creature_name: String, action: String, frame:
 		for dx: int in range(-span,span+1):
 			var px2: int=center.x+dx; var py2: int=center.y+ry+8+dy
 			if px2>=0 and px2<FRAME_W and py2>=0 and py2<FRAME_H: image.set_pixel(px2,py2,edge)
-	var texture: Texture2D=ImageTexture.create_from_image(image)
-	_safe_fallback_cache[key]=texture
-	return texture
+	var texture: Texture2D=ImageTexture.create_from_image(image); _safe_fallback_cache[key]=texture; return texture
 
 static func _strip_path(creature_name: String, action: String) -> String:
 	return "res://data/creatures/battle_sprites/%s/%s.b64.txt" % [_slug(creature_name),action]
