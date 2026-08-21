@@ -12,6 +12,7 @@ const REVERSE05 = preload("res://scripts/battle/reverse_family05_sprite_db.gd")
 const REVERSE04 = preload("res://scripts/battle/reverse_family04_sprite_db.gd")
 const REVERSE03 = preload("res://scripts/battle/reverse_family03_sprite_db.gd")
 const REVERSE02 = preload("res://scripts/battle/reverse_family02_sprite_db.gd")
+const REVERSE01 = preload("res://scripts/battle/reverse_family01_sprite_db.gd")
 const SEED_ATLAS = preload("res://scripts/battle/creature_seed_atlas_db.gd")
 const ARCHETYPE_RUNTIME = preload("res://scripts/battle/creature_archetype_animation_db.gd")
 
@@ -27,7 +28,7 @@ static var _missing_cache: Dictionary = {}
 static var _safe_fallback_cache: Dictionary = {}
 
 static func _authored_families() -> Array:
-	return [REVERSE15,REVERSE10,REVERSE09,REVERSE08,REVERSE07,REVERSE06,REVERSE05,REVERSE04,REVERSE03,REVERSE02]
+	return [REVERSE15,REVERSE10,REVERSE09,REVERSE08,REVERSE07,REVERSE06,REVERSE05,REVERSE04,REVERSE03,REVERSE02,REVERSE01]
 
 static func animated_names() -> Array[String]:
 	var names: Array[String] = []
@@ -91,8 +92,6 @@ static func frame_texture(creature_name: String, action: String, frame: int) -> 
 	if seed!=null: return seed
 	var portrait: Texture2D=ART.texture_for(creature_name)
 	if portrait!=null: return portrait
-	# QA-blocked atlas forms must never expose the rejected source image, but the
-	# battle renderer still needs a valid state for all 150 logical forms.
 	return _safe_fallback_texture(creature_name,action,frame)
 
 static func source_kind(creature_name: String) -> String:
@@ -169,7 +168,6 @@ static func _safe_fallback_texture(creature_name: String, action: String, frame:
 		for yy: int in range(center.y-5,center.y):
 			for xx: int in range(eye_x-2,eye_x+3):
 				if xx>=0 and xx<FRAME_W and yy>=0 and yy<FRAME_H: image.set_pixel(xx,yy,glow)
-	# A small diamond marks this explicitly as a temporary QA-safe visual.
 	for dy: int in range(-6,7):
 		var span: int=6-abs(dy)
 		for dx: int in range(-span,span+1):
