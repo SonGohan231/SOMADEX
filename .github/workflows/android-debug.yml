@@ -83,6 +83,10 @@ jobs:
           export/android/debug_keystore_pass = "android"
           EOF
 
+      - name: Diagnose trainer talent GDScript
+        shell: bash
+        run: godot --headless --path . --check-only --script res://scripts/data/trainer_talent_db.gd
+
       - name: Import and compile Godot project
         shell: bash
         run: |
