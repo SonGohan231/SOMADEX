@@ -114,13 +114,17 @@ static func _draw_signature(image: Image, motion: String, action: String, frame:
 			_draw_line(image, Vector2i(38,y-10), Vector2i(38,y+10), cyan)
 			_draw_line(image, Vector2i(90,y-10), Vector2i(90,y+10), cyan)
 		"neural_echo":
+			var drift := Vector2i((frame % 3) - 1, ((frame * 2) % 3) - 1)
 			for p: Vector2i in [Vector2i(37,51),Vector2i(55,39),Vector2i(76,44),Vector2i(91,61),Vector2i(72,82),Vector2i(48,78)]:
-				_draw_line(image, center, p, violet)
-				_set_safe(image, p.x, p.y, cyan)
+				var target: Vector2i = p + drift
+				_draw_line(image, center - drift, target, violet if frame % 2 == 0 else cyan)
+				_set_safe(image, target.x, target.y, gold)
 		"mosaic_shift":
 			for y: int in range(40,96,12):
 				for x: int in range(34,100,12):
-					if (x + y + frame * 12) % 24 == 0:
+					var cell_x: int = int((x - 34) / 12)
+					var cell_y: int = int((y - 40) / 12)
+					if (cell_x + cell_y + frame) % 2 == 0:
 						_draw_box(image, Rect2i(x,y,5,5), green if frame % 2 == 0 else violet)
 
 static func _place(seed: Image, dx: int, dy: int, sx: float, sy: float, alpha: float) -> Image:
