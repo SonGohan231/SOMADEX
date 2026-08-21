@@ -21,6 +21,9 @@ func setup(save_exists: bool, message: String = "") -> void:
 
 func _ready() -> void:
 	font = ThemeDB.fallback_font
+	var pixel_font_path: String = "res://assets/external/ninja_adventure/ui/font_normal.ttf"
+	if ResourceLoader.exists(pixel_font_path):
+		font = load(pixel_font_path) as Font
 	hero_texture = ART.texture_for("Luzik")
 	_build_touch_buttons()
 	set_process(true)
@@ -56,15 +59,18 @@ func _draw_brand() -> void:
 	draw_string(font, Vector2(20, 88), "SOMADEX", HORIZONTAL_ALIGNMENT_CENTER, 320, 38, Color(0.28, 0.95, 0.91, glow))
 	draw_string(font, Vector2(20, 119), "KRONIKI REZONANSU", HORIZONTAL_ALIGNMENT_CENTER, 320, 14, Color("b9d9d7"))
 	draw_line(Vector2(46, 138), Vector2(314, 138), Color("2c8e90"), 2.0)
-	draw_string(font, Vector2(50, 158), "ALPHA 1 · engine migration", HORIZONTAL_ALIGNMENT_CENTER, 260, 10, Color("6e9297"))
+	draw_string(font, Vector2(50, 158), "ALPHA 1 · REGION VELA", HORIZONTAL_ALIGNMENT_CENTER, 260, 10, Color("8ab1b3"))
 
 func _draw_hero() -> void:
 	var card: Rect2 = Rect2(40, 184, 280, 212)
 	draw_rect(Rect2(card.position - Vector2(4, 4), card.size + Vector2(8, 8)), Color("13313c"))
 	draw_rect(card, Color("0b2029"))
 	if hero_texture != null:
-		draw_texture_rect(hero_texture, Rect2(48, 192, 264, 198), false)
-	draw_rect(Rect2(48, 192, 264, 198), Color(0.25, 0.95, 0.9, 0.35), false, 2.0)
+		# Keep nearest-neighbour art contained instead of stretching it edge-to-edge.
+		var side: float = minf(176.0, minf(float(hero_texture.get_width()), float(hero_texture.get_height())))
+		var hero_rect := Rect2(card.get_center() - Vector2(side, side) * 0.5 + Vector2(0, -8), Vector2(side, side))
+		draw_texture_rect(hero_texture, hero_rect, false)
+	draw_rect(card, Color(0.25, 0.95, 0.9, 0.35), false, 2.0)
 	draw_rect(Rect2(58, 344, 126, 27), Color(0.03, 0.10, 0.14, 0.82))
 	draw_string(font, Vector2(68, 363), "SOMASKAN 001 · LUZIK", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("d8fffb"))
 
@@ -87,7 +93,7 @@ func _draw_buttons() -> void:
 		if i == 1 and not has_save:
 			draw_string(font, Vector2(rect.end.x - 98, rect.position.y + 32), "brak zapisu", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("586870"))
 	if selected == 2:
-		draw_string(font, Vector2(25, 690), "silnik: akcje wejścia · battle manager · data-driven", HORIZONTAL_ALIGNMENT_CENTER, 310, 9, Color("789aa0"))
+		draw_string(font, Vector2(25, 690), "SOMADEX · oryginalne RPG kolekcjonerskie", HORIZONTAL_ALIGNMENT_CENTER, 310, 9, Color("789aa0"))
 	else:
 		draw_string(font, Vector2(25, 690), "Dotknij opcji lub użyj strzałek", HORIZONTAL_ALIGNMENT_CENTER, 310, 11, Color("789aa0"))
 
@@ -99,6 +105,15 @@ func _draw_notice() -> void:
 
 func _button_rect(index: int) -> Rect2:
 	return Rect2(46, 438 + index * 70, 268, 54)
+
+static func touch_option_at(pos: Vector2, save_exists: bool = true) -> int:
+	for i: int in range(3):
+		var rect := Rect2(46, 438 + i * 70, 268, 54)
+		if rect.has_point(pos):
+			if i == 1 and not save_exists:
+				return 1
+			return i
+	return -1
 
 func _build_touch_buttons() -> void:
 	for old_button: Button in touch_buttons:
@@ -135,6 +150,17 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif key_event.keycode in [KEY_ENTER, KEY_SPACE, KEY_Z]:
 			_activate_selected()
 		queue_redraw()
+		return
+
+	if event is InputEventScreenTouch:
+		var touch := event as InputEventScreenTouch
+		if not touch.pressed:
+			return
+		var option: int = touch_option_at(touch.position, has_save)
+		if option >= 0:
+			selected = option
+			_activate_selected()
+			queue_redraw()
 
 func _activate_selected() -> void:
 	match selected:
@@ -147,6 +173,6 @@ func _activate_selected() -> void:
 				notice = "Brak zapisu gry"
 				notice_until = Time.get_ticks_msec() + 2400
 		2:
-			notice = "Alpha 1 · migracja na gotowy fundament monster-RPG"
+			notice = "SOMADEX Alpha 1 · Region Vela"
 			notice_until = Time.get_ticks_msec() + 3200
 	queue_redraw()
