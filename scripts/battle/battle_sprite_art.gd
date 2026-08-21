@@ -11,6 +11,7 @@ const REVERSE06 = preload("res://scripts/battle/reverse_family06_sprite_db.gd")
 const REVERSE05 = preload("res://scripts/battle/reverse_family05_sprite_db.gd")
 const REVERSE04 = preload("res://scripts/battle/reverse_family04_sprite_db.gd")
 const REVERSE03 = preload("res://scripts/battle/reverse_family03_sprite_db.gd")
+const REVERSE02 = preload("res://scripts/battle/reverse_family02_sprite_db.gd")
 
 const ACTIONS: Array[String] = ["idle","attack","hurt","faint","special"]
 const ACTION_FRAME_COUNTS: Dictionary = {"idle":4,"attack":6,"hurt":3,"faint":5,"special":6}
@@ -37,7 +38,7 @@ static var _frame_cache: Dictionary = {}
 static var _missing_cache: Dictionary = {}
 
 static func _authored_families() -> Array:
-	return [REVERSE15,REVERSE10,REVERSE09,REVERSE08,REVERSE07,REVERSE06,REVERSE05,REVERSE04,REVERSE03]
+	return [REVERSE15,REVERSE10,REVERSE09,REVERSE08,REVERSE07,REVERSE06,REVERSE05,REVERSE04,REVERSE03,REVERSE02]
 
 static func animated_names() -> Array[String]:
 	var names: Array[String]=SPECIES.duplicate(); names.sort(); return names
