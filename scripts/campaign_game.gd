@@ -9,7 +9,7 @@ const CAMPAIGN_TRAINERS = preload("res://scripts/data/runtime_trainer_db.gd")
 const CAMPAIGN_PICKUPS = preload("res://scripts/data/pickup_db.gd")
 const CAMPAIGN_PROGRESS = preload("res://scripts/data/campaign_progression_db.gd")
 const CAMPAIGN_ALPHA_QUESTS = preload("res://scripts/data/alpha1_quest_db.gd")
-const CAMPAIGN_WORLD = preload("res://scripts/world/campaign_world_screen.gd")
+const CAMPAIGN_WORLD = preload("res://scripts/world/sprite_campaign_world_screen.gd")
 const CAMPAIGN_TRAINER_BATTLE = preload("res://scripts/battle/campaign_trainer_battle_screen.gd")
 const CAMPAIGN_EQUIPMENT = preload("res://scripts/data/equipment_db.gd")
 
