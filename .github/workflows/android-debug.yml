@@ -138,6 +138,10 @@ jobs:
         shell: bash
         run: godot --headless --path . --script res://scripts/tests/battle_animation_smoke.gd
 
+      - name: Validate authored creature sprite-strip runtime
+        shell: bash
+        run: godot --headless --path . --script res://scripts/tests/creature_sprite_runtime_smoke.gd
+
       - name: Validate full RPG systems foundation
         shell: bash
         run: godot --headless --path . --script res://scripts/tests/rpg_systems_smoke.gd
