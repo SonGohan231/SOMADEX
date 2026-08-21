@@ -1,6 +1,6 @@
 extends SceneTree
 
-const GAME_ANIMATIONS = preload("res://scripts/game_animations.gd")
+const CAMPAIGN_GAME = preload("res://scripts/campaign_game.gd")
 const EVOLUTION_SCREEN = preload("res://scripts/ui/evolution_screen.gd")
 const STATE = preload("res://scripts/core/game_state.gd")
 const RULES = preload("res://scripts/battle/battle_rules.gd")
@@ -26,7 +26,8 @@ func _test_main_scene_controller(errors: Array[String]) -> void:
 	if packed == null:
 		return
 	var node: Node = packed.instantiate()
-	_expect(node.get_script() == GAME_ANIMATIONS, "Main.tscn does not use the evolution-aware animation controller", errors)
+	_expect(node.get_script() == CAMPAIGN_GAME, "Main.tscn does not use the campaign controller that inherits evolution presentation", errors)
+	_expect(node.has_method("_show_evolution_queue"), "campaign controller lost evolution presentation methods", errors)
 	node.free()
 
 func _test_evolution_event_source(errors: Array[String]) -> void:
