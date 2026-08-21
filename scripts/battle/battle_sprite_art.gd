@@ -8,6 +8,7 @@ const REVERSE09 = preload("res://scripts/battle/reverse_family09_sprite_db.gd")
 const REVERSE08 = preload("res://scripts/battle/reverse_family08_sprite_db.gd")
 const REVERSE07 = preload("res://scripts/battle/reverse_family07_sprite_db.gd")
 const REVERSE06 = preload("res://scripts/battle/reverse_family06_sprite_db.gd")
+const REVERSE05 = preload("res://scripts/battle/reverse_family05_sprite_db.gd")
 const SEED_ATLAS = preload("res://scripts/battle/creature_seed_atlas_db.gd")
 const ARCHETYPE_RUNTIME = preload("res://scripts/battle/creature_archetype_animation_db.gd")
 
@@ -42,10 +43,10 @@ static func has_authored_seed(creature_name: String) -> bool:
 	return SEEDS.has_seed(creature_name)
 
 static func authored_full_animation_count() -> int:
-	return REVERSE15.animation_count() + REVERSE10.animation_count() + REVERSE09.animation_count() + REVERSE08.animation_count() + REVERSE07.animation_count() + REVERSE06.animation_count()
+	return REVERSE15.animation_count() + REVERSE10.animation_count() + REVERSE09.animation_count() + REVERSE08.animation_count() + REVERSE07.animation_count() + REVERSE06.animation_count() + REVERSE05.animation_count()
 
 static func has_authored_full_animation(creature_name: String) -> bool:
-	return REVERSE15.has_animation(creature_name) or REVERSE10.has_animation(creature_name) or REVERSE09.has_animation(creature_name) or REVERSE08.has_animation(creature_name) or REVERSE07.has_animation(creature_name) or REVERSE06.has_animation(creature_name)
+	return REVERSE15.has_animation(creature_name) or REVERSE10.has_animation(creature_name) or REVERSE09.has_animation(creature_name) or REVERSE08.has_animation(creature_name) or REVERSE07.has_animation(creature_name) or REVERSE06.has_animation(creature_name) or REVERSE05.has_animation(creature_name)
 
 static func production_atlas_approved_count() -> int:
 	return ARCHETYPE_RUNTIME.animation_count()
@@ -75,6 +76,7 @@ static func _reverse_frame(creature_name: String, action: String, frame: int) ->
 	if REVERSE08.has_animation(creature_name): return REVERSE08.frame_texture(creature_name, action, frame)
 	if REVERSE07.has_animation(creature_name): return REVERSE07.frame_texture(creature_name, action, frame)
 	if REVERSE06.has_animation(creature_name): return REVERSE06.frame_texture(creature_name, action, frame)
+	if REVERSE05.has_animation(creature_name): return REVERSE05.frame_texture(creature_name, action, frame)
 	return null
 
 static func frame_texture(creature_name: String, action: String, frame: int) -> Texture2D:
