@@ -23,7 +23,7 @@ func _initialize() -> void:
 		_expect(SPRITES.source_kind(creature_name) in ["authored-seed-archetype", "sprite-strip-partial", "sprite-strip"], "%s still uses portrait placeholder" % creature_name, errors)
 		_expect(SPRITES.archetype(creature_name) == "glide", "%s family archetype mismatch" % creature_name, errors)
 
-	_expect(SPRITES.authored_full_animation_count() >= 21, "reverse pass must contain at least twenty-one fully animated forms", errors)
+	_expect(SPRITES.authored_full_animation_count() >= 24, "reverse pass must contain at least twenty-four fully animated forms", errors)
 	_test_full_family(["Nucik", "Wibrospiew", "Rezonar"], "family015", errors)
 	_test_full_family(["Nasuch", "Echouszek", "Sensoryks"], "family010", errors)
 	_test_full_family(["Kotwiczek", "Bramnik", "Fundamentor"], "family009", errors)
@@ -31,10 +31,11 @@ func _initialize() -> void:
 	_test_full_family(["Srubik", "Torsys", "Spiralion"], "family007", errors)
 	_test_full_family(["Kompasik", "Oktantor", "Kartografon"], "family006", errors)
 	_test_full_family(["Wahlik", "Oscylot", "Fazoryb"], "family005", errors)
+	_test_full_family(["Pufek", "Pulsopuch", "Falomamut"], "family004", errors)
 	_validate_seed_manifest(errors)
 
 	if errors.is_empty():
-		print("CREATURE_SPRITE_RUNTIME_SMOKE: PASS · idle4 attack6 hurt3 faint5 special6 · families015+010+009+008+007+006+005 fully animated · 50-family/150-form manifest")
+		print("CREATURE_SPRITE_RUNTIME_SMOKE: PASS · idle4 attack6 hurt3 faint5 special6 · reverse families 015,010,009..004 fully animated · 50-family/150-form manifest")
 		quit(0)
 		return
 	for text: String in errors:
@@ -60,8 +61,7 @@ func _test_full_family(names: Array[String], family_label: String, errors: Array
 func _validate_seed_manifest(errors: Array[String]) -> void:
 	var file := FileAccess.open(SEED_MANIFEST, FileAccess.READ)
 	_expect(file != null, "150-form seed manifest missing", errors)
-	if file == null:
-		return
+	if file == null: return
 	var header: PackedStringArray = file.get_csv_line()
 	_expect(header.size() >= 9, "seed manifest header incomplete", errors)
 	var row_count: int = 0
@@ -70,8 +70,7 @@ func _validate_seed_manifest(errors: Array[String]) -> void:
 	var approved: int = 0
 	while not file.eof_reached():
 		var row: PackedStringArray = file.get_csv_line()
-		if row.size() < 9 or row[0].strip_edges().is_empty():
-			continue
+		if row.size() < 9 or row[0].strip_edges().is_empty(): continue
 		row_count += 1
 		var family_id: int = int(row[0])
 		var stage: int = int(row[1])
@@ -90,5 +89,4 @@ func _validate_seed_manifest(errors: Array[String]) -> void:
 	_expect(approved >= 3, "first authored family must remain approved", errors)
 
 func _expect(condition: bool, message: String, errors: Array[String]) -> void:
-	if not condition:
-		errors.append(message)
+	if not condition: errors.append(message)
