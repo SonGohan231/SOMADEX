@@ -11,26 +11,14 @@ const REVERSE06 = preload("res://scripts/battle/reverse_family06_sprite_db.gd")
 const REVERSE05 = preload("res://scripts/battle/reverse_family05_sprite_db.gd")
 const REVERSE04 = preload("res://scripts/battle/reverse_family04_sprite_db.gd")
 const REVERSE03 = preload("res://scripts/battle/reverse_family03_sprite_db.gd")
+const SEED_ATLAS = preload("res://scripts/battle/creature_seed_atlas_db.gd")
+const ARCHETYPE_RUNTIME = preload("res://scripts/battle/creature_archetype_animation_db.gd")
 
 const ACTIONS: Array[String] = ["idle","attack","hurt","faint","special"]
 const ACTION_FRAME_COUNTS: Dictionary = {"idle":4,"attack":6,"hurt":3,"faint":5,"special":6}
 const FRAME_COUNT: int = 6
 const FRAME_W: int = 128
 const FRAME_H: int = 128
-
-const SPECIES: Array[String] = [
-	"Luzik","Warstwin","Synkronaut",
-	"Bocznik","Slizgogon","Horyzontor",
-	"Milimik","Drobnoskok","Kwantomruk",
-	"Pufek","Pulsopuch","Falomamut",
-	"Wahlik","Oscylot","Fazoryb",
-	"Kompasik","Oktantor","Kartografon",
-	"Srubik","Torsys","Spiralion",
-	"Uczek","Obiegnik","Labiryntaur",
-	"Kotwiczek","Bramnik","Fundamentor",
-	"Nasuch","Echouszek","Sensoryks",
-	"Nucik","Wibrospiew","Rezonar"
-]
 
 static var _strip_cache: Dictionary = {}
 static var _frame_cache: Dictionary = {}
@@ -40,13 +28,17 @@ static func _authored_families() -> Array:
 	return [REVERSE15,REVERSE10,REVERSE09,REVERSE08,REVERSE07,REVERSE06,REVERSE05,REVERSE04,REVERSE03]
 
 static func animated_names() -> Array[String]:
-	var names: Array[String]=SPECIES.duplicate(); names.sort(); return names
+	var names: Array[String] = []
+	for raw_name: String in SEED_ATLAS.NAMES:
+		var creature_name: String = "Uczek" if raw_name.to_lower()=="uczek" else raw_name
+		if not names.has(creature_name): names.append(creature_name)
+	names.sort(); return names
 
 static func has_animation(creature_name: String) -> bool:
-	return creature_name in SPECIES
+	return SEED_ATLAS.has_name(creature_name)
 
 static func animation_count() -> int:
-	return SPECIES.size()
+	return SEED_ATLAS.form_count()
 
 static func authored_seed_count() -> int:
 	return SEEDS.seed_count()
@@ -63,6 +55,12 @@ static func has_authored_full_animation(creature_name: String) -> bool:
 	for family in _authored_families():
 		if family.has_animation(creature_name): return true
 	return false
+
+static func production_atlas_approved_count() -> int:
+	return ARCHETYPE_RUNTIME.animation_count()
+
+static func production_atlas_is_approved(creature_name: String) -> bool:
+	return ARCHETYPE_RUNTIME.has_animation(creature_name)
 
 static func frame_count(action: String) -> int:
 	return maxi(1,int(ACTION_FRAME_COUNTS.get(action,1)))
@@ -85,6 +83,8 @@ static func frame_texture(creature_name: String, action: String, frame: int) -> 
 			if authored!=null: return authored
 	var real_frame: Texture2D=_real_frame_texture(creature_name,action,frame)
 	if real_frame!=null: return real_frame
+	var atlas_frame: Texture2D=ARCHETYPE_RUNTIME.frame_texture(creature_name,action,frame)
+	if atlas_frame!=null: return atlas_frame
 	var seed: Texture2D=SEEDS.texture_for(creature_name)
 	if seed!=null: return seed
 	return ART.texture_for(creature_name)
@@ -95,10 +95,12 @@ static func source_kind(creature_name: String) -> String:
 	var count: int=real_strip_count(creature_name)
 	if count>=ACTIONS.size(): return "sprite-strip"
 	if count>0: return "sprite-strip-partial"
+	if ARCHETYPE_RUNTIME.has_animation(creature_name): return "sprite-archetype-generated"
 	if SEEDS.has_seed(creature_name): return "authored-seed-archetype"
 	return "portrait-procedural"
 
 static func archetype(creature_name: String) -> String:
+	if SEED_ATLAS.has_name(creature_name): return SEED_ATLAS.archetype(creature_name)
 	return SEEDS.archetype(creature_name)
 
 static func _real_frame_texture(creature_name: String, action: String, frame: int) -> Texture2D:
