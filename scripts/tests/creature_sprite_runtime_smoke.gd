@@ -23,13 +23,14 @@ func _initialize() -> void:
 		_expect(SPRITES.source_kind(creature_name) in ["authored-seed-archetype", "sprite-strip-partial", "sprite-strip"], "%s still uses portrait placeholder" % creature_name, errors)
 		_expect(SPRITES.archetype(creature_name) == "glide", "%s family archetype mismatch" % creature_name, errors)
 
-	_expect(SPRITES.authored_full_animation_count() >= 6, "reverse pass must contain at least six fully animated forms", errors)
+	_expect(SPRITES.authored_full_animation_count() >= 9, "reverse pass must contain at least nine fully animated forms", errors)
 	_test_full_family(["Nucik", "Wibrospiew", "Rezonar"], "family015", errors)
 	_test_full_family(["Nasuch", "Echouszek", "Sensoryks"], "family010", errors)
+	_test_full_family(["Kotwiczek", "Bramnik", "Fundamentor"], "family009", errors)
 	_validate_seed_manifest(errors)
 
 	if errors.is_empty():
-		print("CREATURE_SPRITE_RUNTIME_SMOKE: PASS · idle4 attack6 hurt3 faint5 special6 · families015+010 fully animated · 50-family/150-form manifest")
+		print("CREATURE_SPRITE_RUNTIME_SMOKE: PASS · idle4 attack6 hurt3 faint5 special6 · families015+010+009 fully animated · 50-family/150-form manifest")
 		quit(0)
 		return
 	for text: String in errors:
