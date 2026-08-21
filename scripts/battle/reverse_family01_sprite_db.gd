@@ -1,11 +1,11 @@
 extends RefCounted
 
 # Reverse visual-production pass: family 001 (Luzik -> Warstwin -> Synkronaut).
-# Uses the three approved transparent production seeds and authors a complete
+# Uses the three approved transparent production-atlas seeds and authors a complete
 # five-state battle set around the family's layer-coupling / synchronization
 # identity. Frames remain 128x128 nearest-neighbour pixel art.
 
-const SEEDS = preload("res://scripts/battle/creature_battle_seed_db.gd")
+const SEEDS = preload("res://scripts/battle/creature_seed_atlas_db.gd")
 const ACTIONS: Array[String] = ["idle", "attack", "hurt", "faint", "special"]
 const ACTION_FRAME_COUNTS: Dictionary = {"idle":4, "attack":6, "hurt":3, "faint":5, "special":6}
 const NAMES: Array[String] = ["Luzik", "Warstwin", "Synkronaut"]
@@ -45,10 +45,10 @@ static func frame_texture(creature_name: String, action: String, frame: int) -> 
 
 static func _base_image(creature_name: String) -> Image:
 	if _base_cache.has(creature_name): return _base_cache[creature_name] as Image
-	var texture: Texture2D = SEEDS.texture_for(creature_name)
-	if texture == null: return null
-	var image: Image = texture.get_image()
+	if not SEEDS.is_approved(creature_name): return null
+	var image: Image = SEEDS.image_for(creature_name)
 	if image == null: return null
+	image = image.duplicate()
 	if Vector2i(image.get_size()) != FRAME_SIZE: image.resize(FRAME_SIZE.x, FRAME_SIZE.y, Image.INTERPOLATE_NEAREST)
 	_base_cache[creature_name] = image
 	return image
