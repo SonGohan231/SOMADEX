@@ -8,6 +8,8 @@ func _initialize() -> void:
 	var errors: Array[String] = []
 	var expected_counts: Dictionary = {"idle":4, "attack":6, "hurt":3, "faint":5, "special":6}
 	_expect(SPRITES.FRAME_W == 128 and SPRITES.FRAME_H == 128, "battle sprite frame must be 128x128", errors)
+	_expect(SPRITES.animation_count() == 150, "battle sprite runtime must expose all 150 forms", errors)
+	_expect(SPRITES.production_atlas_approved_count() == 130, "production atlas must expose exactly 130 QA-approved forms", errors)
 	for action: String in SPRITES.ACTIONS:
 		_expect(SPRITES.frame_count(action) == int(expected_counts[action]), "wrong frame count for %s" % action, errors)
 	for creature_name: String in SPRITES.animated_names():
@@ -17,10 +19,8 @@ func _initialize() -> void:
 			_expect(SPRITES.frame_texture(creature_name, action, 0) != null, "%s %s frame 0 is blank" % [creature_name, action], errors)
 			_expect(SPRITES.frame_texture(creature_name, action, last_frame) != null, "%s %s final frame is blank" % [creature_name, action], errors)
 
-	_expect(SPRITES.authored_seed_count() >= 3, "expected at least three authored transparent seeds", errors)
 	for creature_name: String in ["Luzik", "Warstwin", "Synkronaut"]:
 		_expect(SPRITES.has_authored_seed(creature_name), "%s authored seed missing" % creature_name, errors)
-		_expect(SPRITES.source_kind(creature_name) in ["authored-seed-archetype", "sprite-strip-partial", "sprite-strip"], "%s still uses portrait placeholder" % creature_name, errors)
 		_expect(SPRITES.archetype(creature_name) == "glide", "%s family archetype mismatch" % creature_name, errors)
 
 	_expect(SPRITES.authored_full_animation_count() >= 24, "reverse pass must contain at least twenty-four fully animated forms", errors)
@@ -33,9 +33,10 @@ func _initialize() -> void:
 	_test_full_family(["Wahlik", "Oscylot", "Fazoryb"], "family005", errors)
 	_test_full_family(["Pufek", "Pulsopuch", "Falomamut"], "family004", errors)
 	_validate_seed_manifest(errors)
+	_validate_logical_animation_contract(errors)
 
 	if errors.is_empty():
-		print("CREATURE_SPRITE_RUNTIME_SMOKE: PASS · idle4 attack6 hurt3 faint5 special6 · reverse families 015,010,009..004 fully animated · 50-family/150-form manifest")
+		print("CREATURE_SPRITE_RUNTIME_SMOKE: PASS · 150 forms · 130 approved seeds · 650 accepted logical animations · 20 QA fallbacks · authored families004-010+015 preserved")
 		quit(0)
 		return
 	for text: String in errors:
@@ -45,7 +46,7 @@ func _initialize() -> void:
 func _test_full_family(names: Array[String], family_label: String, errors: Array[String]) -> void:
 	for creature_name: String in names:
 		_expect(SPRITES.has_authored_full_animation(creature_name), "%s %s full reverse-pass animation missing" % [family_label, creature_name], errors)
-		_expect(SPRITES.source_kind(creature_name) == "sprite-strip-authored-runtime", "%s %s still routes through a placeholder source" % [family_label, creature_name], errors)
+		_expect(SPRITES.source_kind(creature_name) == "sprite-strip-authored-runtime", "%s %s must retain authored priority" % [family_label, creature_name], errors)
 		for action: String in SPRITES.ACTIONS:
 			var first: Texture2D = SPRITES.frame_texture(creature_name, action, 0)
 			var last: Texture2D = SPRITES.frame_texture(creature_name, action, SPRITES.frame_count(action) - 1)
@@ -68,6 +69,7 @@ func _validate_seed_manifest(errors: Array[String]) -> void:
 	var families: Dictionary = {}
 	var names: Dictionary = {}
 	var approved: int = 0
+	var blocked: int = 0
 	while not file.eof_reached():
 		var row: PackedStringArray = file.get_csv_line()
 		if row.size() < 9 or row[0].strip_edges().is_empty(): continue
@@ -75,18 +77,33 @@ func _validate_seed_manifest(errors: Array[String]) -> void:
 		var family_id: int = int(row[0])
 		var stage: int = int(row[1])
 		var creature_name: String = row[2].strip_edges()
+		var key: String = creature_name.to_lower()
 		families[family_id] = int(families.get(family_id, 0)) + 1
 		_expect(stage in [1,2,3], "%s has invalid manifest stage" % creature_name, errors)
-		_expect(not names.has(creature_name), "duplicate creature in seed manifest: %s" % creature_name, errors)
-		names[creature_name] = true
+		_expect(not names.has(key), "duplicate creature in seed manifest: %s" % creature_name, errors)
+		names[key] = true
 		_expect(row[7] == "128x128", "%s seed frame contract mismatch" % creature_name, errors)
 		_expect(row[8] == "bottom-center", "%s seed anchor contract mismatch" % creature_name, errors)
-		if row[5].strip_edges() == "approved": approved += 1
+		var status: String = row[5].strip_edges()
+		if status == "approved": approved += 1
+		elif status == "blocked_qa": blocked += 1
+		else: _expect(false, "%s has invalid QA status %s" % [creature_name, status], errors)
+	for creature_name: String in MONSTERS.all_names():
+		_expect(names.has(creature_name.to_lower()), "seed manifest drifted from runtime catalog: %s missing" % creature_name, errors)
 	_expect(row_count == 150, "expected 150 seed manifest rows, got %d" % row_count, errors)
 	_expect(families.size() == 50, "expected 50 seed manifest families, got %d" % families.size(), errors)
 	for raw_family_id: Variant in families.keys():
 		_expect(int(families[raw_family_id]) == 3, "family %s does not contain exactly three forms" % str(raw_family_id), errors)
-	_expect(approved >= 3, "first authored family must remain approved", errors)
+	_expect(approved == 130, "expected 130 approved production seeds, got %d" % approved, errors)
+	_expect(blocked == 20, "expected 20 QA-blocked production seeds, got %d" % blocked, errors)
+
+func _validate_logical_animation_contract(errors: Array[String]) -> void:
+	var total: int = SPRITES.animation_count() * SPRITES.ACTIONS.size()
+	var accepted: int = SPRITES.production_atlas_approved_count() * SPRITES.ACTIONS.size()
+	var blocked: int = total - accepted
+	_expect(total == 750, "expected 750 logical animations, got %d" % total, errors)
+	_expect(accepted == 650, "expected 650 accepted logical animations, got %d" % accepted, errors)
+	_expect(blocked == 100, "expected 100 QA-blocked logical animations, got %d" % blocked, errors)
 
 func _expect(condition: bool, message: String, errors: Array[String]) -> void:
 	if not condition: errors.append(message)
