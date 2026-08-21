@@ -14,6 +14,7 @@ const REVERSE03 = preload("res://scripts/battle/reverse_family03_sprite_db.gd")
 const REVERSE02 = preload("res://scripts/battle/reverse_family02_sprite_db.gd")
 const REVERSE01 = preload("res://scripts/battle/reverse_family01_sprite_db.gd")
 const PRODUCTION_BATCH = preload("res://scripts/battle/production_family_animation_db.gd")
+const PRODUCTION_BATCH2 = preload("res://scripts/battle/production_family_animation_batch2_db.gd")
 const SEED_ATLAS = preload("res://scripts/battle/creature_seed_atlas_db.gd")
 const ARCHETYPE_RUNTIME = preload("res://scripts/battle/creature_archetype_animation_db.gd")
 
@@ -29,7 +30,7 @@ static var _missing_cache: Dictionary = {}
 static var _safe_fallback_cache: Dictionary = {}
 
 static func _authored_families() -> Array:
-	return [REVERSE15,REVERSE10,REVERSE09,REVERSE08,REVERSE07,REVERSE06,REVERSE05,REVERSE04,REVERSE03,REVERSE02,REVERSE01,PRODUCTION_BATCH]
+	return [REVERSE15,REVERSE10,REVERSE09,REVERSE08,REVERSE07,REVERSE06,REVERSE05,REVERSE04,REVERSE03,REVERSE02,REVERSE01,PRODUCTION_BATCH,PRODUCTION_BATCH2]
 
 static func animated_names() -> Array[String]:
 	var names: Array[String] = []
