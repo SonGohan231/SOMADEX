@@ -58,9 +58,15 @@ jobs:
         shell: bash
         run: xvfb-run -a godot --path . --rendering-method gl_compatibility --script res://scripts/tests/render_world_snapshot.gd
 
-      - name: Verify runtime screenshot
+      - name: Render actual current battle runtime
         shell: bash
-        run: test -s build/visual_qa/current_world.png
+        run: xvfb-run -a godot --path . --rendering-method gl_compatibility --script res://scripts/tests/render_battle_snapshot.gd
+
+      - name: Verify runtime screenshots
+        shell: bash
+        run: |
+          test -s build/visual_qa/current_world.png
+          test -s build/visual_qa/current_battle.png
 
       - name: Upload visual QA sources
         uses: actions/upload-artifact@v4
