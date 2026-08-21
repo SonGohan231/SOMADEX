@@ -18,7 +18,7 @@ func _initialize() -> void:
 func _test_sprite_catalog(errors: Array[String]) -> void:
 	_expect(SPRITES.animation_count()==33,"expected 33 Vela forms with battle animation states",errors)
 	var authored_family: Array[String]=["Luzik","Warstwin","Synkronaut"]
-	var reverse_families: Array[String]=["Milimik","Drobnoskok","Kwantomruk","Pufek","Pulsopuch","Falomamut","Wahlik","Oscylot","Fazoryb","Kompasik","Oktantor","Kartografon","Srubik","Torsys","Spiralion","Uczek","Obiegnik","Labiryntaur","Kotwiczek","Bramnik","Fundamentor","Nasuch","Echouszek","Sensoryks","Nucik","Wibrospiew","Rezonar"]
+	var reverse_families: Array[String]=["Bocznik","Slizgogon","Horyzontor","Milimik","Drobnoskok","Kwantomruk","Pufek","Pulsopuch","Falomamut","Wahlik","Oscylot","Fazoryb","Kompasik","Oktantor","Kartografon","Srubik","Torsys","Spiralion","Uczek","Obiegnik","Labiryntaur","Kotwiczek","Bramnik","Fundamentor","Nasuch","Echouszek","Sensoryks","Nucik","Wibrospiew","Rezonar"]
 	for name: String in authored_family:
 		_expect(SPRITES.has_authored_seed(name),"%s authored seed missing" % name,errors)
 	for name: String in reverse_families:
@@ -26,7 +26,7 @@ func _test_sprite_catalog(errors: Array[String]) -> void:
 		_expect(SPRITES.source_kind(name)=="sprite-strip-authored-runtime","%s is not using full authored frame routing" % name,errors)
 
 func _test_visual_states(errors: Array[String]) -> void:
-	var representatives: Array[String]=["Rezonar","Sensoryks","Fundamentor","Labiryntaur","Spiralion","Kartografon","Fazoryb","Falomamut","Kwantomruk"]
+	var representatives: Array[String]=["Rezonar","Sensoryks","Fundamentor","Labiryntaur","Spiralion","Kartografon","Fazoryb","Falomamut","Kwantomruk","Horyzontor"]
 	for action: String in SPRITES.ACTIONS:
 		for frame: int in range(SPRITES.frame_count(action)):
 			for name: String in representatives:
