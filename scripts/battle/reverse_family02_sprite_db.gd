@@ -57,9 +57,9 @@ static func _draw_bocznik(im:Image)->void:
 	_poly(im,[Vector2i(23,28),Vector2i(18,17),Vector2i(29,25)],GREEN)
 	_poly(im,[Vector2i(32,28),Vector2i(37,16),Vector2i(41,29)],GREEN)
 	_poly(im,[Vector2i(40,30),Vector2i(51,20),Vector2i(48,35)],LIME_L)
-	_ellipse(im,Rect2i(17,31,8,8),WHITE); _ellipse(im,Rect2i(20,33,4,5),EYE); _set(im,22,33,CYAN,0)
-	for p:Vector2i in [Vector2i(28,34),Vector2i(36,32),Vector2i(41,38)]: _set(im,p.x,p.y,BLUE_L,1)
-	for x:int in [21,31,41]: _line(im,Vector2i(x,44),Vector2i(x-3,55),BLUE_D,1); _set(im,x-4,56,OUTLINE,1)
+	_ellipse(im,Rect2i(17,31,8,8),WHITE); _ellipse(im,Rect2i(20,33,4,5),EYE); _plot(im,22,33,CYAN,0)
+	for p:Vector2i in [Vector2i(28,34),Vector2i(36,32),Vector2i(41,38)]: _plot(im,p.x,p.y,BLUE_L,1)
+	for x:int in [21,31,41]: _line(im,Vector2i(x,44),Vector2i(x-3,55),BLUE_D,1); _plot(im,x-4,56,OUTLINE,1)
 	_line(im,Vector2i(47,38),Vector2i(58,42),LIME_D,2)
 
 static func _draw_slizgogon(im:Image)->void:
@@ -83,7 +83,7 @@ static func _draw_horyzontor(im:Image)->void:
 	_ellipse(im,Rect2i(54,23,6,6),WHITE); _ellipse(im,Rect2i(56,24,3,4),EYE)
 	_line(im,Vector2i(5,34),Vector2i(0,43),BLUE_D,2)
 	_poly(im,[Vector2i(4,39),Vector2i(0,52),Vector2i(11,45)],LIME)
-	for p:Vector2i in [Vector2i(20,29),Vector2i(31,27),Vector2i(42,30)]: _set(im,p.x,p.y,CYAN,1)
+	for p:Vector2i in [Vector2i(20,29),Vector2i(31,27),Vector2i(42,30)]: _plot(im,p.x,p.y,CYAN,1)
 
 static func _make_frame(base:Image,action:String,frame:int)->Image:
 	match action:
@@ -113,7 +113,7 @@ static func _draw_stream_field(im:Image,phase:int)->void:
 		var y:int=30+lane*14
 		var shift:int=(phase*7+lane*5)%20
 		_line(im,Vector2i(9+shift,y),Vector2i(113,y-5+lane%3),Color(BLUE_L.r,BLUE_L.g,BLUE_L.b,0.40),0)
-		for x:int in range(18+shift,112,24): _set(im,x,y,CYAN,1)
+		for x:int in range(18+shift,112,24): _plot(im,x,y,CYAN,1)
 	_draw_partial_ring(im,Vector2i(64,65),22+phase*4,160,380,Color(LIME_L.r,LIME_L.g,LIME_L.b,0.55),1)
 
 static func _place(base:Image,dx:int,dy:int,sx:float,sy:float,alpha:float)->Image:
@@ -165,15 +165,15 @@ static func _inside(p:Vector2,pts:Array[Vector2i])->bool:
 	return inside
 
 static func _line(im:Image,a:Vector2i,b:Vector2i,c:Color,r:int)->void:
-	var steps:int=maxi(abs(b.x-a.x),abs(b.y-a.y));if steps<=0:_set(im,a.x,a.y,c,r);return
+	var steps:int=maxi(abs(b.x-a.x),abs(b.y-a.y));if steps<=0:_plot(im,a.x,a.y,c,r);return
 	for i:int in range(steps+1):
-		var t:float=float(i)/float(steps);_set(im,int(round(lerpf(a.x,b.x,t))),int(round(lerpf(a.y,b.y,t))),c,r)
+		var t:float=float(i)/float(steps);_plot(im,int(round(lerpf(a.x,b.x,t))),int(round(lerpf(a.y,b.y,t))),c,r)
 
-static func _set(im:Image,x:int,y:int,c:Color,r:int)->void:
+static func _plot(im:Image,x:int,y:int,c:Color,r:int)->void:
 	for yy:int in range(y-r,y+r+1):
 		for xx:int in range(x-r,x+r+1):
 			if xx>=0 and xx<im.get_width() and yy>=0 and yy<im.get_height():im.set_pixel(xx,yy,c)
 
 static func _draw_partial_ring(im:Image,center:Vector2i,radius:int,start_degree:int,end_degree:int,c:Color,thickness:int)->void:
 	for degree:int in range(start_degree,end_degree+1,6):
-		var a:float=deg_to_rad(float(degree));_set(im,center.x+int(round(cos(a)*radius)),center.y+int(round(sin(a)*radius)),c,thickness)
+		var a:float=deg_to_rad(float(degree));_plot(im,center.x+int(round(cos(a)*radius)),center.y+int(round(sin(a)*radius)),c,thickness)
