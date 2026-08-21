@@ -22,7 +22,7 @@ const ORDER: Array[String] = [
 static var _BEATS: Dictionary = {
 	"orin_after_trial":{"zone":"orin_gate","requires":["defeated_vela_trial"],"text":"Brama Orin odpowiada na zapis twojego rezonansu. Za Velą kończy się szkolenie — od tej chwili każdy biom wymusza inny sposób walki."},
 	"reed_first_field":{"zone":"reed_marsh","requires":["defeated_vela_trial"],"text":"Mokradła tłumią zwykły rytm pola. Wilgoć wzmacnia część reakcji statusowych, ale wydłuża starcia i utrudnia szybkie zakończenia."},
-	"ferrum_line_after_marea":{"zone":"ferrum_line","requires":["defeated_marea_resonance"],"text":"Sygnał Sor y został zapisany w SOMADEX. Linia Ferrum otwiera się, a echo przypływu ustępuje rytmowi cewek i przeciążeń."},
+	"ferrum_line_after_marea":{"zone":"ferrum_line","requires":["defeated_marea_resonance"],"text":"Sygnał Sory został zapisany w SOMADEX. Linia Ferrum otwiera się, a echo przypływu ustępuje rytmowi cewek i przeciążeń."},
 	"ferrum_city_pressure":{"zone":"ferrum","requires":["defeated_marea_resonance"],"text":"Całe Ferrum pracuje ponad bezpieczny limit. Warsztaty jeszcze działają, ale źródło przeciążenia bije z Elektrowni Cewkowej."},
 	"nivra_pass_after_construct":{"zone":"nivra_pass","requires":["defeated_ferrum_construct"],"text":"Po zatrzymaniu AX-7 pole regionu stabilizuje się tylko częściowo. Przełęcz Nivra odpowiada zimnym, długim impulsem prowadzącym ku górom."},
 	"nivra_whiteout":{"zone":"nivra","requires":["defeated_ferrum_construct"],"text":"Nivra nie testuje samej siły. Długie walki, ograniczone zasoby i role w drużynie zaczynają ważyć więcej niż pojedynczy mocny ruch."},
