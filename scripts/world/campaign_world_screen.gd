@@ -5,6 +5,7 @@ const CAMPAIGN_PROGRESS = preload("res://scripts/data/campaign_progression_db.gd
 const RUNTIME_NPCS = preload("res://scripts/data/runtime_npc_db.gd")
 const RUNTIME_TRAINERS = preload("res://scripts/data/runtime_trainer_db.gd")
 const RUNTIME_PICKUPS = preload("res://scripts/data/pickup_db.gd")
+const RUNTIME_ENCOUNTERS = preload("res://scripts/data/encounter_db.gd")
 const OLD_SIDEQUESTS = preload("res://scripts/data/alpha1_sidequest_db.gd")
 
 func setup(
@@ -30,7 +31,6 @@ func setup(
 
 func _draw() -> void:
 	super._draw()
-	# Replace the legacy header with the actual campaign-zone identity.
 	draw_rect(Rect2(0, 0, 360, 56), Color("0a1f28"))
 	draw_line(Vector2(0, 55), Vector2(360, 55), Color("3bd4cd"), 2.0)
 	draw_string(font, Vector2(15, 22), CAMPAIGN_ZONES.zone_name(zone_id).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 205, 11, Color("dff8f4"))
@@ -82,7 +82,7 @@ func _after_step() -> void:
 		return
 	steps_since_encounter += 1
 	var code: String = _tile_code(player_tile)
-	if code in ["G", "F", "A", "D", "V"] and steps_since_encounter >= 4 and rng.randf() < 0.18:
+	if not RUNTIME_ENCOUNTERS.pool(zone_id).is_empty() and code in ["G", "F", "A", "D", "V"] and steps_since_encounter >= 4 and rng.randf() < 0.18:
 		steps_since_encounter = 0
 		battle_requested.emit(player_tile)
 
