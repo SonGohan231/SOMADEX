@@ -11,8 +11,14 @@ const POST_GAME_POOL_SIZE: int = 18
 static func zone_ids() -> Array[String]:
 	return PACK.ids()
 
-static func pool(zone_id: String) -> Array[Dictionary]:
+static func is_safe_zone(zone_id: String) -> bool:
 	if not PACK.has_zone(zone_id):
+		return false
+	var style: String = str(ZONES.zone_info(zone_id).get("style", ""))
+	return style == "town" or style.ends_with("_town")
+
+static func pool(zone_id: String) -> Array[Dictionary]:
+	if not PACK.has_zone(zone_id) or is_safe_zone(zone_id):
 		return []
 	var level: int = ZONES.recommended_level(zone_id)
 	var stage_cap: int = 1
@@ -70,7 +76,7 @@ static func all_species() -> Array[String]:
 		for name: String in species(zone_id):
 			if not result.has(name):
 				result.append(name)
-	# Post-game guarantees that every runtime form can appear somewhere in region content.
+	# The three post-game ecosystems deliberately expose the complete 150-form runtime catalog.
 	for name: String in MONSTERS.all_names():
 		if not result.has(name):
 			result.append(name)
@@ -88,7 +94,7 @@ static func roll(zone_id: String, rng: RandomNumberGenerator) -> Dictionary:
 	if ZONES.is_post_game(zone_id):
 		entries = post_game_completion_pool()
 	if entries.is_empty():
-		return {"name":"Wahlik","level":maxi(2, ZONES.recommended_level(zone_id))}
+		return {}
 	var total: int = 0
 	for entry: Dictionary in entries:
 		total += maxi(1, int(entry.get("weight", 1)))
@@ -100,4 +106,4 @@ static func roll(zone_id: String, rng: RandomNumberGenerator) -> Dictionary:
 			var min_level: int = maxi(1, int(entry.get("min_level", 2)))
 			var max_level: int = maxi(min_level, int(entry.get("max_level", min_level)))
 			return {"name":str(entry.get("name", "Wahlik")),"level":rng.randi_range(min_level, max_level)}
-	return {"name":"Wahlik","level":maxi(2, ZONES.recommended_level(zone_id))}
+	return {}
