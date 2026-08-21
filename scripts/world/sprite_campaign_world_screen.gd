@@ -5,6 +5,7 @@ const WORLD_NPCS = preload("res://scripts/data/runtime_npc_db.gd")
 const WORLD_PICKUPS = preload("res://scripts/data/pickup_db.gd")
 const WORLD_TRAINERS = preload("res://scripts/data/runtime_trainer_db.gd")
 const WORLD_DISCOVERIES = preload("res://scripts/data/campaign_discovery_db.gd")
+const WORLD_EVENTS = preload("res://scripts/data/campaign_event_db.gd")
 const RETRO_SFX = preload("res://scripts/audio/retro_sfx.gd")
 
 var _sfx: Node = null
@@ -12,6 +13,7 @@ var _sfx: Node = null
 func _draw() -> void:
 	super._draw()
 	_draw_chapter_badge()
+	_draw_mobile_readability_strip()
 
 func _draw_tile(tile: Vector2i, code: String) -> void:
 	var p: Vector2 = _tile_to_px(tile)
@@ -19,6 +21,7 @@ func _draw_tile(tile: Vector2i, code: String) -> void:
 	if texture != null:
 		draw_texture_rect(texture, Rect2(p, Vector2(TILE, TILE)), false)
 	_draw_environment_motion(tile, code, p)
+	_draw_event_hint(tile, p)
 	var pickup: Dictionary = WORLD_PICKUPS.at(zone_id, tile)
 	if not pickup.is_empty():
 		var pickup_id: String = str(pickup.get("id", ""))
@@ -65,6 +68,18 @@ func _draw_sprite_pickup(tile: Vector2i, pickup: Dictionary) -> void:
 	if texture != null:
 		draw_texture_rect(texture, rect, false)
 
+func _draw_event_hint(tile: Vector2i, p: Vector2) -> void:
+	if abs(tile.x - player_tile.x) + abs(tile.y - player_tile.y) > 2:
+		return
+	var event: Dictionary = WORLD_EVENTS.at(zone_id, tile, dialogue_flags)
+	if event.is_empty():
+		return
+	var pulse: float = 0.55 + 0.35 * sin(elapsed * 5.0 + float(tile.x + tile.y))
+	var center: Vector2 = p + Vector2(TILE / 2.0, 5.0)
+	draw_circle(center, 4.0, Color(0.30, 0.95, 0.88, 0.10 + pulse * 0.12))
+	draw_line(center + Vector2(-2, 0), center + Vector2(2, 0), Color(0.70, 1.0, 0.94, pulse), 1.0)
+	draw_line(center + Vector2(0, -2), center + Vector2(0, 2), Color(0.70, 1.0, 0.94, pulse), 1.0)
+
 func _draw_environment_motion(tile: Vector2i, code: String, p: Vector2) -> void:
 	var phase: float = elapsed * 2.4 + float(tile.x) * 0.73 + float(tile.y) * 0.37
 	if code in ["A", "W"]:
@@ -91,15 +106,37 @@ func _draw_chapter_badge() -> void:
 	var stage: int = CAMPAIGN_PROGRESS.STAGE_VELA_TRIAL + completed
 	stage = mini(stage, CAMPAIGN_PROGRESS.STAGE_POST_GAME)
 	var title: String = CAMPAIGN_PROGRESS.title(stage)
-	var badge: Rect2 = Rect2(116, 2, 128, 16)
-	draw_rect(badge, Color(0.04, 0.12, 0.15, 0.88))
-	draw_rect(badge, Color(0.25, 0.72, 0.69, 0.42), false, 1.0)
-	draw_string(font, Vector2(121, 13), "R%d/8 · %s" % [mini(completed + 1, 8), title], HORIZONTAL_ALIGNMENT_CENTER, 118, 6, Color("bfe8e4"))
+	var badge: Rect2 = Rect2(104, 2, 152, 18)
+	draw_rect(badge, Color(0.04, 0.12, 0.15, 0.92))
+	draw_rect(badge, Color(0.25, 0.72, 0.69, 0.52), false, 1.0)
+	var chapter_label: String = "POST · %s" % title if completed >= 8 else "R%d/8 · %s" % [completed + 1, title]
+	draw_string(font, Vector2(110, 14), chapter_label, HORIZONTAL_ALIGNMENT_CENTER, 140, 6, Color("d4f6f1"))
+
+func _draw_mobile_readability_strip() -> void:
+	var strip: Rect2 = Rect2(6, 716, 348, 22)
+	draw_rect(strip, Color(0.02, 0.08, 0.10, 0.66))
+	draw_rect(strip, Color(0.22, 0.60, 0.60, 0.28), false, 1.0)
+	draw_string(font, Vector2(14, 731), "DOTKNIJ: RUCH · A: INTERAKCJA · MENU: DRUŻYNA / EKWIPUNEK", HORIZONTAL_ALIGNMENT_CENTER, 332, 6, Color("b8d8d6"))
 
 func _interact() -> void:
 	if moving:
 		return
 	var target: Vector2i = player_tile + facing
+	var event: Dictionary = WORLD_EVENTS.at(zone_id, target, dialogue_flags)
+	if not event.is_empty():
+		var event_id: String = str(event.get("id", ""))
+		var event_flag: String = WORLD_EVENTS.flag_id(event_id)
+		dialogue_flags[event_flag] = true
+		dialog = "WYDARZENIE: %s\n%s\n%d/%d zdarzeń opcjonalnych" % [
+			str(event.get("title", "ŚLAD")),
+			str(event.get("text", "")),
+			WORLD_EVENTS.completed_count(dialogue_flags),
+			WORLD_EVENTS.count()
+		]
+		dialogue_flag_requested.emit(event_flag)
+		_play_cue("chapter")
+		queue_redraw()
+		return
 	var discovery: Dictionary = WORLD_DISCOVERIES.at(zone_id, target, dialogue_flags)
 	if not discovery.is_empty():
 		var discovery_id: String = str(discovery.get("id", ""))
