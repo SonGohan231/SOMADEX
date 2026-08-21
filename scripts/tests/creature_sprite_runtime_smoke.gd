@@ -13,7 +13,8 @@ const FULL_FAMILIES: Array = [
 	[["Kompasik","Oktantor","Kartografon"],"family006"],
 	[["Wahlik","Oscylot","Fazoryb"],"family005"],
 	[["Pufek","Pulsopuch","Falomamut"],"family004"],
-	[["Milimik","Drobnoskok","Kwantomruk"],"family003"]
+	[["Milimik","Drobnoskok","Kwantomruk"],"family003"],
+	[["Bocznik","Slizgogon","Horyzontor"],"family002"]
 ]
 
 func _initialize() -> void:
@@ -31,12 +32,12 @@ func _initialize() -> void:
 			_expect(SPRITES.frame_texture(creature_name,action,0)!=null,"%s %s frame 0 is blank" % [creature_name,action],errors)
 			_expect(SPRITES.frame_texture(creature_name,action,last_frame)!=null,"%s %s final frame is blank" % [creature_name,action],errors)
 	_expect(SPRITES.authored_seed_count()>=3,"expected at least three authored transparent seeds",errors)
-	_expect(SPRITES.authored_full_animation_count()>=27,"reverse pass must contain at least twenty-seven fully animated forms",errors)
+	_expect(SPRITES.authored_full_animation_count()>=30,"reverse pass must contain at least thirty fully animated forms",errors)
 	for entry in FULL_FAMILIES: _test_full_family(entry[0],entry[1],errors)
 	_validate_seed_manifest(errors)
 	_validate_logical_animation_contract(errors)
 	if errors.is_empty():
-		print("CREATURE_SPRITE_RUNTIME_SMOKE: PASS · 150 forms · 130 approved · 20 blocked · 750 logical states · 27 authored full animations")
+		print("CREATURE_SPRITE_RUNTIME_SMOKE: PASS · 150 forms · 130 approved · 20 blocked · 750 logical states · 30 authored full animations")
 		quit(0); return
 	for text: String in errors: printerr("CREATURE_SPRITE_RUNTIME_SMOKE: "+text)
 	quit(1)

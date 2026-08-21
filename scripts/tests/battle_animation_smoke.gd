@@ -11,22 +11,27 @@ func _initialize() -> void:
 	_test_visual_states(errors)
 	_test_visual_queue(errors)
 	_test_screen_contract(errors)
-	if errors.is_empty(): print("BATTLE_ANIMATION_SMOKE: PASS"); quit(0); return
+	if errors.is_empty(): print("BATTLE_ANIMATION_SMOKE: PASS · 150 logical forms · 30 authored Vela forms"); quit(0); return
 	for text: String in errors: printerr("BATTLE_ANIMATION_SMOKE: "+text)
 	quit(1)
 
 func _test_sprite_catalog(errors: Array[String]) -> void:
-	_expect(SPRITES.animation_count()==33,"expected 33 Vela forms with battle animation states",errors)
+	_expect(SPRITES.animation_count()==150,"expected 150 forms with logical battle animation states",errors)
+	_expect(SPRITES.animated_names().size()==150,"animated name catalog must contain 150 unique forms",errors)
+	var expected_counts: Dictionary={"idle":4,"attack":6,"hurt":3,"faint":5,"special":6}
+	for action: String in SPRITES.ACTIONS:
+		_expect(SPRITES.frame_count(action)==int(expected_counts[action]),"wrong frame count for %s" % action,errors)
 	var authored_family: Array[String]=["Luzik","Warstwin","Synkronaut"]
-	var reverse_families: Array[String]=["Milimik","Drobnoskok","Kwantomruk","Pufek","Pulsopuch","Falomamut","Wahlik","Oscylot","Fazoryb","Kompasik","Oktantor","Kartografon","Srubik","Torsys","Spiralion","Uczek","Obiegnik","Labiryntaur","Kotwiczek","Bramnik","Fundamentor","Nasuch","Echouszek","Sensoryks","Nucik","Wibrospiew","Rezonar"]
+	var reverse_families: Array[String]=["Bocznik","Slizgogon","Horyzontor","Milimik","Drobnoskok","Kwantomruk","Pufek","Pulsopuch","Falomamut","Wahlik","Oscylot","Fazoryb","Kompasik","Oktantor","Kartografon","Srubik","Torsys","Spiralion","Uczek","Obiegnik","Labiryntaur","Kotwiczek","Bramnik","Fundamentor","Nasuch","Echouszek","Sensoryks","Nucik","Wibrospiew","Rezonar"]
 	for name: String in authored_family:
 		_expect(SPRITES.has_authored_seed(name),"%s authored seed missing" % name,errors)
+	_expect(SPRITES.authored_full_animation_count()>=30,"expected at least 30 fully authored reverse-pass forms",errors)
 	for name: String in reverse_families:
 		_expect(SPRITES.has_authored_full_animation(name),"%s reverse-pass animation missing" % name,errors)
 		_expect(SPRITES.source_kind(name)=="sprite-strip-authored-runtime","%s is not using full authored frame routing" % name,errors)
 
 func _test_visual_states(errors: Array[String]) -> void:
-	var representatives: Array[String]=["Rezonar","Sensoryks","Fundamentor","Labiryntaur","Spiralion","Kartografon","Fazoryb","Falomamut","Kwantomruk"]
+	var representatives: Array[String]=["Rezonar","Sensoryks","Fundamentor","Labiryntaur","Spiralion","Kartografon","Fazoryb","Falomamut","Kwantomruk","Horyzontor"]
 	for action: String in SPRITES.ACTIONS:
 		for frame: int in range(SPRITES.frame_count(action)):
 			for name: String in representatives:
