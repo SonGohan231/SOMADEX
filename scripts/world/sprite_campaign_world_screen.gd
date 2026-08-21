@@ -33,7 +33,10 @@ func _draw() -> void:
 
 func _draw_tile(tile: Vector2i, code: String) -> void:
 	var p: Vector2 = _tile_to_px(tile)
-	var texture: Texture2D = WORLD_ART.tile_texture(code, tile.x + tile.y * 3)
+	var variant: int = tile.x + tile.y * 3
+	var texture: Texture2D = CC0_PIXEL.tile_texture(code, variant)
+	if texture == null:
+		texture = WORLD_ART.tile_texture(code, variant)
 	if texture != null:
 		draw_texture_rect(texture, Rect2(p, Vector2(TILE, TILE)), false)
 	_draw_environment_motion(tile, code, p)
@@ -55,8 +58,6 @@ func _draw_player() -> void:
 	if texture == null:
 		super._draw_player()
 		return
-	# 16x16 source art is enlarged with nearest-neighbour filtering by the project.
-	# Keep the feet aligned to the logical 24x24 movement cell.
 	var draw_rect := Rect2(player_px + Vector2(0, -4), Vector2(TILE, TILE))
 	draw_texture_rect(texture, draw_rect, false)
 
@@ -103,20 +104,20 @@ func _draw_environment_motion(tile: Vector2i, code: String, p: Vector2) -> void:
 	if code in ["A", "W"]:
 		var y1: float = 8.0 + sin(phase) * 1.2
 		var y2: float = 16.0 + sin(phase + 1.7)
-		draw_line(p + Vector2(3, y1), p + Vector2(TILE - 4, y1), Color(0.62, 0.93, 0.96, 0.24), 1.0)
-		draw_line(p + Vector2(6, y2), p + Vector2(TILE - 7, y2), Color(0.55, 0.84, 0.91, 0.18), 1.0)
+		draw_line(p + Vector2(3, y1), p + Vector2(TILE - 4, y1), Color(0.62, 0.93, 0.96, 0.20), 1.0)
+		draw_line(p + Vector2(6, y2), p + Vector2(TILE - 7, y2), Color(0.55, 0.84, 0.91, 0.14), 1.0)
 	elif code == "F":
 		var sway: float = sin(phase * 1.4) * 1.2
 		for ox: float in [6.0, 12.0, 18.0]:
-			draw_line(p + Vector2(ox, 20), p + Vector2(ox + sway, 15), Color(0.67, 0.90, 0.55, 0.20), 1.0)
+			draw_line(p + Vector2(ox, 20), p + Vector2(ox + sway, 15), Color(0.67, 0.90, 0.55, 0.14), 1.0)
 	elif code == "D":
-		var pulse: float = 0.14 + 0.12 * (0.5 + 0.5 * sin(phase * 2.0))
+		var pulse: float = 0.10 + 0.09 * (0.5 + 0.5 * sin(phase * 2.0))
 		draw_rect(Rect2(p + Vector2(17, 5), Vector2(2, 2)), Color(0.35, 0.95, 0.90, pulse))
 	elif code == "V":
 		var radius: float = 2.0 + (0.5 + 0.5 * sin(phase)) * 2.0
-		draw_circle(p + Vector2(12, 12), radius, Color(0.68, 0.49, 0.95, 0.08))
+		draw_circle(p + Vector2(12, 12), radius, Color(0.68, 0.49, 0.95, 0.06))
 	elif code == "E":
-		var glow: float = 0.12 + 0.10 * (0.5 + 0.5 * sin(phase * 2.4))
+		var glow: float = 0.10 + 0.08 * (0.5 + 0.5 * sin(phase * 2.4))
 		draw_rect(Rect2(p + Vector2(3, 3), Vector2(TILE - 6, TILE - 6)), Color(0.35, 0.94, 0.84, glow), false, 1.0)
 
 func _draw_chapter_badge() -> void:
