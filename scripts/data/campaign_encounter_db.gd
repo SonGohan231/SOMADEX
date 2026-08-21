@@ -7,6 +7,7 @@ const PACK = preload("res://scripts/data/region_zone_pack.gd")
 
 const BASE_POOL_SIZE: int = 10
 const POST_GAME_POOL_SIZE: int = 18
+const RARE_PER_FIELD_ZONE: int = 2
 
 static func zone_ids() -> Array[String]:
 	return PACK.ids()
@@ -60,6 +61,39 @@ static func pool(zone_id: String) -> Array[Dictionary]:
 			"min_level":maxi(2, level - spread),
 			"max_level":level + 2
 		})
+	_append_rares(zone_id, candidates, selected, level, result)
+	return result
+
+static func _append_rares(zone_id: String, candidates: Array[String], selected: Array[String], level: int, result: Array[Dictionary]) -> void:
+	if candidates.is_empty():
+		return
+	var zone_index: int = maxi(0, zone_ids().find(zone_id))
+	var cursor: int = posmod(zone_index * 17 + 5, candidates.size())
+	var attempts: int = 0
+	var rare_index: int = 0
+	while rare_index < RARE_PER_FIELD_ZONE and attempts < candidates.size() * 2:
+		var name: String = candidates[cursor]
+		if not selected.has(name):
+			result.append({
+				"name":name,
+				"weight":2 if rare_index == 0 else 1,
+				"min_level":maxi(2, level + rare_index),
+				"max_level":level + 3,
+				"rare":true
+			})
+			selected.append(name)
+			rare_index += 1
+		cursor = posmod(cursor + 11, candidates.size())
+		attempts += 1
+
+static func rare_species(zone_id: String) -> Array[String]:
+	var result: Array[String] = []
+	for entry: Dictionary in pool(zone_id):
+		if not bool(entry.get("rare", false)):
+			continue
+		var name: String = str(entry.get("name", ""))
+		if not name.is_empty():
+			result.append(name)
 	return result
 
 static func species(zone_id: String) -> Array[String]:

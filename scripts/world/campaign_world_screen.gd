@@ -6,7 +6,8 @@ const RUNTIME_NPCS = preload("res://scripts/data/runtime_npc_db.gd")
 const RUNTIME_TRAINERS = preload("res://scripts/data/runtime_trainer_db.gd")
 const RUNTIME_PICKUPS = preload("res://scripts/data/pickup_db.gd")
 const RUNTIME_ENCOUNTERS = preload("res://scripts/data/encounter_db.gd")
-const OLD_SIDEQUESTS = preload("res://scripts/data/alpha1_sidequest_db.gd")
+const VELA_SIDEQUESTS = preload("res://scripts/data/alpha1_sidequest_db.gd")
+const CAMPAIGN_SIDEQUESTS = preload("res://scripts/data/campaign_sidequest_db.gd")
 
 func setup(
 	active_partner: String,
@@ -43,6 +44,8 @@ func _draw_tile(tile: Vector2i, code: String) -> void:
 	var pickup: Dictionary = RUNTIME_PICKUPS.at(zone_id, tile)
 	if not pickup.is_empty():
 		var pickup_id: String = str(pickup.get("id", ""))
+		# Only normal region pickups receive a marker. secret_* pickups are
+		# intentionally discovered through exploration/interacting with terrain.
 		if pickup_id.begins_with("region_") and not RUNTIME_PICKUPS.is_collected(pickup_id, dialogue_flags):
 			_draw_pickup(tile)
 	var npc: Dictionary = RUNTIME_NPCS.at(zone_id, tile)
@@ -96,10 +99,7 @@ func _interact() -> void:
 		if not RUNTIME_PICKUPS.is_collected(pickup_id, dialogue_flags):
 			dialogue_flags[RUNTIME_PICKUPS.flag_id(pickup_id)] = true
 			dialog = str(pickup.get("message", "Znaleziono przedmiot."))
-			var completed_titles: Array[String] = []
-			for quest_id: String in OLD_SIDEQUESTS.ids():
-				if OLD_SIDEQUESTS.can_complete(quest_id, dialogue_flags):
-					completed_titles.append(str(OLD_SIDEQUESTS.info(quest_id).get("title", quest_id)))
+			var completed_titles: Array[String] = _completed_sidequest_titles(dialogue_flags)
 			if not completed_titles.is_empty():
 				dialog += "\nZADANIE UKOŃCZONE: %s" % " / ".join(completed_titles)
 			pickup_requested.emit(pickup_id)
@@ -140,6 +140,16 @@ func _interact() -> void:
 		queue_redraw()
 		return
 	super._interact()
+
+func _completed_sidequest_titles(flags: Dictionary) -> Array[String]:
+	var result: Array[String] = []
+	for quest_id: String in VELA_SIDEQUESTS.ids():
+		if VELA_SIDEQUESTS.can_complete(quest_id, flags):
+			result.append(str(VELA_SIDEQUESTS.info(quest_id).get("title", quest_id)))
+	for quest_id: String in CAMPAIGN_SIDEQUESTS.ids():
+		if CAMPAIGN_SIDEQUESTS.can_complete(quest_id, flags):
+			result.append(str(CAMPAIGN_SIDEQUESTS.info(quest_id).get("title", quest_id)))
+	return result
 
 func show_message(text: String) -> void:
 	dialog = text

@@ -9,6 +9,8 @@ const CAMPAIGN_TRAINERS = preload("res://scripts/data/runtime_trainer_db.gd")
 const CAMPAIGN_PICKUPS = preload("res://scripts/data/pickup_db.gd")
 const CAMPAIGN_PROGRESS = preload("res://scripts/data/campaign_progression_db.gd")
 const CAMPAIGN_ALPHA_QUESTS = preload("res://scripts/data/alpha1_quest_db.gd")
+const CAMPAIGN_SIDEQUESTS = preload("res://scripts/data/campaign_sidequest_db.gd")
+const CAMPAIGN_STORY_BEATS = preload("res://scripts/data/campaign_story_beat_db.gd")
 const CAMPAIGN_WORLD = preload("res://scripts/world/sprite_campaign_world_screen.gd")
 const CAMPAIGN_TRAINER_BATTLE = preload("res://scripts/battle/campaign_trainer_battle_screen.gd")
 const CAMPAIGN_EQUIPMENT = preload("res://scripts/data/equipment_db.gd")
@@ -50,6 +52,7 @@ func _show_world() -> void:
 	screen.trainer_battle_requested.connect(_start_trainer_battle)
 	screen.pickup_requested.connect(_on_pickup_requested)
 	_switch_to(screen)
+	_show_story_beat_if_ready(screen, zone_id)
 
 func _start_battle(tile: Vector2i) -> void:
 	CAMPAIGN_STATE.set_player_tile(profile, tile)
@@ -103,6 +106,11 @@ func _on_trainer_battle_finished(result: Dictionary) -> void:
 	if str(result.get("outcome", "")) == "win" and CAMPAIGN_TRAINERS.has(trainer_id):
 		CAMPAIGN_STATE.set_dialogue_flag(profile, CAMPAIGN_TRAINERS.defeated_flag(trainer_id))
 		_merge_campaign_trainer_rewards(result, trainer_id)
+		var returned_inventory: Variant = result.get("inventory", {})
+		if typeof(returned_inventory) == TYPE_DICTIONARY:
+			profile["inventory"] = (returned_inventory as Dictionary).duplicate(true)
+		_resolve_sidequests()
+		result["inventory"] = (profile.get("inventory", {}) as Dictionary).duplicate(true)
 		_refresh_alpha_quest_stage()
 	_on_battle_finished(result)
 
@@ -175,6 +183,33 @@ func _on_pickup_requested(pickup_id: String) -> void:
 		profile["inventory"] = inventory
 	CAMPAIGN_STATE.set_dialogue_flag(profile, flag_id)
 	_resolve_sidequests()
+	_save_game()
+
+func _resolve_sidequests() -> void:
+	super._resolve_sidequests()
+	var flags: Dictionary = profile.get("dialogue_flags", {}) as Dictionary
+	var inventory: Dictionary = profile.get("inventory", {}) as Dictionary
+	for quest_id: String in CAMPAIGN_SIDEQUESTS.ids():
+		if not CAMPAIGN_SIDEQUESTS.can_complete(quest_id, flags):
+			continue
+		var rewards: Dictionary = CAMPAIGN_SIDEQUESTS.reward(quest_id)
+		for raw_item: Variant in rewards.keys():
+			var item_id: String = str(raw_item)
+			inventory[item_id] = maxi(0, int(inventory.get(item_id, 0))) + maxi(0, int(rewards[raw_item]))
+		flags[CAMPAIGN_SIDEQUESTS.complete_flag(quest_id)] = true
+	profile["dialogue_flags"] = flags
+	profile["inventory"] = inventory
+
+func _show_story_beat_if_ready(screen: Control, zone_id: String) -> void:
+	var flags: Dictionary = profile.get("dialogue_flags", {}) as Dictionary
+	var beat: Dictionary = CAMPAIGN_STORY_BEATS.next_for(zone_id, flags)
+	if beat.is_empty():
+		return
+	var beat_flag: String = str(beat.get("flag", ""))
+	if not beat_flag.is_empty():
+		CAMPAIGN_STATE.set_dialogue_flag(profile, beat_flag)
+	if is_instance_valid(screen) and screen.has_method("show_message"):
+		screen.show_message(str(beat.get("text", "")))
 	_save_game()
 
 func _refresh_alpha_quest_stage() -> void:
