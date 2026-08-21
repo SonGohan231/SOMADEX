@@ -27,7 +27,7 @@ func _test_main_scene_controller(errors: Array[String]) -> void:
 		return
 	var node: Node = packed.instantiate()
 	_expect(node.get_script() == CAMPAIGN_GAME, "Main.tscn does not use the campaign controller that inherits evolution presentation", errors)
-	_expect(node.has_method("_show_evolution_queue"), "campaign controller lost evolution presentation methods", errors)
+	_expect(node.has_method("_show_next_evolution"), "campaign controller lost inherited evolution presentation methods", errors)
 	node.free()
 
 func _test_evolution_event_source(errors: Array[String]) -> void:
