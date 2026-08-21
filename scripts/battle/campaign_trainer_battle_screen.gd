@@ -95,6 +95,11 @@ func _win(lines: Array[String]) -> void:
 		enemy_data = _normalize_creature_moves(enemy_data)
 		enemy_passive_id = PASSIVES.default_for_creature(enemy_data)
 		enemy_switched_this_turn = true
+		var focus_before: int = trainer_focus
+		trainer_focus = mini(trainer_focus_max, trainer_focus + CAMPAIGN_BALANCE.FOCUS_ON_ENEMY_KO)
+		var focus_gain: int = trainer_focus - focus_before
+		if focus_gain > 0:
+			lines.append("Pokonanie partnera rywala: +%d Focus." % focus_gain)
 		lines.append("%s wysyła %s Lv.%d!" % [trainer_name, next_name, enemy_level])
 		queue_redraw()
 		return
