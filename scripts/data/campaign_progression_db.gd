@@ -28,6 +28,7 @@ static var _GATES: Dictionary = {
 	"marea>ferrum_line":"defeated_marea_resonance",
 	"ferrum>nivra_pass":"defeated_ferrum_construct",
 	"nivra>lumen_ruins":"defeated_nivra_guardian",
+	"lumen>aster_woods":"defeated_lumen_keeper",
 	"aster>silent_basin":"defeated_aster_warden",
 	"koral>zenith_approach":"defeated_koral_tide",
 	"zenith>echo_depths":"defeated_zenith_final",
@@ -64,6 +65,7 @@ static func lock_text(from_zone: String, to_zone: String) -> String:
 		"defeated_marea_resonance": return "Linia Ferrum nie synchronizuje przejścia. Ukończ Rezonans Marei."
 		"defeated_ferrum_construct": return "Przełęcz Nivra jest zablokowana przez przeciążenie. Pokonaj Konstrukt Ferrum."
 		"defeated_nivra_guardian": return "Szlak do Lumen pozostaje niestabilny. Ukończ próbę Głębokiego Uskoku."
+		"defeated_lumen_keeper": return "Las Aster pozostaje odcięty. Strażnik Pamięci Lumen nie został jeszcze pokonany."
 		"defeated_aster_warden": return "Cicha Niecka nie odpowiada. Strażnik Aster wciąż utrzymuje pole."
 		"defeated_koral_tide": return "Podejście Zenith jest zamknięte. Najpierw ukończ Próbę Przypływu."
 		"defeated_zenith_final": return "Ten obszar otwiera się dopiero po ustabilizowaniu rdzenia Zenith."
@@ -104,7 +106,7 @@ static func objective(stage: int) -> String:
 		return ALPHA.objective(stage)
 	match stage:
 		STAGE_VELA_TRIAL: return "Pokonaj Strażnika Erona przy Północnej Bramie i otwórz drogę do Orin."
-		STAGE_MAREA: return "Przejdź Brame Orin i Mokradła Stroików, a następnie pokonaj Mistrzynię Sorę w Marei."
+		STAGE_MAREA: return "Przejdź Bramę Orin i Mokradła Stroików, a następnie pokonaj Mistrzynię Sorę w Marei."
 		STAGE_FERRUM: return "Przejdź Linię Ferrum i zatrzymaj Konstrukt AX-7 w Elektrowni Cewkowej."
 		STAGE_NIVRA: return "Przejdź Przełęcz Nivra i pokonaj Wardena Hail w Głębokim Uskoku."
 		STAGE_LUMEN: return "Przeszukaj Ruiny Lumen i pokonaj Opiekuna Sol w archiwum miasta."
