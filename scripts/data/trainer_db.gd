@@ -2,6 +2,7 @@ extends RefCounted
 
 const VELA = preload("res://scripts/data/alpha1_trainer_db.gd")
 const CAMPAIGN = preload("res://scripts/data/campaign_trainer_db.gd")
+const CAMPAIGN_REWARDS = preload("res://scripts/data/campaign_reward_db.gd")
 
 static func ids() -> Array[String]:
 	var result: Array[String] = []
@@ -48,7 +49,9 @@ static func reward_xp(trainer_id: String) -> int:
 static func reward_items(trainer_id: String) -> Dictionary:
 	if VELA.has(trainer_id):
 		return VELA.reward_items(trainer_id)
-	return CAMPAIGN.reward_items(trainer_id)
+	if CAMPAIGN.has(trainer_id):
+		return CAMPAIGN_REWARDS.items(trainer_id, CAMPAIGN.info(trainer_id))
+	return {}
 
 static func locked_text(trainer_id: String) -> String:
 	if VELA.has(trainer_id):

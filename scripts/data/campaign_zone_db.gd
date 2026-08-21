@@ -29,9 +29,19 @@ static func recommended_level(zone_id: String) -> int:
 	return maxi(1, int(zone_info(zone_id).get("recommended_level", 2)))
 
 static func map_rows(zone_id: String) -> Array[String]:
+	var rows: Array[String] = []
 	if PACK.has_zone(zone_id):
-		return PACK.map_rows(zone_id)
-	return PACK.patch_base_rows(zone_id, BASE.map_rows(zone_id))
+		rows = PACK.map_rows(zone_id)
+	else:
+		rows = PACK.patch_base_rows(zone_id, BASE.map_rows(zone_id))
+	# In the authored Vela map the synchronization station sat directly below
+	# the north exit. Stations are interactable but intentionally non-walkable,
+	# so it sealed the only tile leading to Resonance Route. Keep the station
+	# beside the corridor and restore the corridor tile to P.
+	if zone_id == "vela" and rows.size() > 1:
+		rows[1] = _replace_char(rows[1], 7, "P")
+		rows[1] = _replace_char(rows[1], 6, "C")
+	return rows
 
 static func spawn_tile(zone_id: String) -> Vector2i:
 	var raw_spawn: Variant = zone_info(zone_id).get("spawn", [7, 20])
@@ -60,3 +70,8 @@ static func exit_spawn(exit_data: Dictionary) -> Vector2i:
 
 static func is_post_game(zone_id: String) -> bool:
 	return bool(zone_info(zone_id).get("post_game", false))
+
+static func _replace_char(text: String, index: int, value: String) -> String:
+	if index < 0 or index >= text.length():
+		return text
+	return text.substr(0, index) + value + text.substr(index + 1)
