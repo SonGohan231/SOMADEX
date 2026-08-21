@@ -3,6 +3,7 @@ extends "res://scripts/battle/loadout_battle_screen.gd"
 const TRAINERS = preload("res://scripts/data/runtime_trainer_db.gd")
 const MONSTERS = preload("res://scripts/data/monster_db.gd")
 const BATTLE_MODES = preload("res://scripts/data/battle_mode_db.gd")
+const CAMPAIGN_BALANCE = preload("res://scripts/data/campaign_battle_balance.gd")
 
 var trainer_id: String = ""
 var trainer_name: String = "Trener"
@@ -44,6 +45,9 @@ func setup_trainer(
 		talent_levels,
 		loadout
 	)
+	var enemy_base_hp: int = int(enemy_data.get("max_hp", 20))
+	enemy_max_hp = CAMPAIGN_BALANCE.scaled_max_hp(enemy_base_hp, enemy_level)
+	enemy_hp = enemy_max_hp
 	set_battle_mode(TRAINERS.battle_mode(trainer_key))
 
 func _ready() -> void:
@@ -83,7 +87,7 @@ func _win(lines: Array[String]) -> void:
 		enemy_data = MONSTERS.get_monster(next_name)
 		enemy_level = maxi(1, int(entry.get("level", 3)))
 		var enemy_base_hp: int = int(enemy_data.get("max_hp", 20))
-		enemy_max_hp = enemy_base_hp + maxi(0, enemy_level - 3)
+		enemy_max_hp = CAMPAIGN_BALANCE.scaled_max_hp(enemy_base_hp, enemy_level)
 		enemy_hp = enemy_max_hp
 		enemy_statuses.clear()
 		enemy_guard = false
