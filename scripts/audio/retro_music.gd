@@ -51,7 +51,7 @@ func _ready() -> void:
 	add_child(player)
 
 func play_theme(theme_id: String) -> void:
-	var safe_id: String = theme_id if THEMES.has(theme_id) else "route"
+	var safe_id: String = _context_theme(theme_id)
 	if player == null:
 		_ready()
 	if current_theme == safe_id and player.playing:
@@ -62,6 +62,18 @@ func play_theme(theme_id: String) -> void:
 		return
 	player.stream = stream
 	player.play()
+
+func _context_theme(theme_id: String) -> String:
+	var safe_id: String = theme_id if THEMES.has(theme_id) else "route"
+	if safe_id != "boss":
+		return safe_id
+	var parent: Node = get_parent()
+	if parent == null:
+		return safe_id
+	for property: Dictionary in parent.get_property_list():
+		if str(property.get("name", "")) == "boss_ai_id":
+			return boss_theme(str(parent.get("boss_ai_id")))
+	return safe_id
 
 func stop_music() -> void:
 	if player != null:
