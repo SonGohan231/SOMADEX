@@ -106,7 +106,11 @@ func _on_trainer_battle_finished(result: Dictionary) -> void:
 	if str(result.get("outcome", "")) == "win" and CAMPAIGN_TRAINERS.has(trainer_id):
 		CAMPAIGN_STATE.set_dialogue_flag(profile, CAMPAIGN_TRAINERS.defeated_flag(trainer_id))
 		_merge_campaign_trainer_rewards(result, trainer_id)
+		var returned_inventory: Variant = result.get("inventory", {})
+		if typeof(returned_inventory) == TYPE_DICTIONARY:
+			profile["inventory"] = (returned_inventory as Dictionary).duplicate(true)
 		_resolve_sidequests()
+		result["inventory"] = (profile.get("inventory", {}) as Dictionary).duplicate(true)
 		_refresh_alpha_quest_stage()
 	_on_battle_finished(result)
 
