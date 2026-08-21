@@ -2,6 +2,7 @@ extends "res://scripts/game_animations.gd"
 
 const CAMPAIGN_STATE = preload("res://scripts/core/game_state.gd")
 const CAMPAIGN_SAVE = preload("res://scripts/core/save_manager.gd")
+const CAMPAIGN_CHECKPOINT = preload("res://scripts/core/campaign_checkpoint.gd")
 const CAMPAIGN_MONSTERS = preload("res://scripts/data/monster_db.gd")
 const CAMPAIGN_ZONES = preload("res://scripts/data/campaign_zone_db.gd")
 const CAMPAIGN_ENCOUNTERS = preload("res://scripts/data/encounter_db.gd")
@@ -125,6 +126,42 @@ func _merge_campaign_trainer_rewards(result: Dictionary, trainer_id: String) -> 
 		inventory[item_id] = maxi(0, int(inventory.get(item_id, 0))) + maxi(0, int(rewards[raw_item]))
 	result["inventory"] = inventory
 
+func _on_battle_finished(result: Dictionary) -> void:
+	var returned_party: Variant = result.get("party", [])
+	if typeof(returned_party) == TYPE_ARRAY:
+		CAMPAIGN_STATE.replace_party(profile, returned_party as Array, int(result.get("active_party_index", 0)))
+
+	var returned_inventory: Variant = result.get("inventory", {})
+	if typeof(returned_inventory) == TYPE_DICTIONARY:
+		profile["inventory"] = (returned_inventory as Dictionary).duplicate(true)
+
+	var seen_name: String = str(result.get("seen_name", ""))
+	if not seen_name.is_empty():
+		CAMPAIGN_STATE.add_seen(profile, seen_name)
+
+	var xp_gain: int = maxi(0, int(result.get("xp", 0)))
+	if xp_gain > 0:
+		var active_index: int = CAMPAIGN_STATE.active_index(profile)
+		CAMPAIGN_STATE.add_member_exp(profile, active_index, xp_gain)
+		profile["trainer_xp"] = maxi(0, int(profile.get("trainer_xp", 0)) + xp_gain)
+
+	var captured_name: String = str(result.get("captured_name", ""))
+	if not captured_name.is_empty():
+		CAMPAIGN_STATE.add_caught(profile, captured_name, maxi(1, int(result.get("captured_level", 1))))
+		if int(profile.get("quest_stage", 0)) <= 2:
+			profile["quest_stage"] = 3
+
+	_apply_trainer_level_ups()
+
+	if str(result.get("outcome", "")) == "loss":
+		var checkpoint: Dictionary = CAMPAIGN_CHECKPOINT.resolve(profile)
+		profile["zone_id"] = str(checkpoint.get("zone_id", "vela"))
+		CAMPAIGN_STATE.set_player_tile(profile, checkpoint.get("tile", CAMPAIGN_STATE.START_TILE) as Vector2i)
+		CAMPAIGN_STATE.heal_party(profile)
+
+	_save_game()
+	_show_world()
+
 func _on_zone_change_requested(target_zone: String, spawn_tile: Vector2i) -> void:
 	if not CAMPAIGN_ZONES.has_zone(target_zone):
 		return
@@ -158,6 +195,7 @@ func _on_station_requested(tile: Vector2i) -> void:
 		if int(profile.get("quest_stage", 0)) >= 3 and int(profile.get("quest_stage", 0)) < 4:
 			profile["quest_stage"] = 4
 	profile["flags"] = flags
+	CAMPAIGN_CHECKPOINT.sync(profile, zone_id, tile)
 	_refresh_alpha_quest_stage()
 	_save_game()
 
