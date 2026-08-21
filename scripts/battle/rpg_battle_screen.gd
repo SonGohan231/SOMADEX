@@ -4,6 +4,7 @@ const MODES = preload("res://scripts/data/battle_mode_db.gd")
 const PASSIVES = preload("res://scripts/data/passive_db.gd")
 const MOVES = preload("res://scripts/data/move_db.gd")
 const RPG_STATUS = preload("res://scripts/data/status_db.gd")
+const TYPE_BALANCE = preload("res://scripts/data/type_balance_db.gd")
 
 var battle_mode_id: String = MODES.MODE_STANDARD
 var player_stability: int = 0
@@ -50,6 +51,7 @@ func _refresh_rpg_identity() -> void:
 	enemy_data = _normalize_creature_moves(enemy_data)
 	player_passive_id = PASSIVES.default_for_creature(player_data)
 	enemy_passive_id = PASSIVES.default_for_creature(enemy_data)
+	_sync_type_markers()
 
 func _normalize_creature_moves(data: Dictionary) -> Dictionary:
 	if data.is_empty():
@@ -69,16 +71,30 @@ func _load_active_member() -> void:
 	super._load_active_member()
 	player_data = _normalize_creature_moves(player_data)
 	player_passive_id = PASSIVES.default_for_creature(player_data)
+	_sync_type_markers()
+
+func _sync_type_markers() -> void:
+	if not player_data.is_empty():
+		player_statuses["__type"] = TYPE_BALANCE.primary_type(player_data)
+	if not enemy_data.is_empty():
+		enemy_statuses["__type"] = TYPE_BALANCE.primary_type(enemy_data)
 
 func _draw_background() -> void:
 	super._draw_background()
 	var mode_name: String = MODES.name(battle_mode_id)
 	draw_string(font, Vector2(205, 27), mode_name, HORIZONTAL_ALIGNMENT_RIGHT, 137, 7, Color("d5c76b"))
+	var player_type: String = str(player_statuses.get("__type", ""))
+	var enemy_type: String = str(enemy_statuses.get("__type", ""))
+	if not player_type.is_empty():
+		draw_string(font, Vector2(18, 70), "TYP %s" % player_type, HORIZONTAL_ALIGNMENT_LEFT, 145, 6, Color("80c8c1"))
+	if not enemy_type.is_empty():
+		draw_string(font, Vector2(198, 144), "TYP %s" % enemy_type, HORIZONTAL_ALIGNMENT_RIGHT, 145, 6, Color("d8ad87"))
 	if MODES.uses_stability(battle_mode_id):
 		draw_string(font, Vector2(18, 58), "STABILNOŚĆ %d/%d" % [player_stability, player_stability_max], HORIZONTAL_ALIGNMENT_LEFT, 152, 7, Color("7fe0d7"))
 		draw_string(font, Vector2(190, 132), "PRZECIWNIK %d/%d" % [enemy_trainer_stability, enemy_trainer_stability_max], HORIZONTAL_ALIGNMENT_RIGHT, 152, 7, Color("e0b77f"))
 
 func _execute_pending_move(lines: Array[String]) -> void:
+	_sync_type_markers()
 	player_data = _normalize_creature_moves(player_data)
 	var moves: Array = player_data.get("moves", []) as Array
 	var move_data: Dictionary = {}
@@ -97,6 +113,9 @@ func _execute_pending_move(lines: Array[String]) -> void:
 	if move_data.is_empty() or enemy_hp >= before_enemy_hp:
 		return
 	var move_type: String = str(move_data.get("move_type", "PHYSICAL"))
+	var type_text: String = RULES.type_label(move_type, enemy_statuses)
+	if not type_text.is_empty():
+		lines.append("%s · ×%.2f" % [type_text, RULES.type_multiplier(move_type, enemy_statuses)])
 	var reaction: Dictionary = RPG_STATUS.resolve_reaction(move_type, enemy_statuses)
 	if not reaction.is_empty():
 		var label: String = str(reaction.get("label", "REAKCJA"))
@@ -110,6 +129,7 @@ func _execute_pending_move(lines: Array[String]) -> void:
 func _enemy_turn(lines: Array[String]) -> void:
 	if enemy_hp <= 0:
 		return
+	_sync_type_markers()
 	enemy_data = _normalize_creature_moves(enemy_data)
 	enemy_passive_id = PASSIVES.default_for_creature(enemy_data)
 	var predicted: Dictionary = _predict_enemy_move()
@@ -125,6 +145,9 @@ func _enemy_turn(lines: Array[String]) -> void:
 		var move_data: Dictionary = predicted
 		if not move_data.is_empty():
 			var move_type: String = str(move_data.get("move_type", "PHYSICAL"))
+			var type_text: String = RULES.type_label(move_type, player_statuses)
+			if not type_text.is_empty():
+				lines.append("%s PRZECIWNIKA · ×%.2f" % [type_text, RULES.type_multiplier(move_type, player_statuses)])
 			var reaction: Dictionary = RPG_STATUS.resolve_reaction(move_type, player_statuses)
 			if not reaction.is_empty():
 				lines.append("REAKCJA PRZECIWNIKA: %s" % str(reaction.get("label", "REAKCJA")))
@@ -141,6 +164,7 @@ func _predict_enemy_move() -> Dictionary:
 
 func _end_round(lines: Array[String]) -> void:
 	super._end_round(lines)
+	_sync_type_markers()
 	if battle_done:
 		return
 	var passive_heal: int = PASSIVES.round_heal(player_passive_id, player_max_hp, player_statuses)
