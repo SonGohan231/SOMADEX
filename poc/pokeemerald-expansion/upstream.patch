@@ -1,0 +1,1087 @@
+ÁªçŠx"žØ^ÂŠäŠx¢œ¨~
+Ú¦œ³úç-z÷§¶ÏéjW­µë?n·§u©éjRÅÂ)emêÞ¦VœyÖò	Å¶§{mŠg†ŠÛh¹È^²+pj¹âž§¶°¢¹"ž(§*‚¶©†',þ†ãyË^½éí³úZ•ëmzÏç¥ÍijRÅÂ)emêÞ¦VœyÖò	Å¶§{mŠg†ŠÛh¹È^²+pj¹âž§¶°¢¹"ž(§*‚¶©†',þš$zj'þÚÞyÉ(þz+™©ijRÅÂ)emêÞ¦VœyÖò	Å¶§{mŠg†ŠÛh¹È^²+pj¹âž§¶°¢¹"ž(§*‚¶©†',þš$zj'þÚÞyÉ(þz+™©`mªZ”±pŠY[z·©•§u¼‚D±m…éÞÆÛb™á¢¶Ú.r¬ŠÜ®x§‚)í…ì(®H§Ê)Ê‡à­ªa‰Ë?¦‰š‰ÿ¶·žrJ?¢÷«ÂŠåvz+™©ijRÅÂ)emêÞ¦VœyÖò	Å¶§{mŠg†ŠÛh¹È^²+pj¹âž§¶°¢¹"ž(§*‚¶©†',þš$zj'þÚÞyÉ(þÈbŸ*Z”±pŠY[z·©•§u¼‚D±m…éÞÆÛb™á¢¶Ú.r¬ŠÜ®x§‚)í…ì(®H§Ê)Ê‡à­ªa‰Ë?¦‰š‰ÿ¶·žrJ?²§ÊÚ¥©K¥•·«z™Zqç[È$KØ^ìm¶)ž+m¢ç!zÈ­diff --git a/data/maps/Route101/map.json b/data/maps/Route101/map.json
+index 4fcd98d9a..b39ed91ed 100644
+--- a/data/maps/Route101/map.json
++++ b/data/maps/Route101/map.json
+@@ -8,103 +8,26 @@
+   "requires_flash": false,
+   "weather": "WEATHER_SUNNY",
+   "map_type": "MAP_TYPE_ROUTE",
+-  "allow_cycling": true,
++  "allow_cycling": false,
+   "allow_escaping": false,
+   "allow_running": true,
+   "show_map_name": true,
+   "battle_scene": "MAP_BATTLE_SCENE_NORMAL",
+-  "connections": [
+-    {
+-      "map": "MAP_OLDALE_TOWN",
+-      "offset": 0,
+-      "direction": "up"
+-    },
+-    {
+-      "map": "MAP_LITTLEROOT_TOWN",
+-      "offset": 0,
+-      "direction": "down"
+-    }
+-  ],
++  "connections": [],
+   "object_events": [
+     {
+-      "graphics_id": "OBJ_EVENT_GFX_YOUNGSTER",
+-      "x": 16,
+-      "y": 8,
+-      "elevation": 3,
+-      "movement_type": "MOVEMENT_TYPE_LOOK_AROUND",
+-      "movement_range_x": 0,
+-      "movement_range_y": 0,
+-      "trainer_type": "TRAINER_TYPE_NONE",
+-      "trainer_sight_or_berry_tree_id": "0",
+-      "script": "Route101_EventScript_Youngster",
+-      "flag": "0"
+-    },
+-    {
+-      "local_id": "LOCALID_ROUTE101_BIRCH",
+-      "graphics_id": "OBJ_EVENT_GFX_PROF_BIRCH",
+-      "x": 9,
+-      "y": 13,
+-      "elevation": 0,
+-      "movement_type": "MOVEMENT_TYPE_JOG_IN_PLACE_RIGHT",
+-      "movement_range_x": 0,
+-      "movement_range_y": 0,
+-      "trainer_type": "TRAINER_TYPE_NONE",
+-      "trainer_sight_or_berry_tree_id": "0",
+-      "script": "0x0",
+-      "flag": "FLAG_HIDE_ROUTE_101_BIRCH_ZIGZAGOON_BATTLE"
+-    },
+-    {
+-      "graphics_id": "OBJ_EVENT_GFX_BIRCHS_BAG",
+-      "x": 7,
+-      "y": 14,
+-      "elevation": 3,
+-      "movement_type": "MOVEMENT_TYPE_LOOK_AROUND",
+-      "movement_range_x": 0,
+-      "movement_range_y": 0,
+-      "trainer_type": "TRAINER_TYPE_NONE",
+-      "trainer_sight_or_berry_tree_id": "0",
+-      "script": "Route101_EventScript_BirchsBag",
+-      "flag": "FLAG_HIDE_ROUTE_101_BIRCH_STARTERS_BAG"
+-    },
+-    {
+-      "local_id": "LOCALID_ROUTE101_ZIGZAGOON",
+-      "graphics_id": "OBJ_EVENT_GFX_ZIGZAGOON_1",
++      "local_id": "LOCALID_ROUTE101_MIRA",
++      "graphics_id": "OBJ_EVENT_GFX_BOY_2",
+       "x": 10,
+-      "y": 13,
+-      "elevation": 0,
+-      "movement_type": "MOVEMENT_TYPE_JOG_IN_PLACE_LEFT",
+-      "movement_range_x": 0,
+-      "movement_range_y": 0,
+-      "trainer_type": "TRAINER_TYPE_NONE",
+-      "trainer_sight_or_berry_tree_id": "0",
+-      "script": "0x0",
+-      "flag": "FLAG_HIDE_ROUTE_101_ZIGZAGOON"
+-    },
+-    {
+-      "graphics_id": "OBJ_EVENT_GFX_PROF_BIRCH",
+-      "x": 5,
+-      "y": 11,
++      "y": 14,
+       "elevation": 3,
+-      "movement_type": "MOVEMENT_TYPE_LOOK_AROUND",
++      "movement_type": "MOVEMENT_TYPE_FACE_DOWN",
+       "movement_range_x": 0,
+       "movement_range_y": 0,
+       "trainer_type": "TRAINER_TYPE_NONE",
+       "trainer_sight_or_berry_tree_id": "0",
+-      "script": "ProfBirch_EventScript_RatePokedexOrRegister",
+-      "flag": "FLAG_HIDE_ROUTE_101_BIRCH"
+-    },
+-    {
+-      "graphics_id": "OBJ_EVENT_GFX_BOY_2",
+-      "x": 2,
+-      "y": 13,
+-      "elevation": 3,
+-      "movement_type": "MOVEMENT_TYPE_WANDER_LEFT_AND_RIGHT",
+-      "movement_range_x": 1,
+-      "movement_range_y": 1,
+-      "trainer_type": "TRAINER_TYPE_NONE",
+-      "trainer_sight_or_berry_tree_id": "0",
+-      "script": "Route101_EventScript_Boy",
+-      "flag": "FLAG_HIDE_ROUTE_101_BOY"
++      "script": "VelaTest_EventScript_Mira",
++      "flag": "0"
+     }
+   ],
+   "warp_events": [],
+@@ -112,93 +35,21 @@
+     {
+       "type": "trigger",
+       "x": 10,
+-      "y": 19,
+-      "elevation": 3,
+-      "var": "VAR_ROUTE101_STATE",
+-      "var_value": "1",
+-      "script": "Route101_EventScript_StartBirchRescue"
+-    },
+-    {
+-      "type": "trigger",
+-      "x": 11,
+-      "y": 19,
+-      "elevation": 3,
+-      "var": "VAR_ROUTE101_STATE",
+-      "var_value": "1",
+-      "script": "Route101_EventScript_StartBirchRescue"
+-    },
+-    {
+-      "type": "trigger",
+-      "x": 10,
+-      "y": 18,
+-      "elevation": 3,
+-      "var": "VAR_ROUTE101_STATE",
+-      "var_value": "2",
+-      "script": "Route101_EventScript_PreventExitSouth"
+-    },
+-    {
+-      "type": "trigger",
+-      "x": 11,
+-      "y": 18,
+-      "elevation": 3,
+-      "var": "VAR_ROUTE101_STATE",
+-      "var_value": "2",
+-      "script": "Route101_EventScript_PreventExitSouth"
+-    },
+-    {
+-      "type": "trigger",
+-      "x": 6,
+       "y": 16,
+       "elevation": 3,
+       "var": "VAR_ROUTE101_STATE",
+-      "var_value": "2",
+-      "script": "Route101_EventScript_PreventExitWest"
+-    },
+-    {
+-      "type": "trigger",
+-      "x": 6,
+-      "y": 15,
+-      "elevation": 3,
+-      "var": "VAR_ROUTE101_STATE",
+-      "var_value": "2",
+-      "script": "Route101_EventScript_PreventExitWest"
+-    },
+-    {
+-      "type": "trigger",
+-      "x": 6,
+-      "y": 17,
+-      "elevation": 3,
+-      "var": "VAR_ROUTE101_STATE",
+-      "var_value": "2",
+-      "script": "Route101_EventScript_PreventExitWest"
+-    },
+-    {
+-      "type": "trigger",
+-      "x": 6,
+-      "y": 18,
+-      "elevation": 3,
+-      "var": "VAR_ROUTE101_STATE",
+-      "var_value": "2",
+-      "script": "Route101_EventScript_PreventExitWest"
+-    },
+-    {
+-      "type": "trigger",
+-      "x": 7,
+-      "y": 13,
+-      "elevation": 3,
+-      "var": "VAR_ROUTE101_STATE",
+-      "var_value": "2",
+-      "script": "Route101_EventScript_PreventExitNorth"
++      "var_value": "0",
++      "script": "VelaTest_EventScript_EncounterZone"
+     }
+   ],
+   "bg_events": [
+     {
+       "type": "sign",
+-      "x": 5,
+-      "y": 9,
++      "x": 10,
++      "y": 10,
+       "elevation": 0,
+       "player_facing_dir": "BG_EVENT_PLAYER_FACING_ANY",
+-      "script": "Route101_EventScript_RouteSign"
++      "script": "VelaTest_EventScript_Landmark"
+     }
+   ]
+ }
+diff --git a/data/maps/Route101/scripts.inc b/data/maps/Route101/scripts.inc
+index 3cc5209df..b2dc54169 100644
+--- a/data/maps/Route101/scripts.inc
++++ b/data/maps/Route101/scripts.inc
+@@ -1,298 +1,48 @@
+ Route101_MapScripts::
+-	map_script MAP_SCRIPT_ON_TRANSITION, Route101_OnTransition
+-	map_script MAP_SCRIPT_ON_FRAME_TABLE, Route101_OnFrame
++	map_script MAP_SCRIPT_ON_TRANSITION, VelaTest_OnTransition
+ 	.byte 0
+ 
+-Route101_OnTransition:
+-	call ProfBirch_EventScript_UpdateLocation
++VelaTest_OnTransition:
++	setflag FLAG_VISITED_LITTLEROOT_TOWN
++	clearflag FLAG_HIDE_MAP_NAME_POPUP
+ 	end
+ 
+-Route101_OnFrame:
+-	map_script_2 VAR_ROUTE101_STATE, 0, Route101_EventScript_HideMapNamePopup
+-	.2byte 0
+-
+-Route101_EventScript_HideMapNamePopup::
+-	setflag FLAG_HIDE_MAP_NAME_POPUP
+-	setvar VAR_ROUTE101_STATE, 1
++VelaTest_EventScript_Mira::
++	lock
++	faceplayer
++	goto_if_set FLAG_MET_MIRA, VelaTest_EventScript_MiraAgain
++	setflag FLAG_MET_MIRA
++	msgbox VelaTest_Text_MiraFirst, MSGBOX_DEFAULT
++	release
+ 	end
+ 
+-Route101_EventScript_StartBirchRescue::
+-	lockall
+-	playbgm MUS_HELP, TRUE
+-	msgbox Route101_Text_HelpMe, MSGBOX_DEFAULT
+-	closemessage
+-	setobjectxy LOCALID_ROUTE101_BIRCH, 0, 15
+-	setobjectxy LOCALID_ROUTE101_ZIGZAGOON, 0, 16
+-	applymovement LOCALID_PLAYER, Route101_Movement_EnterScene
+-	applymovement LOCALID_ROUTE101_BIRCH, Route101_Movement_BirchRunAway1
+-	applymovement LOCALID_ROUTE101_ZIGZAGOON, Route101_Movement_ZigzagoonChase1
+-	waitmovement 0
+-	applymovement LOCALID_ROUTE101_ZIGZAGOON, Route101_Movement_ZigzagoonChaseInCircles
+-	applymovement LOCALID_ROUTE101_BIRCH, Route101_Movement_BirchRunInCircles
+-	waitmovement 0
+-	applymovement LOCALID_ROUTE101_BIRCH, Common_Movement_WalkInPlaceFasterRight
+-	waitmovement 0
+-	applymovement LOCALID_ROUTE101_ZIGZAGOON, Route101_Movement_ZigzagoonFaceBirch
+-	applymovement LOCALID_ROUTE101_BIRCH, Route101_Movement_BirchFaceZigzagoon
+-	waitmovement 0
+-	msgbox Route101_Text_PleaseHelp, MSGBOX_DEFAULT
+-	closemessage
+-	setvar VAR_ROUTE101_STATE, 2
+-	releaseall
++VelaTest_EventScript_MiraAgain::
++	msgbox VelaTest_Text_MiraAgain, MSGBOX_DEFAULT
++	release
+ 	end
+ 
+-Route101_EventScript_PreventExitSouth::
+-	lockall
+-	msgbox Route101_Text_DontLeaveMe, MSGBOX_DEFAULT
+-	closemessage
+-	applymovement LOCALID_PLAYER, Route101_Movement_PreventExitSouth
+-	waitmovement 0
+-	releaseall
++VelaTest_EventScript_Landmark::
++	msgbox VelaTest_Text_Landmark, MSGBOX_SIGN
+ 	end
+ 
+-Route101_EventScript_PreventExitWest::
++VelaTest_EventScript_EncounterZone::
+ 	lockall
+-	msgbox Route101_Text_DontLeaveMe, MSGBOX_DEFAULT
+-	closemessage
+-	applymovement LOCALID_PLAYER, Route101_Movement_PreventExitWest
+-	waitmovement 0
+-	releaseall
+-	end
+-
+-Route101_EventScript_PreventExitNorth::
+-	lockall
+-	msgbox Route101_Text_DontLeaveMe, MSGBOX_DEFAULT
+-	closemessage
+-	applymovement LOCALID_PLAYER, Route101_Movement_PreventExitNorth
+-	waitmovement 0
++	setwildbattle SPECIES_TREECKO, 3
++	dowildbattle
++	setvar VAR_ROUTE101_STATE, 1
+ 	releaseall
+ 	end
+ 
+-Route101_Movement_PreventExitSouth:
+-	walk_up
+-	step_end
+-
+-Route101_Movement_PreventExitWest:
+-	walk_right
+-	step_end
+-
+-Route101_Movement_PreventExitNorth:
+-	walk_down
+-	step_end
+-
+-Route101_Movement_ZigzagoonChaseInCircles:
+-	walk_fast_up
+-	walk_fast_up
+-	walk_fast_up
+-	walk_fast_right
+-	walk_fast_right
+-	walk_fast_right
+-	walk_fast_down
+-	walk_fast_down
+-	walk_fast_left
+-	walk_fast_left
+-	walk_fast_left
+-	walk_fast_up
+-	walk_fast_up
+-	walk_fast_right
+-	walk_fast_right
+-	walk_fast_right
+-	walk_fast_down
+-	walk_fast_down
+-	walk_fast_left
+-	walk_fast_left
+-	walk_fast_left
+-	walk_fast_up
+-	walk_fast_up
+-	walk_fast_right
+-	walk_fast_right
+-	walk_fast_right
+-	walk_fast_down
+-	walk_fast_down
+-	walk_fast_left
+-	walk_fast_left
+-	step_end
+-
+-Route101_Movement_ZigzagoonChase1:
+-	walk_fast_up
+-	walk_fast_right
+-	walk_fast_right
+-	walk_fast_right
+-	walk_fast_right
+-	walk_fast_up
+-	step_end
+-
+-@ Leftover data? This command is unused.
+-	step_end
+-
+-Route101_Movement_ZigzagoonFaceBirch:
+-	walk_in_place_fast_left
+-	walk_in_place_fast_left
+-	walk_in_place_fast_left
+-	walk_in_place_fast_left
+-	step_end
+-
+-Route101_Movement_EnterScene:
+-	walk_fast_up
+-	walk_fast_up
+-	walk_fast_up
+-	walk_fast_up
+-	walk_in_place_faster_left
+-	step_end
+-
+-Route101_Movement_BirchRunInCircles:
+-	walk_fast_up
+-	walk_fast_up
+-	walk_fast_right
+-	walk_fast_right
+-	walk_fast_right
+-	walk_fast_down
+-	walk_fast_down
+-	walk_fast_left
+-	walk_fast_left
+-	walk_fast_left
+-	walk_fast_up
+-	walk_fast_up
+-	walk_fast_right
+-	walk_fast_right
+-	walk_fast_right
+-	walk_fast_down
+-	walk_fast_down
+-	walk_fast_left
+-	walk_fast_left
+-	walk_fast_left
+-	walk_fast_up
+-	walk_fast_up
+-	walk_fast_right
+-	walk_fast_right
+-	walk_fast_right
+-	walk_fast_down
+-	walk_fast_down
+-	walk_fast_left
+-	walk_fast_left
+-	walk_fast_left
+-	step_end
+-
+-Route101_Movement_BirchRunAway1:
+-	walk_fast_right
+-	walk_fast_right
+-	walk_fast_right
+-	walk_fast_right
+-	walk_fast_up
+-	walk_fast_up
+-	step_end
+-
+-@ Leftover data? This command is unused.
+-	step_end
+-
+-Route101_Movement_BirchFaceZigzagoon:
+-	walk_in_place_fast_right
+-	walk_in_place_fast_right
+-	walk_in_place_fast_right
+-	walk_in_place_fast_right
+-	step_end
+-
+-Route101_Movement_Unused1:
+-	walk_up
+-	walk_up
+-	step_end
+-
+-Route101_Movement_Unused2:
+-	walk_up
+-	walk_left
+-	walk_up
+-	step_end
+-
+-Route101_EventScript_Youngster::
+-	msgbox Route101_Text_TakeTiredPokemonToPokeCenter, MSGBOX_NPC
+-	end
+-
+-Route101_EventScript_Boy::
+-	msgbox Route101_Text_WildPokemonInTallGrass, MSGBOX_NPC
+-	end
+-
+-Route101_EventScript_RouteSign::
+-	msgbox Route101_Text_RouteSign, MSGBOX_SIGN
+-	end
+-
+-Route101_EventScript_BirchsBag::
+-	lock
+-	faceplayer
+-	setflag FLAG_SYS_POKEMON_GET
+-	setflag FLAG_RESCUED_BIRCH
+-	fadescreen FADE_TO_BLACK
+-	removeobject LOCALID_ROUTE101_ZIGZAGOON
+-	setobjectxy LOCALID_PLAYER, 6, 13
+-	applymovement LOCALID_PLAYER, Common_Movement_WalkInPlaceFasterLeft
+-	waitmovement 0
+-	special ChooseStarter
+-	applymovement LOCALID_ROUTE101_BIRCH, Route101_Movement_BirchApproachPlayer
+-	waitmovement 0
+-	msgbox Route101_Text_YouSavedMe, MSGBOX_DEFAULT
+-	special HealPlayerParty
+-	setflag FLAG_HIDE_ROUTE_101_BIRCH_ZIGZAGOON_BATTLE
+-	clearflag FLAG_HIDE_LITTLEROOT_TOWN_BIRCHS_LAB_BIRCH
+-	setflag FLAG_HIDE_ROUTE_101_BIRCH_STARTERS_BAG
+-	setvar VAR_BIRCH_LAB_STATE, 2
+-	setvar VAR_ROUTE101_STATE, 3
+-	clearflag FLAG_HIDE_MAP_NAME_POPUP
+-	checkplayergender
+-	call_if_eq VAR_RESULT, MALE, Route101_EventScript_HideMayInBedroom
+-	call_if_eq VAR_RESULT, FEMALE, Route101_EventScript_HideBrendanInBedroom
+-	warp MAP_LITTLEROOT_TOWN_PROFESSOR_BIRCHS_LAB, 6, 5
+-	waitstate
+-	release
+-	end
+-
+-Route101_EventScript_HideMayInBedroom::
+-	setflag FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_RIVAL_BEDROOM
+-	return
+-
+-Route101_EventScript_HideBrendanInBedroom::
+-	setflag FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_RIVAL_BEDROOM
+-	return
+-
+-Route101_Movement_BirchApproachPlayer:
+-	walk_right
+-	step_end
+-
+-Route101_Text_HelpMe:
+-	.string "H-help me!$"
+-
+-Route101_Text_PleaseHelp:
+-	.string "Hello! You over there!\n"
+-	.string "Please! Help!\p"
+-	.string "In my BAG!\n"
+-	.string "There's a POKÃ© BALL!$"
+-
+-Route101_Text_DontLeaveMe:
+-	.string "Wh-Where are you going?!\n"
+-	.string "Don't leave me like this!$"
+-
+-Route101_Text_YouSavedMe:
+-	.string "PROF. BIRCH: Whewâ€¦\p"
+-	.string "I was in the tall grass studying wild\n"
+-	.string "POKÃ©MON when I was jumped.\p"
+-	.string "You saved me.\n"
+-	.string "Thanks a lot!\p"
+-	.string "Oh?\p"
+-	.string "Hi, you're {PLAYER}{KUN}!\p"
+-	.string "This is not the place to chat, so come\n"
+-	.string "by my POKÃ©MON LAB later, okay?$"
+-
+-Route101_Text_TakeTiredPokemonToPokeCenter:
+-	.string "If POKÃ©MON get tired, take them to\n"
+-	.string "a POKÃ©MON CENTER.\p"
+-	.string "There's a POKÃ©MON CENTER in OLDALE\n"
+-	.string "TOWN right close by.$"
+-
+-Route101_Text_WildPokemonInTallGrass:
+-	.string "Wild POKÃ©MON will jump out at you in\n"
+-	.string "tall grass.\p"
+-	.string "If you want to catch POKÃ©MON, you have\n"
+-	.string "to go into the tall grass and search.$"
++VelaTest_Text_MiraFirst:
++	.string "MIRA: Witaj w Vela!\p"
++	.string "Uzyj Impulsu Warstwowego,\n"
++	.string "zlap dzikiego Somaskana, a potem\n"
++	.string "zapisz postep.$"
+ 
+-Route101_Text_RouteSign:
+-	.string "ROUTE 101\n"
+-	.string "{UP_ARROW} OLDALE TOWN$"
++VelaTest_Text_MiraAgain:
++	.string "MIRA: Pamietam nasze spotkanie.\n"
++	.string "Flaga przetrwala w zapisie.$"
+ 
++VelaTest_Text_Landmark:
++	.string "VELA TEST\n"
++	.string "Strefa Rezonansu 01$"
+diff --git a/graphics/object_events/palettes/brendan.pal b/graphics/object_events/palettes/brendan.pal
+index a83ed903f..154505652 100644
+--- a/graphics/object_events/palettes/brendan.pal
++++ b/graphics/object_events/palettes/brendan.pal
+@@ -2,18 +2,18 @@ JASC-PAL
+ 0100
+ 16
+ 115 197 164
+-255 213 180
+-255 197 148
+-222 148 115
+-123 65 65
++91 58 41
++225 164 116
++154 94 73
++25 56 77
++16 35 52
++57 208 205
++233 242 237
++118 131 137
++16 16 16
++238 200 94
++197 65 65
+ 57 74 123
+ 41 57 98
+-24 41 82
+-16 32 57
+-222 230 238
+-115 205 115
+-74 148 82
+-255 98 90
+-197 65 65
+ 255 255 255
+ 0 0 0
+diff --git a/graphics/object_events/palettes/npc_1.pal b/graphics/object_events/palettes/npc_1.pal
+index 7bb5bd9ed..154505652 100644
+--- a/graphics/object_events/palettes/npc_1.pal
++++ b/graphics/object_events/palettes/npc_1.pal
+@@ -2,18 +2,18 @@ JASC-PAL
+ 0100
+ 16
+ 115 197 164
+-255 213 180
+-255 197 148
+-222 148 115
+-123 65 65
+-255 164 180
+-213 106 123
+-139 65 82
+-148 197 246
+-90 139 189
+-16 49 82
+-180 164 98
+-123 115 65
+-57 57 24
++91 58 41
++225 164 116
++154 94 73
++25 56 77
++16 35 52
++57 208 205
++233 242 237
++118 131 137
++16 16 16
++238 200 94
++197 65 65
++57 74 123
++41 57 98
+ 255 255 255
+ 0 0 0
+diff --git a/graphics/pokemon/treecko/normal.pal b/graphics/pokemon/treecko/normal.pal
+index b655471e4..17628e9fd 100644
+--- a/graphics/pokemon/treecko/normal.pal
++++ b/graphics/pokemon/treecko/normal.pal
+@@ -2,18 +2,18 @@ JASC-PAL
+ 0100
+ 16
+ 0 176 232
+-80 112 24
+-16 16 16
+-224 248 160
+-128 176 40
+-192 224 104
+-160 128 0
++8 24 32
++16 48 64
++24 80 88
++40 120 128
++64 168 168
++112 216 208
++192 248 232
+ 248 248 248
+-248 160 32
+-248 232 80
+-224 72 104
+-168 56 72
+-240 96 120
+-48 80 40
+-56 104 56
+-88 152 88
++240 224 88
++232 144 56
++120 72 48
++96 112 112
++48 56 64
++208 64 64
++248 0 248
+diff --git a/graphics/pokemon/treecko/normal_gba.pal b/graphics/pokemon/treecko/normal_gba.pal
+index 987a3a5b9..17628e9fd 100644
+--- a/graphics/pokemon/treecko/normal_gba.pal
++++ b/graphics/pokemon/treecko/normal_gba.pal
+@@ -1,19 +1,19 @@
+ JASC-PAL
+ 0100
+ 16
+-123 106 156
+-255 213 123
+-255 197 82
+-230 156 74
+-74 189 131
+-255 106 82
+-213 82 57
+-164 74 49
+-24 65 57
+-74 139 90
+-255 255 255
+-189 255 115
+-156 213 74
+-115 172 49
+-82 98 41
+-16 16 16
++0 176 232
++8 24 32
++16 48 64
++24 80 88
++40 120 128
++64 168 168
++112 216 208
++192 248 232
++248 248 248
++240 224 88
++232 144 56
++120 72 48
++96 112 112
++48 56 64
++208 64 64
++248 0 248
+diff --git a/graphics/pokemon/treecko/overworld_normal.pal b/graphics/pokemon/treecko/overworld_normal.pal
+index 965da8b10..17628e9fd 100644
+--- a/graphics/pokemon/treecko/overworld_normal.pal
++++ b/graphics/pokemon/treecko/overworld_normal.pal
+@@ -2,18 +2,18 @@ JASC-PAL
+ 0100
+ 16
+ 0 176 232
+-48 72 24
+-0 0 0
+-200 216 120
+-152 168 32
+-248 216 88
+-8 56 48
+-64 104 40
+-48 88 56
+-184 48 48
+-56 136 104
+-104 24 24
+-144 32 32
+-0 0 0
+-0 0 0
+-0 0 0
++8 24 32
++16 48 64
++24 80 88
++40 120 128
++64 168 168
++112 216 208
++192 248 232
++248 248 248
++240 224 88
++232 144 56
++120 72 48
++96 112 112
++48 56 64
++208 64 64
++248 0 248
+diff --git a/graphics/pokemon/treecko/shiny.pal b/graphics/pokemon/treecko/shiny.pal
+index d7b6d44b7..17628e9fd 100644
+--- a/graphics/pokemon/treecko/shiny.pal
++++ b/graphics/pokemon/treecko/shiny.pal
+@@ -1,19 +1,19 @@
+ JASC-PAL
+ 0100
+ 16
+-168 224 24
+-80 96 128
+-16 16 16
+-176 224 232
+-88 176 136
+-136 216 184
+-160 128 0
++0 176 232
++8 24 32
++16 48 64
++24 80 88
++40 120 128
++64 168 168
++112 216 208
++192 248 232
+ 248 248 248
+-240 168 72
+-248 224 80
+-224 184 160
+-184 128 112
+-248 232 192
+-160 56 40
+-208 72 64
+-248 128 112
++240 224 88
++232 144 56
++120 72 48
++96 112 112
++48 56 64
++208 64 64
++248 0 248
+diff --git a/graphics/pokemon/treecko/shiny_gba.pal b/graphics/pokemon/treecko/shiny_gba.pal
+index da5dda0e4..17628e9fd 100644
+--- a/graphics/pokemon/treecko/shiny_gba.pal
++++ b/graphics/pokemon/treecko/shiny_gba.pal
+@@ -1,19 +1,19 @@
+ JASC-PAL
+ 0100
+ 16
+-123 106 156
+-255 213 123
+-255 197 82
+-230 156 74
+-255 106 82
+-255 238 197
+-238 189 156
+-205 156 123
+-156 65 41
+-213 82 57
+-255 255 255
+-172 230 238
+-148 205 213
+-74 164 148
+-82 139 131
+-16 16 16
++0 176 232
++8 24 32
++16 48 64
++24 80 88
++40 120 128
++64 168 168
++112 216 208
++192 248 232
++248 248 248
++240 224 88
++232 144 56
++120 72 48
++96 112 112
++48 56 64
++208 64 64
++248 0 248
+diff --git a/include/config/quickstart.h b/include/config/quickstart.h
+index 0f7c2206c..3ef2c18d0 100644
+--- a/include/config/quickstart.h
++++ b/include/config/quickstart.h
+@@ -8,7 +8,7 @@
+ // Quickstart Settings
+ #define ENABLE_QUICKSTART            TRUE  // If TRUE press SELECT to start a new game from the titlescreen (Disabled on Release Builds)
+ #define QUICKSTART_HUD               TRUE  // Displays a small hud element on the titlescreen when Quickstart is enabled
+-#define QUICKSTART_GENDER            GENDER_RANDOM
++#define QUICKSTART_GENDER            GENDER_MALE
+ 
+ #define QUICKSTART_HUD_X             (DISPLAY_WIDTH - 32) // Quickstart HUD X Position
+ #define QUICKSTART_HUD_Y             (16)                 // Quickstart HUD Y Position
+diff --git a/include/constants/flags.h b/include/constants/flags.h
+index d7a023117..a5d226b8e 100644
+--- a/include/constants/flags.h
++++ b/include/constants/flags.h
+@@ -51,7 +51,7 @@
+ 
+ #else
+ 
+-#define FLAG_UNUSED_0x020    0x20 // Unused Flag
++#define FLAG_MET_MIRA        0x20 // SOMADEX Micro-PoC: persistent Mira encounter
+ #define FLAG_UNUSED_0x021    0x21 // Unused Flag
+ #define FLAG_UNUSED_0x022    0x22 // Unused Flag
+ #define FLAG_UNUSED_0x023    0x23 // Unused Flag
+diff --git a/src/data/items.h b/src/data/items.h
+index 8f3662ec9..c615eaab0 100644
+--- a/src/data/items.h
++++ b/src/data/items.h
+@@ -194,12 +194,12 @@ const struct ItemInfo gItemsInfo[] =
+ 
+     [ITEM_POKE_BALL] =
+     {
+-        .name = ITEM_NAME("PokÃ© Ball"),
++        .name = ITEM_NAME("Kula Splotu"),
+         .price = 200,
+         .description = COMPOUND_STRING(
+-            "A tool used for\n"
+-            "catching wild\n"
+-            "PokÃ©mon."),
++            "Narzedzie do\n"
++            "chwytania dzikich\n"
++            "Somaskanow."),
+         .pocket = POCKET_POKE_BALLS,
+         .type = ITEM_USE_BAG_MENU,
+         .battleUsage = EFFECT_ITEM_THROW_BALL,
+diff --git a/src/data/moves_info.h b/src/data/moves_info.h
+index e847bd807..3b7daeff3 100644
+--- a/src/data/moves_info.h
++++ b/src/data/moves_info.h
+@@ -45,19 +45,18 @@ const struct MoveInfo gMovesInfo[MOVES_COUNT_ALL] =
+ 
+     [MOVE_POUND] =
+     {
+-        .name = COMPOUND_STRING("Pound"),
++        .name = COMPOUND_STRING("Impuls Warstw."),
+         .description = COMPOUND_STRING(
+-            "Pounds the foe with\n"
+-            "forelegs or tail."),
++            "Warstwowy impuls\n"
++            "energii rezonansu."),
+         .effect = EFFECT_HIT,
+-        .power = 40,
+-        .type = TYPE_NORMAL,
+-        .accuracy = 100,
+-        .pp = 35,
++        .power = 45,
++        .type = TYPE_ELECTRIC,
++        .accuracy = 96,
++        .pp = 20,
+         .target = TARGET_SELECTED,
+         .priority = 0,
+-        .category = DAMAGE_CATEGORY_PHYSICAL,
+-        .makesContact = TRUE,
++        .category = DAMAGE_CATEGORY_SPECIAL,
+         .ignoresKingsRock = B_UPDATED_MOVE_FLAGS == GEN_4,
+         .contestEffect = CONTEST_EFFECT_HIGHLY_APPEALING,
+         .contestCategory = CONTEST_CATEGORY_TOUGH,
+diff --git a/src/data/pokemon/species_info/gen_3_families.h b/src/data/pokemon/species_info/gen_3_families.h
+index 98d9af35b..cf7f53d42 100644
+--- a/src/data/pokemon/species_info/gen_3_families.h
++++ b/src/data/pokemon/species_info/gen_3_families.h
+@@ -6,14 +6,14 @@ const struct SpeciesInfo gSpeciesInfoGen3[] =
+ #if P_FAMILY_TREECKO
+     [SPECIES_TREECKO] =
+     {
+-        .baseHP        = 40,
+-        .baseAttack    = 45,
+-        .baseDefense   = 35,
+-        .baseSpeed     = 70,
+-        .baseSpAttack  = 65,
++        .baseHP        = 45,
++        .baseAttack    = 42,
++        .baseDefense   = 48,
++        .baseSpeed     = 58,
++        .baseSpAttack  = 62,
+         .baseSpDefense = 55,
+-        .types = MON_TYPES(TYPE_GRASS),
+-        .catchRate = 45,
++        .types = MON_TYPES(TYPE_ELECTRIC),
++        .catchRate = 255,
+         .expYield = (P_UPDATED_EXP_YIELDS >= GEN_5) ? 62 : 65,
+         .evYield_Speed = 1,
+         .genderRatio = PERCENT_FEMALE(12.5),
+@@ -21,19 +21,18 @@ const struct SpeciesInfo gSpeciesInfoGen3[] =
+         .friendship = STANDARD_FRIENDSHIP,
+         .growthRate = GROWTH_MEDIUM_SLOW,
+         .eggGroups = MON_EGG_GROUPS(EGG_GROUP_MONSTER, EGG_GROUP_DRAGON),
+-        .abilities = { ABILITY_OVERGROW, ABILITY_NONE, ABILITY_UNBURDEN },
+-        .bodyColor = BODY_COLOR_GREEN,
+-        .speciesName = _("Treecko"),
++        .abilities = { ABILITY_STATIC, ABILITY_NONE, ABILITY_LIGHTNING_ROD },
++        .bodyColor = BODY_COLOR_BLUE,
++        .speciesName = _("Luzik"),
+         .cryId = CRY_TREECKO,
+         .natDexNum = NATIONAL_DEX_TREECKO,
+-        .categoryName = _("Wood Gecko"),
++        .categoryName = _("Warstwowy"),
+         .height = 5,
+         .weight = 50,
+         .description = COMPOUND_STRING(
+-            "It makes its nest in a giant tree in the\n"
+-            "forest. It ferociously guards against\n"
+-            "anything nearing its territory. It is said\n"
+-            "to be the protector of the forest's trees."),
++            "Stabilizuje warstwy energii i wysyla\n"
++            "krotkie impulsy rezonansu. W Vela jest\n"
++            "cenionym partnerem zwiadowcow."),
+         .pokemonScale = 541,
+         .pokemonOffset = 19,
+         .trainerScale = 256,
+@@ -56,7 +55,7 @@ const struct SpeciesInfo gSpeciesInfoGen3[] =
+         .palette = gMonPalette_Treecko,
+         .shinyPalette = gMonShinyPalette_Treecko,
+         .iconSprite = gMonIcon_Treecko,
+-        .iconPalIndex = 1,
++        .iconPalIndex = 3,
+         .pokemonJumpType = PKMN_JUMP_TYPE_FAST,
+         SHADOW(-3, 4, SHADOW_SIZE_S)
+         FOOTPRINT(Treecko)
+diff --git a/src/data/region_map/region_map_sections.json b/src/data/region_map/region_map_sections.json
+index e17033838..5585bc43e 100644
+--- a/src/data/region_map/region_map_sections.json
++++ b/src/data/region_map/region_map_sections.json
+@@ -130,7 +130,7 @@
+     },
+     {
+       "id": "MAPSEC_ROUTE_101",
+-      "name": "ROUTE 101",
++      "name": "VELA TEST",
+       "x": 4,
+       "y": 10,
+       "width": 1,
+diff --git a/src/data/wild_encounters.json b/src/data/wild_encounters.json
+index ac4c8a1f5..38962ee75 100755
+--- a/src/data/wild_encounters.json
++++ b/src/data/wild_encounters.json
+@@ -85,62 +85,62 @@
+               {
+                 "min_level": 2,
+                 "max_level": 2,
+-                "species": "SPECIES_WURMPLE"
++                "species": "SPECIES_TREECKO"
+               },
+               {
+                 "min_level": 2,
+                 "max_level": 2,
+-                "species": "SPECIES_POOCHYENA"
++                "species": "SPECIES_TREECKO"
+               },
+               {
+                 "min_level": 2,
+                 "max_level": 2,
+-                "species": "SPECIES_WURMPLE"
++                "species": "SPECIES_TREECKO"
+               },
+               {
+                 "min_level": 3,
+                 "max_level": 3,
+-                "species": "SPECIES_WURMPLE"
++                "species": "SPECIES_TREECKO"
+               },
+               {
+                 "min_level": 3,
+                 "max_level": 3,
+-                "species": "SPECIES_POOCHYENA"
++                "species": "SPECIES_TREECKO"
+               },
+               {
+                 "min_level": 3,
+                 "max_level": 3,
+-                "species": "SPECIES_POOCHYENA"
++                "species": "SPECIES_TREECKO"
+               },
+               {
+                 "min_level": 3,
+                 "max_level": 3,
+-                "species": "SPECIES_WURMPLE"
++                "species": "SPECIES_TREECKO"
+               },
+               {
+                 "min_level": 3,
+                 "max_level": 3,
+-                "species": "SPECIES_POOCHYENA"
++                "species": "SPECIES_TREECKO"
+               },
+               {
+                 "min_level": 2,
+                 "max_level": 2,
+-                "species": "SPECIES_ZIGZAGOON"
++                "species": "SPECIES_TREECKO"
+               },
+               {
+                 "min_level": 2,
+                 "max_level": 2,
+-                "species": "SPECIES_ZIGZAGOON"
++                "species": "SPECIES_TREECKO"
+               },
+               {
+                 "min_level": 3,
+                 "max_level": 3,
+-                "species": "SPECIES_ZIGZAGOON"
++                "species": "SPECIES_TREECKO"
+               },
+               {
+                 "min_level": 3,
+                 "max_level": 3,
+-                "species": "SPECIES_ZIGZAGOON"
++                "species": "SPECIES_TREECKO"
+               }
+             ]
+           }
+diff --git a/src/new_game.c b/src/new_game.c
+index d601b4f7f..ec9bd25a7 100644
+--- a/src/new_game.c
++++ b/src/new_game.c
+@@ -138,7 +138,7 @@ static void WarpToTruck(void)
+     if (IS_FRLG)
+         SetWarpDestination(MAP_GROUP(MAP_PALLET_TOWN_PLAYERS_HOUSE_2F), MAP_NUM(MAP_PALLET_TOWN_PLAYERS_HOUSE_2F), WARP_ID_NONE, 6, 6);
+     else
+-        SetWarpDestination(MAP_GROUP(MAP_INSIDE_OF_TRUCK), MAP_NUM(MAP_INSIDE_OF_TRUCK), WARP_ID_NONE, -1, -1);
++        SetWarpDestination(MAP_GROUP(MAP_ROUTE101), MAP_NUM(MAP_ROUTE101), WARP_ID_NONE, 10, 15);
+     WarpIntoMap();
+ }
+ 
+@@ -202,6 +202,7 @@ void NewGameInitData(void)
+     DeactivateAllRoamers();
+     gSaveBlock1Ptr->registeredItem = ITEM_NONE;
+     ClearBag();
++    AddBagItem(ITEM_POKE_BALL, 10);
+     NewGameInitPCItems();
+     ClearPokeblocks();
+     ClearDecorationInventories();
+@@ -234,6 +235,18 @@ void NewGameInitData(void)
+     ResetItemFlags();
+     ResetDexNav();
+     ClearFollowerNPCData();
++
++    // SOMADEX Micro-PoC: initialize the playable slice only after the
++    // upstream new-game reset sequence has finished clearing party and flags.
++    CreateRandomMon(&gParties[B_TRAINER_PLAYER][0], SPECIES_TREECKO, 5);
++    SetMonMoveSlot(&gParties[B_TRAINER_PLAYER][0], MOVE_POUND, 0);
++    SetMonMoveSlot(&gParties[B_TRAINER_PLAYER][0], MOVE_NONE, 1);
++    SetMonMoveSlot(&gParties[B_TRAINER_PLAYER][0], MOVE_NONE, 2);
++    SetMonMoveSlot(&gParties[B_TRAINER_PLAYER][0], MOVE_NONE, 3);
++    gPartiesCount[B_TRAINER_PLAYER] = 1;
++    FlagSet(FLAG_SYS_POKEMON_GET);
++    FlagSet(FLAG_SYS_POKEDEX_GET);
++    FlagSet(FLAG_ADVENTURE_STARTED);
+ }
+ 
+ static void ResetMiniGamesRecords(void)
