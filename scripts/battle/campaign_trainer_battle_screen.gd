@@ -3,6 +3,7 @@ extends "res://scripts/battle/loadout_battle_screen.gd"
 const TRAINERS = preload("res://scripts/data/runtime_trainer_db.gd")
 const MONSTERS = preload("res://scripts/data/monster_db.gd")
 const BATTLE_MODES = preload("res://scripts/data/battle_mode_db.gd")
+const CAMPAIGN_BALANCE = preload("res://scripts/data/campaign_battle_balance.gd")
 
 var trainer_id: String = ""
 var trainer_name: String = "Trener"
@@ -44,6 +45,9 @@ func setup_trainer(
 		talent_levels,
 		loadout
 	)
+	var enemy_base_hp: int = int(enemy_data.get("max_hp", 20))
+	enemy_max_hp = CAMPAIGN_BALANCE.scaled_max_hp(enemy_base_hp, enemy_level)
+	enemy_hp = enemy_max_hp
 	set_battle_mode(TRAINERS.battle_mode(trainer_key))
 
 func _ready() -> void:
@@ -83,7 +87,7 @@ func _win(lines: Array[String]) -> void:
 		enemy_data = MONSTERS.get_monster(next_name)
 		enemy_level = maxi(1, int(entry.get("level", 3)))
 		var enemy_base_hp: int = int(enemy_data.get("max_hp", 20))
-		enemy_max_hp = enemy_base_hp + maxi(0, enemy_level - 3)
+		enemy_max_hp = CAMPAIGN_BALANCE.scaled_max_hp(enemy_base_hp, enemy_level)
 		enemy_hp = enemy_max_hp
 		enemy_statuses.clear()
 		enemy_guard = false
@@ -91,6 +95,11 @@ func _win(lines: Array[String]) -> void:
 		enemy_data = _normalize_creature_moves(enemy_data)
 		enemy_passive_id = PASSIVES.default_for_creature(enemy_data)
 		enemy_switched_this_turn = true
+		var focus_before: int = trainer_focus
+		trainer_focus = mini(trainer_focus_max, trainer_focus + CAMPAIGN_BALANCE.FOCUS_ON_ENEMY_KO)
+		var focus_gain: int = trainer_focus - focus_before
+		if focus_gain > 0:
+			lines.append("Pokonanie partnera rywala: +%d Focus." % focus_gain)
 		lines.append("%s wysyła %s Lv.%d!" % [trainer_name, next_name, enemy_level])
 		queue_redraw()
 		return
