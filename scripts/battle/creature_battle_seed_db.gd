@@ -1,52 +1,39 @@
 extends RefCounted
 
-# First production batch of transparent battle seeds. These are compact,
-# retro-pixel cutouts derived from the approved SOMADEX family artwork.
-# Runtime animation remains data-driven: a unique seed provides silhouette and
-# palette, while action timing/effects come from AnimatedBattleScreen. Full
-# authored strips can override this seed later without changing battle logic.
+# Compatibility adapter for the first authored Vela family. The canonical
+# creature seed source is creature_seed_atlas_db.gd; keeping a second embedded
+# Base64 copy here previously allowed the two sources to drift and caused a
+# Godot decode regression. This adapter preserves the old API without storing
+# duplicate artwork.
 
-const _SEEDS: Dictionary = {
-	"Luzik": {
-		"archetype": "glide",
-		"b64": "UklGRtAEAABXRUJQVlA4TMMEAAAvf8AfELfAIACAJHR3Wwt87iYdkV/YRrat5LtmHv3MP5XQCWXSCCk1+AzbyLaVfHeXyID+WyLTAiBlZv4DANCBwOrCRmbDmwEqmQmaPqy99tp0OmVjXTtwH7/wZ/a2onTqJfwLUkWm18ex7c7zYPB223bV2LZtjTAgXpLAwiL+/28FHP0VjPmepUT0fwI+/+///234BfxOsxMjd04Pg+9swK8yOxFPZ1/cM9WCXr3YLqs/a3YiOvtCJ1RB75bqRGYietguq8nZ3vdebLwzMXJ2LEQXZgfv1wRER5ILhY2nWhhPg08XqpnCxovCwtNqcn5zZGJVYXZk917NTkR1ZDBYWH2qCyOzEyPVp9XCxlOA6tNqcgJmC/pCR6I6MRJcqG/en5bZeHrIvHiqheiEjgxWVzeep7BwSI7E0wmd1XgKvfWLd2giOqKDulHYgMIIqPYmtzdfZBZ2J6LVJIAWMguZicH65bvTq2eDGi1srGrynQIcyml1d7BXk/EyA8noyO4h2MvlxJ0Z0cEX0UGNJrXa0TIy2HiYeLpdRpPV3kGdKLyIJjMQnehtSQ6OpxOzAC/g/vQ2amE3U1gdGQxqMpgpbBQgGUwGBydeFBaSQcgUBnt1BOLl6gREYfbODOpsMJkpbKfVweQqLEQ3ki3BwZHelpHZF4VqJlldiI4MajndeDE7nUZ15PMn3oPG6AZknm4UVmEDymkmGdTeERicKCwUopoMZpKDGl3VgsJhJJ7OTtyXkd7BzAYUVjcOG1CAjcJGQfVptWUwWoBMcmIwmOwdjC4UtsvChCYzMDHy+RO/v8GW6Ebh8BQ24EVB4cVGYfWprgZHZjPVqPZqCzQOJhcK22kBMhDVCRjcvTOQLKwuqBY2oFyqcqoanU+D2tvSUV1YjSZ3VzcKkKnq2QgEq3pvVjWTPAPVp7Cq4CkozA4GGzW4n65C5kUhmQEvB3u1ZVfvTrAxuX55IZnZgMLhfKHa8heNLRCMarI3qpmOYG+wV2E/re7q3WmBr2WgEOzQd3Qh2avxdPYwMRJc1Woys6obXkZ1975Eg9HGhfdAteVh4wcPk6vLaSY6AbqbHOzVwd7Vqi4Ek6sF0AXIFGY77kvy4QdnvK3BD6Ivgg8bM2fVlua0V8+SC5BZgGqyqlxOJDt2745mli9mGh+2BBvhYfUMOj44aAdUNZ/6JgQ1WdX98s50tMDy5cxD/eAvPmiB5EIGegd7tbHl6jqjuwqryWALaIfqfYkGW3QhA2eZhWRjy8MPWnYhc0gGWwZ1RFs0qLtaXSisVjt2q5mFTDKqyc+f+P2BakZ3OU1y2hGs7i4EkxnQakdzOrx5aKnmy46WDtgv4fMn34EMVPWwGzwDL5Og0d5gy0NoVC47oGW3qlfvf/707w+C1Yxqki9qVCHZG9SWh9CoAB2wCy2NHbuaqe4mO1qC0Kt3CDqCALpf1jd3NajQqC3daUu4PNMO2FWo7rZv3iNobHmHL7fAQwXYre4CHKDx4eEhlx27jQ8bH+pdgsb2F9SOg0KjPn5g4wGCjQ8b7xR0QEvj480PGt+D3WR1Fx4/GKA3qHDQO/UrdlQP8Phyc/rw8w///e1Wdbflk4egAMq3+f0lg8o3/v0de//u/Ws4AA=="
-	},
-	"Warstwin": {
-		"archetype": "glide",
-		"b64": "UklGRsoDAABXRUJQVlA4TL4DAAAvf8AfELegNJKt5oPKWeUKKIH+q0DjUbERJrJttaEqXAeL7pr9bwJSXFtBVP4ojiQpOXkdbgmQEbmTiD3hquY/AMGOBioFjY9/O8kjBU5whdGMCuY+DyU0YFpwkYCwWeZU+/z+ZdXQyD8yQ7XeGCjYth21cuobgSTTGSHs+Y/VwlXpSJ+cE9H/CXj97////f///i2FN4tzj7Z9UD0RO4rC6+1MWOwJ8PbCxq4VJZnW2+XF1cPYFdLeTbJ38K59vmxuri6mU3MAHN1UXdPTnIwn6bTbfldveT2z3Ry+JGc/eksjrxYAI2YPckq8ksHOwWVHmrJxD4xHoOTqCyuNFMRgurE9GAguqoRpP57UllNanvoNL8lA6yhdmXE5Vyu7jRnA3sAkSThahOwOwqBCpJLWhgdlBHo6vt7Sf0JHsQ3s6uLq5q88FgYLdZKWSTAVgF3XjePoBoYAJmRx8Mas/E7gl8QtlLZbU5uzqrG4EJSFbKbXS2qQGYWI0+eQDPtw++pAdUo5WTT2c1UIEATEBgowDNDQ1ANqkAzUpgAh5f/bydmL9wVAdh45MJJPMtjA6OTkBltTkxuwGB6KXS3AgUAqsanRjVB4Ojgzoa2Kg0A6sbDwZ7OuBzed5mCxOjujgLgY369qBQOYFCcrcZSEYfPFENTIwO9nT0dFROdrXQnO35bJ48uMDq7MTiRjOaPAk0K9nd5Gxy93y7MfH4ygmYvYDuX1hZ7egZ/FQevJvo6Vg9edAzUWm3hV0IQAW0oLo6qg90eAursx09HRsHcLJ7UNjogc/k8fZJsqe77YHZehuAChQqAVgtHOxCYeLB8NWzy9vAAezqiS7qpzI6EW9nO1QDhZPdAKxWNKq7hVXNnsBuNjAx29EzCHCZuGxoR0+ysKsHzdc3/v1pNJlNRpPZwgGcHJwEVisXyCZ3AbK6e9Hml10DleyBJqPZ/Qs/F81e8i0o7HKbDExAoKBaye4WDpqFAwhc7jsWV5NZTRay+xe+vuvvT7N6AJevjV70oPIkWTkoaLYJB6CLHRcNTIwmtbALl0oBPh1Nt9Fkvr0oKEAyW5h4MKEH4XbD28BidxvIFmC/PWkudujrB/z9aaDdVpIXvzia1InRwehBNjABd1FdXW6TB7vnbXOxQzc+o+vJbjapWd09uHsA0ZeD+vrCweQFBl/qYkdPMnuw21xum68f+Pf3vtJu8+2TUX39wCcHJxuLr5/29/fPdw=="
-	},
-	"Synkronaut": {
-		"archetype": "glide",
-		"b64": "UklGRp4DAABXRUJQVlA4TJIDAAAvf8AfEKfAJgCANLhDP3JTwe2dSw22CQCmgTwQMukXLkfrlAf6QzuXbi6boSQAgCSSyDaJpwxzdw/zH23m947YKtCeovbDbyUXDimEEL8ONDIgZqTikdRpeVCC8YT4UBtEbmj9gYeMwYNt205r27aFEa57QIp/YEHTT81ltiklov8T8Pq////v///i2FN4tzj7Z9UD0RO4rC6+1MWOwJ8PbCxq4VJZnW2+XF1cPYFdLeTbJ38K59vmxuri6mU3MAHN1UXdPTnIwn6bTbfldveT2z3Ry+JGc/eksjrxYAI2YPckq8ksHOwWVHmrJxD4xHoOTqCyuNFMRgurE9GAguqoRpP57UllNanvoNL8lA6yhdmXE5Vyu7jRnA3sAkSThahOwOwqBCpJLWhgdlBHo6vt7Sf0JHsQ3s6uLq5q88FgYLdZKWSTAVgF3XjePoBoYAJmRx8Mas/E7gl8QtlLZbU5uzqrG4EJSFbKbXS2qQGYWI0+eQDPtw++pAdUo5WTT2c1UIEATEBgowDNDQ1ANqkAzUpgAh5f/bydmL9wVAdh45MJJPMtjA6OTkBltTkxuwGB6KXS3AgUAqsanRjVB4Ojgzoa2Kg0A6sbDwZ7OuBzed5mCxOjujgLgY369qBQOYFCcrcZSEYfPFENTIwO9nT0dFROdrXQnO35bJ48uMDq7MTiRjOaPAk0K9nd5Gxy93y7MfH4ygmYvYDuX1hZ7egZ/FQevJvo6Vg9edAzUWm3hV0IQAW0oLo6qg90eAursx09HRsHcLJ7UNjogc/k8fZJsqe77YHZehuAChQqAVgtHOxCYeLB8NWzy9vAAezqiS7qpzI6EW9nO1QDhZPdAKxWNKq7hVXNnsBuNjAx29EzCHCZuGxoR0+ysKsHzdc3/v1pNJlNRpPZwgGcHJwEVisXyCZ3AbK6e9Hml10DleyBJqPZ/Qs/F81e8i0o7HKbDExAoKBaye4WDpqFAwhc7jsWV5NZTRay+xe+vuvvT7N6AJevjV70oPIkWTkoaLYJB6CLHRcNTIwmtbALl0oBPh1Nt9Fkvr0oKEAyW5h4MKEH4XbD28BidxvIFmC/PWkudujrB/z9aaDdVpIXvzia1InRwehBNjABd1FdXW6TB7vnbXOxQzc+o+vJbjapWd09uHsA0ZeD+vrCweQFBl/qYkdPMnuw21xum68f+Pf3vtJu8+2TUX39wCcHJxuLr5/29/fPdw=="
-	}
-}
+const ATLAS = preload("res://scripts/battle/creature_seed_atlas_db.gd")
+const NAMES: Array[String] = ["Luzik", "Warstwin", "Synkronaut"]
+const FRAME_SIZE := Vector2i(128, 128)
 
 static var _texture_cache: Dictionary = {}
 
 static func has_seed(creature_name: String) -> bool:
-	return _SEEDS.has(creature_name)
+	return creature_name in NAMES and ATLAS.is_approved(creature_name)
 
 static func seed_count() -> int:
-	return _SEEDS.size()
+	return NAMES.size()
 
 static func archetype(creature_name: String) -> String:
-	return str((_SEEDS.get(creature_name, {}) as Dictionary).get("archetype", "default"))
+	if not has_seed(creature_name):
+		return "default"
+	return ATLAS.archetype(creature_name)
 
 static func texture_for(creature_name: String) -> Texture2D:
 	if not has_seed(creature_name):
 		return null
 	if _texture_cache.has(creature_name):
 		return _texture_cache[creature_name] as Texture2D
-	var encoded: String = str((_SEEDS[creature_name] as Dictionary).get("b64", ""))
-	var bytes: PackedByteArray = Marshalls.base64_to_raw(encoded)
-	if bytes.is_empty():
+	var image: Image = ATLAS.image_for(creature_name)
+	if image == null:
 		return null
-	var image := Image.new()
-	var err: Error = image.load_webp_from_buffer(bytes)
-	if err != OK:
-		return null
-	if image.get_size() != Vector2i(128, 128):
-		image.resize(128, 128, Image.INTERPOLATE_NEAREST)
+	image = image.duplicate()
+	if Vector2i(image.get_size()) != FRAME_SIZE:
+		image.resize(FRAME_SIZE.x, FRAME_SIZE.y, Image.INTERPOLATE_NEAREST)
 	var texture: Texture2D = ImageTexture.create_from_image(image)
 	_texture_cache[creature_name] = texture
 	return texture
