@@ -3,6 +3,7 @@ extends RefCounted
 const ART = preload("res://scripts/data/monster_art.gd")
 const SEEDS = preload("res://scripts/battle/creature_battle_seed_db.gd")
 const REVERSE15 = preload("res://scripts/battle/reverse_family15_sprite_db.gd")
+const REVERSE10 = preload("res://scripts/battle/reverse_family10_sprite_db.gd")
 
 const ACTIONS: Array[String] = ["idle", "attack", "hurt", "faint", "special"]
 const ACTION_FRAME_COUNTS: Dictionary = {
@@ -12,9 +13,6 @@ const ACTION_FRAME_COUNTS: Dictionary = {
 	"faint": 5,
 	"special": 6
 }
-# AnimatedBattleScreen advances a shared maximum frame clock. Full authored
-# strips are clamped per action. Authored transparent seeds are animated by the
-# battle actor transform/effect archetype until a strip override is shipped.
 const FRAME_COUNT: int = 6
 const FRAME_W: int = 128
 const FRAME_H: int = 128
@@ -55,10 +53,10 @@ static func has_authored_seed(creature_name: String) -> bool:
 	return SEEDS.has_seed(creature_name)
 
 static func authored_full_animation_count() -> int:
-	return REVERSE15.animation_count()
+	return REVERSE15.animation_count() + REVERSE10.animation_count()
 
 static func has_authored_full_animation(creature_name: String) -> bool:
-	return REVERSE15.has_animation(creature_name)
+	return REVERSE15.has_animation(creature_name) or REVERSE10.has_animation(creature_name)
 
 static func frame_count(action: String) -> int:
 	return maxi(1, int(ACTION_FRAME_COUNTS.get(action, 1)))
@@ -80,30 +78,26 @@ static func frame_texture(creature_name: String, action: String, frame: int) -> 
 		return null
 	if action not in ACTIONS:
 		action = "idle"
-	# Reverse production pass: family 015 already owns true transparent per-frame
-	# idle/attack/hurt/faint/special art, generated deterministically from the
-	# approved pixel seed rather than reusing a single portrait.
 	if REVERSE15.has_animation(creature_name):
-		var authored: Texture2D = REVERSE15.frame_texture(creature_name, action, frame)
-		if authored != null:
-			return authored
-	# Highest-quality disk strip wins for families migrated through external art.
+		var family15: Texture2D = REVERSE15.frame_texture(creature_name, action, frame)
+		if family15 != null:
+			return family15
+	if REVERSE10.has_animation(creature_name):
+		var family10: Texture2D = REVERSE10.frame_texture(creature_name, action, frame)
+		if family10 != null:
+			return family10
 	var real_frame: Texture2D = _real_frame_texture(creature_name, action, frame)
 	if real_frame != null:
 		return real_frame
-	# Production seed keeps the creature silhouette/palette unique while the
-	# existing actor animation layer provides idle/attack/hurt/faint/special
-	# movement and FX. This replaces rectangular portrait placeholders.
 	var seed: Texture2D = SEEDS.texture_for(creature_name)
 	if seed != null:
 		return seed
-	# Final safety fallback while the remaining families are migrated.
 	return ART.texture_for(creature_name)
 
 static func source_kind(creature_name: String) -> String:
 	if not has_animation(creature_name):
 		return "fallback"
-	if REVERSE15.has_animation(creature_name):
+	if REVERSE15.has_animation(creature_name) or REVERSE10.has_animation(creature_name):
 		return "sprite-strip-authored-runtime"
 	var count: int = real_strip_count(creature_name)
 	if count >= ACTIONS.size():
