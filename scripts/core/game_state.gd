@@ -6,6 +6,7 @@ const EVOLUTION = preload("res://scripts/data/evolution_db.gd")
 const ITEMS = preload("res://scripts/data/item_db.gd")
 const EQUIPMENT = preload("res://scripts/data/equipment_db.gd")
 const RULES = preload("res://scripts/battle/battle_rules.gd")
+const LEARNSETS = preload("res://scripts/data/learnset_db.gd")
 
 const SAVE_VERSION: int = 10
 const START_TILE: Vector2i = Vector2i(7, 20)
@@ -58,8 +59,13 @@ static func make_member(monster_name: String, level: int, serial: int, hp: int =
 		"xp": 0,
 		"hp": 1,
 		"bond": 0,
-		"moves": [0, 1, 2, 3]
+		"moves": [0, 1, 2, 3],
+		"move_ids": [],
+		"special_move_id": ""
 	}
+	var creature_data: Dictionary = DB.get_monster(safe_name)
+	member["move_ids"] = LEARNSETS.default_loadout(safe_name, safe_level, creature_data)
+	member["special_move_id"] = LEARNSETS.default_special(safe_name, safe_level, creature_data)
 	var max_hp: int = base_member_max_hp(member)
 	member["hp"] = max_hp if hp < 0 else clampi(hp, 0, max_hp)
 	return member
@@ -81,7 +87,7 @@ static func migrate(raw: Dictionary) -> Dictionary:
 	profile["starter"] = starter_name
 	profile["player_x"] = int(raw.get("player_x", START_TILE.x))
 	profile["player_y"] = int(raw.get("player_y", START_TILE.y))
-	profile["trainer_level"] = maxi(1, int(raw.get("trainer_level", 1)))
+	profile["trainer_level"] = clampi(int(raw.get("trainer_level", 1)), 1, PROGRESSION.TRAINER_LEVEL_CAP)
 	profile["trainer_xp"] = maxi(0, int(raw.get("trainer_xp", 0)))
 	profile["haptics"] = bool(raw.get("haptics", true))
 	profile["zone_id"] = str(raw.get("zone_id", "vela"))
@@ -93,7 +99,7 @@ static func migrate(raw: Dictionary) -> Dictionary:
 	if typeof(raw_talents) == TYPE_DICTIONARY:
 		var incoming_talents: Dictionary = raw_talents as Dictionary
 		for path_id: String in PROGRESSION.path_ids():
-			talents[path_id] = clampi(int(incoming_talents.get(path_id, 0)), 0, 5)
+			talents[path_id] = clampi(int(incoming_talents.get(path_id, 0)), 0, PROGRESSION.max_rank(path_id))
 	profile["talents"] = talents
 
 	profile["inventory"] = ITEMS.normalize_inventory(raw.get("inventory", {}))
@@ -278,6 +284,9 @@ static func add_member_exp(profile: Dictionary, index: int, amount: int) -> int:
 	if not resolved_name.is_empty() and resolved_name != old_name:
 		var old_max_hp: int = member_max_hp(member, talents, loadout)
 		member["name"] = resolved_name
+		var evolved_data: Dictionary = DB.get_monster(resolved_name)
+		member["move_ids"] = LEARNSETS.normalize_loadout(resolved_name, level, member.get("move_ids", []), evolved_data)
+		member["special_move_id"] = LEARNSETS.normalize_special(resolved_name, level, member.get("special_move_id", ""), evolved_data)
 		var new_max_hp: int = member_max_hp(member, talents, loadout)
 		member["hp"] = clampi(int(member.get("hp", 1)) + maxi(1, new_max_hp - old_max_hp), 0, new_max_hp)
 		var seen: Array = profile.get("seen", []) as Array
@@ -359,7 +368,25 @@ static func _normalize_member(value: Variant, serial: int) -> Dictionary:
 			if moves.size() >= 4:
 				break
 	member["moves"] = moves
+	var creature_data: Dictionary = DB.get_monster(name)
+	member["move_ids"] = LEARNSETS.normalize_loadout(name, level, incoming.get("move_ids", []), creature_data)
+	member["special_move_id"] = LEARNSETS.normalize_special(name, level, incoming.get("special_move_id", ""), creature_data)
 	return member
+
+static func cycle_member_move(profile: Dictionary, party_index: int, slot_index: int) -> Dictionary:
+	var party: Array = profile.get("party", []) as Array
+	if party_index < 0 or party_index >= party.size():
+		return {}
+	var member: Dictionary = party[party_index] as Dictionary
+	var data: Dictionary = DB.get_monster(str(member.get("name", "")))
+	var updated: Dictionary = LEARNSETS.cycle_slot(member, data, slot_index)
+	party[party_index] = updated
+	profile["party"] = party
+	return updated.duplicate(true)
+
+static func member_move_data(member: Dictionary) -> Array[Dictionary]:
+	var data: Dictionary = DB.get_monster(str(member.get("name", "")))
+	return LEARNSETS.active_move_data(member, data)
 
 static func _string_array(value: Variant) -> Array[String]:
 	var result: Array[String] = []

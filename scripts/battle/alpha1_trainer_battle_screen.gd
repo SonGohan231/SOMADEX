@@ -1,4 +1,4 @@
-extends "res://scripts/battle/rpg_battle_screen.gd"
+extends "res://scripts/battle/loadout_battle_screen.gd"
 
 const TRAINERS = preload("res://scripts/data/alpha1_trainer_db.gd")
 const MONSTERS = preload("res://scripts/data/monster_db.gd")
