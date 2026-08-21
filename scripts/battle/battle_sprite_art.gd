@@ -2,6 +2,7 @@ extends RefCounted
 
 const ART = preload("res://scripts/data/monster_art.gd")
 const SEEDS = preload("res://scripts/battle/creature_battle_seed_db.gd")
+const REVERSE15 = preload("res://scripts/battle/reverse_family15_sprite_db.gd")
 
 const ACTIONS: Array[String] = ["idle", "attack", "hurt", "faint", "special"]
 const ACTION_FRAME_COUNTS: Dictionary = {
@@ -53,6 +54,12 @@ static func authored_seed_count() -> int:
 static func has_authored_seed(creature_name: String) -> bool:
 	return SEEDS.has_seed(creature_name)
 
+static func authored_full_animation_count() -> int:
+	return REVERSE15.animation_count()
+
+static func has_authored_full_animation(creature_name: String) -> bool:
+	return REVERSE15.has_animation(creature_name)
+
 static func frame_count(action: String) -> int:
 	return maxi(1, int(ACTION_FRAME_COUNTS.get(action, 1)))
 
@@ -73,8 +80,14 @@ static func frame_texture(creature_name: String, action: String, frame: int) -> 
 		return null
 	if action not in ACTIONS:
 		action = "idle"
-	# Highest-quality source wins. A full/partial strip can be dropped in at any
-	# time without touching battle code.
+	# Reverse production pass: family 015 already owns true transparent per-frame
+	# idle/attack/hurt/faint/special art, generated deterministically from the
+	# approved pixel seed rather than reusing a single portrait.
+	if REVERSE15.has_animation(creature_name):
+		var authored: Texture2D = REVERSE15.frame_texture(creature_name, action, frame)
+		if authored != null:
+			return authored
+	# Highest-quality disk strip wins for families migrated through external art.
 	var real_frame: Texture2D = _real_frame_texture(creature_name, action, frame)
 	if real_frame != null:
 		return real_frame
@@ -90,6 +103,8 @@ static func frame_texture(creature_name: String, action: String, frame: int) -> 
 static func source_kind(creature_name: String) -> String:
 	if not has_animation(creature_name):
 		return "fallback"
+	if REVERSE15.has_animation(creature_name):
+		return "sprite-strip-authored-runtime"
 	var count: int = real_strip_count(creature_name)
 	if count >= ACTIONS.size():
 		return "sprite-strip"
