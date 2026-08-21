@@ -2,6 +2,7 @@ extends SceneTree
 
 const SPRITES = preload("res://scripts/battle/battle_sprite_art.gd")
 const MONSTERS = preload("res://scripts/data/monster_db.gd")
+const SEED_MANIFEST: String = "res://data/creatures/battle_sprites/seed_manifest.csv"
 
 func _initialize() -> void:
 	var errors: Array[String] = []
@@ -22,20 +23,54 @@ func _initialize() -> void:
 			_expect(SPRITES.frame_texture(creature_name, action, 0) != null, "%s %s frame 0 is blank" % [creature_name, action], errors)
 			_expect(SPRITES.frame_texture(creature_name, action, last_frame) != null, "%s %s final frame is blank" % [creature_name, action], errors)
 
-	# First production family must no longer depend on rectangular card art.
 	_expect(SPRITES.authored_seed_count() >= 3, "expected at least three authored transparent seeds", errors)
 	for creature_name: String in ["Luzik", "Warstwin", "Synkronaut"]:
 		_expect(SPRITES.has_authored_seed(creature_name), "%s authored seed missing" % creature_name, errors)
 		_expect(SPRITES.source_kind(creature_name) in ["authored-seed-archetype", "sprite-strip-partial", "sprite-strip"], "%s still uses portrait placeholder" % creature_name, errors)
 		_expect(SPRITES.archetype(creature_name) == "glide", "%s family archetype mismatch" % creature_name, errors)
 
+	_validate_seed_manifest(errors)
+
 	if errors.is_empty():
-		print("CREATURE_SPRITE_RUNTIME_SMOKE: PASS · idle4 attack6 hurt3 faint5 special6 · family001 authored transparent seeds · staged fallback safe")
+		print("CREATURE_SPRITE_RUNTIME_SMOKE: PASS · idle4 attack6 hurt3 faint5 special6 · family001 approved · 50-family/150-form production manifest · staged fallback safe")
 		quit(0)
 		return
 	for text: String in errors:
 		printerr("CREATURE_SPRITE_RUNTIME_SMOKE: " + text)
 	quit(1)
+
+func _validate_seed_manifest(errors: Array[String]) -> void:
+	var file := FileAccess.open(SEED_MANIFEST, FileAccess.READ)
+	_expect(file != null, "150-form seed manifest missing", errors)
+	if file == null:
+		return
+	var header: PackedStringArray = file.get_csv_line()
+	_expect(header.size() >= 9, "seed manifest header incomplete", errors)
+	var row_count: int = 0
+	var families: Dictionary = {}
+	var names: Dictionary = {}
+	var approved: int = 0
+	while not file.eof_reached():
+		var row: PackedStringArray = file.get_csv_line()
+		if row.size() < 9 or row[0].strip_edges().is_empty():
+			continue
+		row_count += 1
+		var family_id: int = int(row[0])
+		var stage: int = int(row[1])
+		var creature_name: String = row[2].strip_edges()
+		families[family_id] = int(families.get(family_id, 0)) + 1
+		_expect(stage in [1, 2, 3], "%s has invalid manifest stage" % creature_name, errors)
+		_expect(not names.has(creature_name), "duplicate creature in seed manifest: %s" % creature_name, errors)
+		names[creature_name] = true
+		_expect(row[7] == "128x128", "%s seed frame contract mismatch" % creature_name, errors)
+		_expect(row[8] == "bottom-center", "%s seed anchor contract mismatch" % creature_name, errors)
+		if row[5].strip_edges() == "approved":
+			approved += 1
+	_expect(row_count == 150, "expected 150 seed manifest rows, got %d" % row_count, errors)
+	_expect(families.size() == 50, "expected 50 seed manifest families, got %d" % families.size(), errors)
+	for raw_family_id: Variant in families.keys():
+		_expect(int(families[raw_family_id]) == 3, "family %s does not contain exactly three forms" % str(raw_family_id), errors)
+	_expect(approved >= 3, "first authored family must remain approved", errors)
 
 func _expect(condition: bool, message: String, errors: Array[String]) -> void:
 	if not condition:
