@@ -23,7 +23,7 @@ func _initialize() -> void:
 		_expect(SPRITES.has_authored_seed(creature_name), "%s authored seed missing" % creature_name, errors)
 		_expect(SPRITES.archetype(creature_name) == "glide", "%s family archetype mismatch" % creature_name, errors)
 
-	_expect(SPRITES.authored_full_animation_count() >= 21, "reverse pass must contain at least twenty-one fully animated forms", errors)
+	_expect(SPRITES.authored_full_animation_count() >= 24, "reverse pass must contain at least twenty-four fully animated forms", errors)
 	_test_full_family(["Nucik", "Wibrospiew", "Rezonar"], "family015", errors)
 	_test_full_family(["Nasuch", "Echouszek", "Sensoryks"], "family010", errors)
 	_test_full_family(["Kotwiczek", "Bramnik", "Fundamentor"], "family009", errors)
@@ -31,11 +31,12 @@ func _initialize() -> void:
 	_test_full_family(["Srubik", "Torsys", "Spiralion"], "family007", errors)
 	_test_full_family(["Kompasik", "Oktantor", "Kartografon"], "family006", errors)
 	_test_full_family(["Wahlik", "Oscylot", "Fazoryb"], "family005", errors)
+	_test_full_family(["Pufek", "Pulsopuch", "Falomamut"], "family004", errors)
 	_validate_seed_manifest(errors)
 	_validate_logical_animation_contract(errors)
 
 	if errors.is_empty():
-		print("CREATURE_SPRITE_RUNTIME_SMOKE: PASS · 150 forms · 130 approved seeds · 650 accepted logical animations · 20 QA fallbacks · authored families005-010+015 preserved")
+		print("CREATURE_SPRITE_RUNTIME_SMOKE: PASS · 150 forms · 130 approved seeds · 650 accepted logical animations · 20 QA fallbacks · authored families004-010+015 preserved")
 		quit(0)
 		return
 	for text: String in errors:
