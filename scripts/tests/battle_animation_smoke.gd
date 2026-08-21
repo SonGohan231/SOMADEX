@@ -22,9 +22,9 @@ func _initialize() -> void:
 func _test_sprite_catalog(errors: Array[String]) -> void:
 	_expect(SPRITES.animation_count() == 33, "expected 33 Vela forms with battle animation states", errors)
 	var authored_family: Array[String] = ["Luzik", "Warstwin", "Synkronaut"]
-	var reverse_families: Array[String] = ["Nasuch", "Echouszek", "Sensoryks", "Nucik", "Wibrospiew", "Rezonar"]
+	var reverse_families: Array[String] = ["Kotwiczek", "Bramnik", "Fundamentor", "Nasuch", "Echouszek", "Sensoryks", "Nucik", "Wibrospiew", "Rezonar"]
 	var allowed_sources: Array[String] = ["portrait-procedural", "authored-seed-archetype", "sprite-strip-partial", "sprite-strip", "sprite-strip-authored-runtime"]
-	for name: String in ["Luzik", "Synkronaut", "Bocznik", "Falomamut", "Wahlik", "Kartografon", "Spiralion", "Labiryntaur", "Fundamentor", "Nasuch", "Echouszek", "Sensoryks", "Nucik", "Wibrospiew", "Rezonar"]:
+	for name: String in ["Luzik", "Synkronaut", "Bocznik", "Falomamut", "Wahlik", "Kartografon", "Spiralion", "Labiryntaur", "Kotwiczek", "Bramnik", "Fundamentor", "Nasuch", "Echouszek", "Sensoryks", "Nucik", "Wibrospiew", "Rezonar"]:
 		_expect(SPRITES.has_animation(name), "missing battle animation mapping for %s" % name, errors)
 		_expect(SPRITES.source_kind(name) in allowed_sources, "wrong animation source for %s" % name, errors)
 	for name: String in authored_family:
@@ -44,6 +44,8 @@ func _test_visual_states(errors: Array[String]) -> void:
 			_expect(final_voice != null, "Rezonar %s authored frame %d failed" % [action, frame], errors)
 			var final_sensor: Texture2D = SPRITES.frame_texture("Sensoryks", action, frame)
 			_expect(final_sensor != null, "Sensoryks %s authored frame %d failed" % [action, frame], errors)
+			var final_anchor: Texture2D = SPRITES.frame_texture("Fundamentor", action, frame)
+			_expect(final_anchor != null, "Fundamentor %s authored frame %d failed" % [action, frame], errors)
 
 func _test_visual_queue(errors: Array[String]) -> void:
 	var queue = VISUAL_QUEUE.new()
