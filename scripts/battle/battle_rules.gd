@@ -1,6 +1,7 @@
 extends RefCounted
 
 const STATUS = preload("res://scripts/data/status_db.gd")
+const TYPE_BALANCE = preload("res://scripts/data/type_balance_db.gd")
 
 static func calculate_damage(power: int, attack: int, defense: int, level: int, flat_bonus: int, move_type: String, target_statuses: Dictionary, attacker_statuses: Dictionary, guard_multiplier: float = 1.0) -> int:
 	var base: float = float(maxi(1, power))
@@ -10,9 +11,24 @@ static func calculate_damage(power: int, attack: int, defense: int, level: int, 
 	base -= float(maxi(0, defense)) * 0.28
 	base = maxf(1.0, base)
 	base *= STATUS.damage_multiplier(move_type, target_statuses)
+	var target_type: String = str(target_statuses.get("__type", ""))
+	if not target_type.is_empty():
+		base *= TYPE_BALANCE.multiplier(move_type, [target_type])
 	base *= STATUS.outgoing_multiplier(attacker_statuses)
 	base *= clampf(guard_multiplier, 0.15, 1.0)
 	return maxi(1, int(round(base)))
+
+static func type_label(move_type: String, target_statuses: Dictionary) -> String:
+	var target_type: String = str(target_statuses.get("__type", ""))
+	if target_type.is_empty():
+		return ""
+	return TYPE_BALANCE.label(move_type, [target_type])
+
+static func type_multiplier(move_type: String, target_statuses: Dictionary) -> float:
+	var target_type: String = str(target_statuses.get("__type", ""))
+	if target_type.is_empty():
+		return 1.0
+	return TYPE_BALANCE.multiplier(move_type, [target_type])
 
 static func capture_chance(base_rate: float, current_hp: int, max_hp: int, talent_bonus: float, equipment_bonus: float, target_statuses: Dictionary) -> float:
 	var safe_max: int = maxi(1, max_hp)
