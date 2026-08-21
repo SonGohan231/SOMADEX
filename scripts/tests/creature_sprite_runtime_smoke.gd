@@ -21,8 +21,16 @@ func _initialize() -> void:
 			var last_frame: int = SPRITES.frame_count(action) - 1
 			_expect(SPRITES.frame_texture(creature_name, action, 0) != null, "%s %s frame 0 is blank" % [creature_name, action], errors)
 			_expect(SPRITES.frame_texture(creature_name, action, last_frame) != null, "%s %s final frame is blank" % [creature_name, action], errors)
+
+	# First production family must no longer depend on rectangular card art.
+	_expect(SPRITES.authored_seed_count() >= 3, "expected at least three authored transparent seeds", errors)
+	for creature_name: String in ["Luzik", "Warstwin", "Synkronaut"]:
+		_expect(SPRITES.has_authored_seed(creature_name), "%s authored seed missing" % creature_name, errors)
+		_expect(SPRITES.source_kind(creature_name) in ["authored-seed-archetype", "sprite-strip-partial", "sprite-strip"], "%s still uses portrait placeholder" % creature_name, errors)
+		_expect(SPRITES.archetype(creature_name) == "glide", "%s family archetype mismatch" % creature_name, errors)
+
 	if errors.is_empty():
-		print("CREATURE_SPRITE_RUNTIME_SMOKE: PASS · idle4 attack6 hurt3 faint5 special6 · staged fallback safe")
+		print("CREATURE_SPRITE_RUNTIME_SMOKE: PASS · idle4 attack6 hurt3 faint5 special6 · family001 authored transparent seeds · staged fallback safe")
 		quit(0)
 		return
 	for text: String in errors:
