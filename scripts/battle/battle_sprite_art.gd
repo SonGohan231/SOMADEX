@@ -25,7 +25,7 @@ const SPECIES: Array[String] = [
 	"Wahlik", "Oscylot", "Fazoryb",
 	"Kompasik", "Oktantor", "Kartografon",
 	"Srubik", "Torsys", "Spiralion",
-	"Uczek", "Objegnik", "Labiryntaur",
+	"Uczek", "Obiegnik", "Labiryntaur",
 	"Kotwiczek", "Bramnik", "Fundamentor",
 	"Nasuch", "Echouszek", "Sensoryks",
 	"Nucik", "Wibrospiew", "Rezonar"
