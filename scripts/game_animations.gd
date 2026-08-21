@@ -5,6 +5,7 @@ const ANIM_ENCOUNTERS = preload("res://scripts/data/alpha1_encounter_db.gd")
 const ANIM_BATTLE_SCREEN = preload("res://scripts/battle/loadout_battle_screen.gd")
 const ANIM_PROGRESSION = preload("res://scripts/data/progression_db.gd")
 const ANIM_PAUSE_MENU = preload("res://scripts/ui/rpg_pause_menu.gd")
+const ANIM_CRAFTING = preload("res://scripts/data/crafting_db.gd")
 
 func _start_battle(tile: Vector2i) -> void:
 	ANIM_STATE.set_player_tile(profile, tile)
@@ -39,7 +40,22 @@ func _open_menu(tile: Vector2i) -> void:
 	screen.equipment_cycle_requested.connect(_on_equipment_cycle_requested.bind(screen))
 	screen.active_member_requested.connect(_on_active_member_requested.bind(screen))
 	screen.move_cycle_requested.connect(_on_move_cycle_requested.bind(screen))
+	screen.craft_requested.connect(_on_craft_requested.bind(screen))
 	_switch_to(screen)
+
+func _on_craft_requested(recipe_id: String, menu_screen: Control) -> void:
+	var inventory: Dictionary = profile.get("inventory", {}) as Dictionary
+	var talents: Dictionary = profile.get("talents", ANIM_PROGRESSION.default_talents()) as Dictionary
+	var technician: int = ANIM_PROGRESSION.rank(talents, ANIM_PROGRESSION.PATH_TECHNICIAN)
+	var result: Dictionary = ANIM_CRAFTING.craft(inventory, recipe_id, technician)
+	if not bool(result.get("crafted", false)):
+		if is_instance_valid(menu_screen) and menu_screen.has_method("show_message"):
+			menu_screen.show_message("Brak materiałów lub wymaganego poziomu Technika")
+		return
+	profile["inventory"] = (result.get("inventory", {}) as Dictionary).duplicate(true)
+	_save_game()
+	if is_instance_valid(menu_screen) and menu_screen.has_method("refresh_profile"):
+		menu_screen.refresh_profile(profile, "Zbudowano: %s" % str(result.get("name", recipe_id)))
 
 func _on_move_cycle_requested(party_index: int, slot_index: int, menu_screen: Control) -> void:
 	var member: Dictionary = ANIM_STATE.cycle_member_move(profile, party_index, slot_index)
