@@ -182,6 +182,10 @@ jobs:
         shell: bash
         run: godot --headless --path . --script res://scripts/tests/parallel_production_pass2_smoke.gd
 
+      - name: Validate parallel production pass 3
+        shell: bash
+        run: godot --headless --path . --script res://scripts/tests/parallel_production_pass3_smoke.gd
+
       - name: Validate world and NPC pixel sprites
         shell: bash
         run: godot --headless --path . --script res://scripts/tests/world_sprite_art_smoke.gd
