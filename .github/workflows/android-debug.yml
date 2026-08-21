@@ -166,6 +166,14 @@ jobs:
         shell: bash
         run: godot --headless --path . --script res://scripts/tests/campaign_balance_smoke.gd
 
+      - name: Validate persistent campaign station checkpoints
+        shell: bash
+        run: godot --headless --path . --script res://scripts/tests/campaign_checkpoint_smoke.gd
+
+      - name: Validate Region 1 combat pacing and Focus economy
+        shell: bash
+        run: godot --headless --path . --script res://scripts/tests/campaign_combat_pacing_smoke.gd
+
       - name: Validate world and NPC pixel sprites
         shell: bash
         run: godot --headless --path . --script res://scripts/tests/world_sprite_art_smoke.gd
