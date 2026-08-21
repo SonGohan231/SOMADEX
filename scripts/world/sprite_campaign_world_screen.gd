@@ -5,7 +5,6 @@ const WORLD_NPCS = preload("res://scripts/data/runtime_npc_db.gd")
 const WORLD_PICKUPS = preload("res://scripts/data/pickup_db.gd")
 const WORLD_TRAINERS = preload("res://scripts/data/runtime_trainer_db.gd")
 const WORLD_DISCOVERIES = preload("res://scripts/data/campaign_discovery_db.gd")
-const CAMPAIGN_PROGRESS = preload("res://scripts/data/campaign_progression_db.gd")
 const RETRO_SFX = preload("res://scripts/audio/retro_sfx.gd")
 
 var _sfx: Node = null
