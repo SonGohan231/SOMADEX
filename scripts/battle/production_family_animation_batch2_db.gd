@@ -152,12 +152,19 @@ static func _set_safe(image: Image, x: int, y: int, color: Color) -> void:
 		image.set_pixel(x,y,color)
 
 static func _draw_line(image: Image, a: Vector2i, b: Vector2i, color: Color) -> void:
-	var x0:=a.x; var y0:=a.y; var x1:=b.x; var y1:=b.y
-	var dx:=abs(x1-x0); var sxv:=1 if x0<x1 else -1; var dy:=-abs(y1-y0); var syv:=1 if y0<y1 else -1; var err:=dx+dy
+	var x0: int = a.x
+	var y0: int = a.y
+	var x1: int = b.x
+	var y1: int = b.y
+	var dx: int = absi(x1 - x0)
+	var sxv: int = 1 if x0 < x1 else -1
+	var dy: int = -absi(y1 - y0)
+	var syv: int = 1 if y0 < y1 else -1
+	var err: int = dx + dy
 	while true:
 		_set_safe(image,x0,y0,color)
 		if x0==x1 and y0==y1: break
-		var e2:=2*err
+		var e2: int = 2 * err
 		if e2>=dy: err+=dy; x0+=sxv
 		if e2<=dx: err+=dx; y0+=syv
 
