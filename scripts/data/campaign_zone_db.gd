@@ -9,11 +9,19 @@ static func ids() -> Array[String]:
 	for zone_id: String in PACK.ids():
 		if not result.has(zone_id):
 			result.append(zone_id)
+	result.sort()
+	return result
+
+static func all_ids() -> Array[String]:
+	var result: Array[String] = ids()
 	for zone_id: String in OPTIONAL.ids():
 		if not result.has(zone_id):
 			result.append(zone_id)
 	result.sort()
 	return result
+
+static func optional_ids() -> Array[String]:
+	return OPTIONAL.ids()
 
 static func has_zone(zone_id: String) -> bool:
 	return BASE.has_zone(zone_id) or PACK.has_zone(zone_id) or OPTIONAL.has_zone(zone_id)
@@ -43,10 +51,6 @@ static func map_rows(zone_id: String) -> Array[String]:
 	else:
 		rows = PACK.patch_base_rows(zone_id, BASE.map_rows(zone_id))
 	rows = OPTIONAL.patch_rows(zone_id, rows)
-	# In the authored Vela map the synchronization station sat directly below
-	# the north exit. Stations are interactable but intentionally non-walkable,
-	# so it sealed the only tile leading to Resonance Route. Keep the station
-	# beside the corridor and restore the corridor tile to P.
 	if zone_id == "vela" and rows.size() > 1:
 		rows[1] = _replace_char(rows[1], 7, "P")
 		rows[1] = _replace_char(rows[1], 6, "C")
