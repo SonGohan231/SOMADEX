@@ -28,6 +28,16 @@ def replace_once(path: Path, old: str, new: str, label: str) -> None:
     write(path, text.replace(old, new, 1))
 
 
+def replace_regex_once(path: Path, pattern: str, replacement: str, label: str) -> None:
+    """Replace one structural anchor while tolerating harmless whitespace/comment drift."""
+    text = path.read_text(encoding="utf-8")
+    updated, count = re.subn(pattern, replacement, text, count=1, flags=re.MULTILINE)
+    if count != 1:
+        matches = len(re.findall(pattern, text, flags=re.MULTILINE))
+        raise SystemExit(f"{label}: expected exactly one structural anchor, found {matches} in {path}")
+    write(path, updated)
+
+
 def append_once(path: Path, marker: str, block: str) -> None:
     text = path.read_text(encoding="utf-8")
     if marker in text:
@@ -83,30 +93,31 @@ def main() -> None:
     # Convert only lines introduced by the PoC from temporary upstream IDs to canonical Phase 3 IDs.
     migrate_added_diff_lines(root)
 
-    # Stable custom species ID.
+    # Stable custom species ID. Anchor on the semantic custom-range terminator instead of a brittle
+    # three-line text block. The locked upstream explicitly reserves this range for custom species.
     species_constants = root / "include/constants/species.h"
-    replace_once(
+    replace_regex_once(
         species_constants,
-        "    SPECIES_CUSTOM_START = SPECIES_GLIMMORA_MEGA,\n    // Add any custom species between here and SPECIES_CUSTOM_END\n    SPECIES_CUSTOM_END,",
-        "    SPECIES_CUSTOM_START = SPECIES_GLIMMORA_MEGA,\n    // SOMADEX production IDs. Do not reuse upstream species slots.\n    SPECIES_LUZIK,\n    SPECIES_CUSTOM_END,",
+        r"^(?P<i>[ \t]*)SPECIES_CUSTOM_END,[ \t]*$",
+        r"\g<i>// SOMADEX production IDs. Do not reuse upstream species slots.\n\g<i>SPECIES_LUZIK,\n\g<i>SPECIES_CUSTOM_END,",
         "species constants",
     )
 
-    # Stable custom move ID. MOVES_COUNT must advance before Z/Max move ranges begin.
+    # Stable custom move ID. Insert immediately at the locked upstream custom-move boundary.
     move_constants = root / "include/constants/moves.h"
-    replace_once(
+    replace_regex_once(
         move_constants,
-        "    // Add any custom moves here, not further down!\n\n    MOVES_COUNT = MOVES_COUNT_GEN9,",
-        "    // SOMADEX production moves.\n    MOVE_IMPULS_WARSTWOWY = MOVES_COUNT_GEN9,\n\n    MOVES_COUNT,",
+        r"^(?P<i>[ \t]*)MOVES_COUNT[ \t]*=[ \t]*MOVES_COUNT_GEN9,[ \t]*$",
+        r"\g<i>// SOMADEX production moves.\n\g<i>MOVE_IMPULS_WARSTWOWY = MOVES_COUNT_GEN9,\n\n\g<i>MOVES_COUNT,",
         "move constants",
     )
 
-    # Stable custom item ID.
+    # Stable custom item ID. Anchor on the last pinned upstream item, leaving ITEMS_COUNT to advance.
     item_constants = root / "include/constants/items.h"
-    replace_once(
+    replace_regex_once(
         item_constants,
-        "    ITEM_GLIMMORANITE = 873,\n\n    ITEMS_COUNT,",
-        "    ITEM_GLIMMORANITE = 873,\n\n    // SOMADEX production items.\n    ITEM_KULA_SPLOTU = 874,\n\n    ITEMS_COUNT,",
+        r"^(?P<i>[ \t]*)ITEM_GLIMMORANITE[ \t]*=[ \t]*873,[ \t]*$",
+        r"\g<i>ITEM_GLIMMORANITE = 873,\n\n\g<i>// SOMADEX production items.\n\g<i>ITEM_KULA_SPLOTU = 874,",
         "item constants",
     )
 
@@ -262,9 +273,7 @@ const u16 gItemIconPalette_KulaSplotu[] = INCGFX_U16("graphics/items/icon_palett
     for forbidden in TOKENS:
         for line in diff.splitlines():
             if line.startswith("+") and not line.startswith("+++") and forbidden in line:
-                # Definitions of the original upstream records are allowed; added production code is not.
-                if forbidden in ("SPECIES_TREECKO", "MOVE_POUND", "ITEM_POKE_BALL"):
-                    raise SystemExit(f"production diff still adds forbidden PoC runtime ID: {forbidden}: {line}")
+                raise SystemExit(f"production diff still adds forbidden PoC runtime ID: {forbidden}: {line}")
 
     print("PHASE3 APPLY PASS: canonical Luzik/move/item IDs installed on locked foundation")
 
