@@ -23,7 +23,8 @@ cd "$UPSTREAM_ROOT"
 git reset --hard "$PINNED"
 git clean -fdx
 git apply --binary "$SOMADEX_ROOT/poc/pokeemerald-expansion/upstream.patch"
-python3 "$SOMADEX_ROOT/poc/pokeemerald-expansion/generate_map.py"
+python3 "$SOMADEX_ROOT/phase3/pokeemerald-expansion/generate_phase3_map.py" \
+  --upstream-root "$UPSTREAM_ROOT"
 
 python3 "$SOMADEX_ROOT/phase3/pokeemerald-expansion/apply_phase3.py" \
   --upstream-root "$UPSTREAM_ROOT"
