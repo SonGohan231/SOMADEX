@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Replace the first reachable battle UI/copy with SOMADEX-facing language.
 
-This deliberately does NOT rewrite the proven battle controller.  It changes the
+This deliberately does NOT rewrite the proven battle controller. It changes the
 small player-facing surface used by the Vela vertical slice, keeping engine logic
 and action slots intact:
 
@@ -11,7 +11,7 @@ and action slots intact:
     bottom-right-> Ucieczka   (run)
 
 Polish text is kept ASCII-only for now because the final production charmap is a
-separate visual/font pass.  The command words themselves need no diacritics.
+separate visual/font pass. The command words themselves need no diacritics.
 """
 
 from __future__ import annotations
@@ -23,13 +23,13 @@ from pathlib import Path
 
 def replace_symbol_string(path: Path, symbol: str, replacement_literal: str) -> None:
     text = path.read_text(encoding="utf-8")
-    pattern = rf'(?P<prefix>(?:static\s+)?const\s+u8\s+{re.escape(symbol)}(?:\[[^\]]*\])?\s*=\s*_\()(?P<body>"(?:[^"\\]|\\.)*"(?:\s*\\\s*\n\s*"(?:[^"\\]|\\.)*")*)(?P<suffix>\);)'
+    pattern = rf'(?P<prefix>(?:static\s+)?const\s+u8\s+{re.escape(symbol)}(?:\[[^\]]*\])?\s*=\s*_\()(?P<body>"(?:[^"\\]|\\.)*")(?P<suffix>\);)'
     updated, count = re.subn(
         pattern,
         lambda m: m.group("prefix") + replacement_literal + m.group("suffix"),
         text,
         count=1,
-        flags=re.MULTILINE,
+        flags=re.MULTILINE | re.DOTALL,
     )
     if count != 1:
         raise SystemExit(f"{path}: expected exactly one string symbol {symbol}, found {count}")
@@ -61,7 +61,7 @@ def main() -> None:
     replace_symbol_string(
         battle,
         "gText_BattleMenu",
-        '_("Atak{CLEAR_TO 56}Plecak\\\nStworki{CLEAR_TO 56}Ucieczka")'[2:-1],
+        '"Atak{CLEAR_TO 56}Plecak\\\nStworki{CLEAR_TO 56}Ucieczka"',
     )
 
     # First-wild-battle copy reachable from Vela. Short lines are intentional for
