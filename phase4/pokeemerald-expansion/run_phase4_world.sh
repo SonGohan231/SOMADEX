@@ -37,11 +37,23 @@ python3 "$SOMADEX_ROOT/phase3/pokeemerald-expansion/generate_phase3_assets.py" \
   --somadex-root "$SOMADEX_ROOT" \
   --upstream-root "$UPSTREAM_ROOT"
 
-# Phase 4 map-only production block: three connected Vela areas.
+# Phase 4 visual core: replace the reachable Vela terrain vocabulary before
+# composing the maps that reference those owned metatile IDs.
+python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/generate_vela_tileset.py" \
+  --upstream-root "$UPSTREAM_ROOT"
+
+# Phase 4 connected world block: three Vela areas, no reachable legacy story hooks.
 python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/apply_vela_world.py" \
   --upstream-root "$UPSTREAM_ROOT"
 python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/generate_vela_world_maps.py" \
   --upstream-root "$UPSTREAM_ROOT"
+
+sha256sum \
+  data/tilesets/primary/general/tiles.png \
+  data/tilesets/primary/general/palettes/00.pal \
+  data/tilesets/primary/general/metatiles.bin \
+  data/tilesets/primary/general/metatile_attributes.bin \
+  | tee "$SOMADEX_ROOT/phase4-vela-tileset.sha256"
 
 # Keep the same production identity guard while expanding the world.
 if git diff --unified=0 HEAD | grep '^+' | grep -E 'SPECIES_TREECKO|MOVE_POUND|ITEM_POKE_BALL' | grep -vE '^\+\+\+'; then
@@ -59,4 +71,4 @@ sha256sum "$ROM" | tee "$SOMADEX_ROOT/phase4-world-rom.sha256"
 stat -c '%s' "$ROM" | tee "$SOMADEX_ROOT/phase4-world-rom.bytes"
 arm-none-eabi-size "$ELF" | tee "$SOMADEX_ROOT/phase4-world-memory.txt"
 
-echo "PHASE4 WORLD BUILD PASS: connected Vela starter world built locally; ROM is intentionally not published"
+echo "PHASE4 WORLD BUILD PASS: connected Vela starter world + owned visual core built locally; ROM is intentionally not published"
