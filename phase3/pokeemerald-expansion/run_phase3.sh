@@ -28,6 +28,15 @@ python3 "$SOMADEX_ROOT/phase3/pokeemerald-expansion/generate_phase3_map.py" \
 
 python3 "$SOMADEX_ROOT/phase3/pokeemerald-expansion/apply_phase3.py" \
   --upstream-root "$UPSTREAM_ROOT"
+
+# The Phase 0 PoC patch adds a battle-position constant use to battle_main.c, while the
+# locked upstream translation unit does not include the header that defines it.
+# Keep the repair local and idempotent instead of renaming a valid upstream constant.
+if ! grep -Fxq '#include "constants/battle.h"' src/battle_main.c; then
+  sed -i '/#include "constants\/abilities.h"/a #include "constants/battle.h"' src/battle_main.c
+fi
+grep -Fxq '#include "constants/battle.h"' src/battle_main.c
+
 python3 "$SOMADEX_ROOT/phase3/pokeemerald-expansion/generate_phase3_assets.py" \
   --somadex-root "$SOMADEX_ROOT" \
   --upstream-root "$UPSTREAM_ROOT"
