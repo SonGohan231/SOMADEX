@@ -1,0 +1,88 @@
+name: Phase 3 GBA Vertical Slice
+
+on:
+  push:
+    branches:
+      - codex/phase3-small-vertical-slice
+  pull_request:
+    branches:
+      - codex/foundation-v3-lock
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phase3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout SOMADEX
+        uses: actions/checkout@v4
+
+      - name: Install GBA and mGBA tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            binutils-arm-none-eabi \
+            gcc-arm-none-eabi \
+            libnewlib-arm-none-eabi \
+            libpng-dev \
+            imagemagick \
+            pkg-config \
+            libmgba-dev
+
+      - name: Fetch locked foundation
+        run: |
+          git clone https://github.com/rh-hideout/pokeemerald-expansion.git upstream
+          git -C upstream checkout bb6f399bce71db7e82a4bfa40e72b29498ef1de6
+          test "$(git -C upstream rev-parse HEAD)" = "bb6f399bce71db7e82a4bfa40e72b29498ef1de6"
+
+      - name: Build Phase 3 source-only slice
+        run: |
+          bash phase3/pokeemerald-expansion/run_phase3.sh "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE/upstream"
+
+      - name: Build runtime harness against actual symbols
+        run: |
+          save1=$(arm-none-eabi-nm -n upstream/pokeemerald.elf | awk '$3 == "gSaveBlock1Ptr" {print "0x" $1; exit}')
+          parties=$(arm-none-eabi-nm -n upstream/pokeemerald.elf | awk '$3 == "gPartiesCount" {print "0x" $1; exit}')
+          test -n "$save1"
+          test -n "$parties"
+          cp poc/pokeemerald-expansion/headless_poc_runner.c phase3-runner.c
+          sed -i "s/#define SAVE_BLOCK_1_PTR_ADDRESS .*/#define SAVE_BLOCK_1_PTR_ADDRESS ${save1}/" phase3-runner.c
+          sed -i "s/#define PARTIES_COUNT_ADDRESS .*/#define PARTIES_COUNT_ADDRESS ${parties}/" phase3-runner.c
+          gcc -O2 -Wall -Wextra phase3-runner.c -o phase3-runner $(pkg-config --cflags --libs mgba)
+
+      - name: Execute vertical slice and hard-restart restore
+        run: |
+          rm -f phase3-test.sav
+          mkdir -p runtime-evidence
+          ./phase3-runner upstream/pokeemerald.gba runtime-evidence/run phase3-test.sav
+          test -s phase3-test.sav
+          ./phase3-runner upstream/pokeemerald.gba runtime-evidence/restore phase3-test.sav restore
+          grep -Eq 'party=1' runtime-evidence/run.log
+          grep -Eq 'party=1' runtime-evidence/restore.log
+          grep -Eq 'pos=10,16' runtime-evidence/run.log
+          grep -Eq 'pos=10,16' runtime-evidence/restore.log
+
+      - name: Record non-ROM evidence
+        if: always()
+        run: |
+          mkdir -p ci-evidence
+          for f in phase3-build.log phase3-rom.sha256 phase3-rom.bytes phase3-memory.txt phase3-symbols.txt; do
+            if test -f "$f"; then cp "$f" ci-evidence/; fi
+          done
+          if test -d runtime-evidence; then
+            cp runtime-evidence/*.log ci-evidence/ 2>/dev/null || true
+          fi
+          printf '%s\n' 'ROM and save files are intentionally excluded from artifacts.' > ci-evidence/README.txt
+
+      - name: Upload source-safe evidence only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase3-source-safe-evidence
+          path: ci-evidence/
+          if-no-files-found: warn
+          retention-days: 14
