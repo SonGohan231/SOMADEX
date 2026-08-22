@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Connect the first three Vela maps and remove reachable legacy Hoenn events.
+"""Connect the first three Vela maps and replace reachable Hoenn hooks with SOMADEX content.
 
-This intentionally keeps upstream map IDs/layout IDs as engine slots. Player-facing map
-names remain hidden until the SOMADEX region-map naming pass.
+The upstream map IDs remain technical engine slots. Player-facing map names stay hidden
+until the dedicated region-map naming pass, but all reachable outer-map events/scripts in
+this block are now Vela-owned.
 """
 
 import argparse
@@ -29,7 +30,24 @@ def connection(map_id: str, direction: str) -> dict:
     return {"map": map_id, "offset": 0, "direction": direction}
 
 
-def configure_outer_map(path: Path, *, expected_id: str, connections: list[dict]) -> None:
+def sign_event(x: int, y: int, script: str) -> dict:
+    return {
+        "type": "sign",
+        "x": x,
+        "y": y,
+        "elevation": 0,
+        "player_facing_dir": "BG_EVENT_PLAYER_FACING_ANY",
+        "script": script,
+    }
+
+
+def configure_outer_map(
+    path: Path,
+    *,
+    expected_id: str,
+    connections: list[dict],
+    bg_events: list[dict],
+) -> None:
     data = load_json(path)
     if data.get("id") != expected_id:
         raise SystemExit(f"unexpected map id in {path}: {data.get('id')} != {expected_id}")
@@ -42,11 +60,11 @@ def configure_outer_map(path: Path, *, expected_id: str, connections: list[dict]
     data["show_map_name"] = False
     data["connections"] = connections
 
-    # Phase 4 map block owns only traversal here. Remove all reachable legacy story/NPC/warp hooks.
+    # Remove all legacy NPC/story/warp hooks. Only explicitly supplied Vela interactions survive.
     data["object_events"] = []
     data["warp_events"] = []
     data["coord_events"] = []
-    data["bg_events"] = []
+    data["bg_events"] = bg_events
     save_json(path, data)
 
 
@@ -78,10 +96,28 @@ def configure_vela_center(path: Path) -> None:
     save_json(path, data)
 
 
-def replace_map_scripts(path: Path, label: str) -> None:
+def write_vela_south_scripts(path: Path) -> None:
     path.write_text(
-        f"{label}_MapScripts::\n"
-        "\t.byte 0\n",
+        "LittlerootTown_MapScripts::\n"
+        "\t.byte 0\n\n"
+        "VelaSouth_EventScript_Sign::\n"
+        "\tmsgbox VelaSouth_Text_Sign, MSGBOX_SIGN\n"
+        "\tend\n\n"
+        "VelaSouth_Text_Sign:\n"
+        "\t.string \"VELA - POLUDNIE\\nCentrum: prosto na polnoc.$\"\n",
+        encoding="utf-8",
+    )
+
+
+def write_vela_grove_scripts(path: Path) -> None:
+    path.write_text(
+        "OldaleTown_MapScripts::\n"
+        "\t.byte 0\n\n"
+        "VelaGrove_EventScript_Crystal::\n"
+        "\tmsgbox VelaGrove_Text_Crystal, MSGBOX_SIGN\n"
+        "\tend\n\n"
+        "VelaGrove_Text_Crystal:\n"
+        "\t.string \"Krysztal rezonansu lekko drga.\\nPowietrze wokol niego faluje.$\"\n",
         encoding="utf-8",
     )
 
@@ -99,19 +135,23 @@ def main() -> None:
         root / "data/maps/LittlerootTown/map.json",
         expected_id="MAP_LITTLEROOT_TOWN",
         connections=[connection("MAP_ROUTE101", "up")],
+        bg_events=[sign_event(5, 8, "VelaSouth_EventScript_Sign")],
     )
     configure_vela_center(root / "data/maps/Route101/map.json")
     configure_outer_map(
         root / "data/maps/OldaleTown/map.json",
         expected_id="MAP_OLDALE_TOWN",
         connections=[connection("MAP_ROUTE101", "down")],
+        bg_events=[
+            sign_event(7, 9, "VelaGrove_EventScript_Crystal"),
+            sign_event(12, 9, "VelaGrove_EventScript_Crystal"),
+        ],
     )
 
-    # With no events on the two outer maps, their old story scripts must not remain reachable.
-    replace_map_scripts(root / "data/maps/LittlerootTown/scripts.inc", "LittlerootTown")
-    replace_map_scripts(root / "data/maps/OldaleTown/scripts.inc", "OldaleTown")
+    write_vela_south_scripts(root / "data/maps/LittlerootTown/scripts.inc")
+    write_vela_grove_scripts(root / "data/maps/OldaleTown/scripts.inc")
 
-    # Verify the intended three-map chain in source after writing.
+    # Verify the intended three-map chain and the two new Vela-only interaction surfaces.
     south = load_json(root / "data/maps/LittlerootTown/map.json")
     center = load_json(root / "data/maps/Route101/map.json")
     north = load_json(root / "data/maps/OldaleTown/map.json")
@@ -121,8 +161,12 @@ def main() -> None:
         raise SystemExit("Vela Center connection verification failed")
     if north["connections"] != [connection("MAP_ROUTE101", "down")]:
         raise SystemExit("Vela Grove connection verification failed")
+    if south["bg_events"] != [sign_event(5, 8, "VelaSouth_EventScript_Sign")]:
+        raise SystemExit("Vela South sign verification failed")
+    if len(north["bg_events"]) != 2 or any(e["script"] != "VelaGrove_EventScript_Crystal" for e in north["bg_events"]):
+        raise SystemExit("Vela Grove crystal interaction verification failed")
 
-    print("PHASE4 VELA WORLD PASS: south <-> center <-> resonance grove connected; legacy outer-map events removed")
+    print("PHASE4 VELA WORLD PASS: south <-> center <-> grove connected; legacy outer events removed; Vela interactions installed")
 
 
 if __name__ == "__main__":
