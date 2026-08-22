@@ -72,6 +72,20 @@ def main() -> None:
     replace_symbol_string(battle, "sText_GotAwaySafely", '"{PLAY_SE SE_FLEE}Udalo sie uciec!\\p"')
     replace_symbol_string(battle, "sText_GoPkmn", '"Naprzod! {B_PLAYER_MON1_NAME}!"')
 
+    # Reachable capture feedback. These are table entries rather than standalone
+    # symbols, so replace only their unique string payloads and preserve IDs/audio.
+    capture_copy = {
+        'COMPOUND_STRING("Oh no! The Pokémon broke free!")': 'COMPOUND_STRING("Somaskan wyrwal sie!")',
+        'COMPOUND_STRING("Aww! It appeared to be caught!")': 'COMPOUND_STRING("Prawie zostal schwytany!")',
+        'COMPOUND_STRING("Aargh! Almost had it!")': 'COMPOUND_STRING("Jeszcze chwila!")',
+        'COMPOUND_STRING("Gah! It was so close, too!")': 'COMPOUND_STRING("Tak blisko!")',
+        'COMPOUND_STRING("Gotcha! {B_DEF_NAME} was caught!{WAIT_SE}{PLAY_BGM MUS_CAUGHT}\\p")': 'COMPOUND_STRING("Schwytano {B_DEF_NAME}!{WAIT_SE}{PLAY_BGM MUS_CAUGHT}\\p")',
+        'COMPOUND_STRING("Would you like to give {B_DEF_NAME} a nickname?")': 'COMPOUND_STRING("Nadac {B_DEF_NAME} pseudonim?")',
+        'COMPOUND_STRING("{B_DEF_NAME}\'s data has been added to the Pokédex!\\p")': 'COMPOUND_STRING("Dane {B_DEF_NAME} zapisano w SOMADEXIE!\\p")',
+    }
+    for idx, (old, new) in enumerate(capture_copy.items(), start=1):
+        replace_exact(battle, old, new, f"capture copy {idx}")
+
     # Generic party label used by reachable party surfaces. We intentionally do
     # not mass-localise the inaccessible upstream story/encyclopedia here.
     replace_exact(
@@ -81,17 +95,20 @@ def main() -> None:
         "generic creature label",
     )
 
-    # Source-level assertions: our four primary commands and the generic creature
-    # label must exist after the transformation.
+    # Source-level assertions: our primary commands and first-capture language
+    # must exist after the transformation.
     final_battle = battle.read_text(encoding="utf-8")
     final_strings = strings.read_text(encoding="utf-8")
-    for token in ("Atak", "Plecak", "Stworki", "Ucieczka", "Co zrobi", "Dziki"):
+    for token in (
+        "Atak", "Plecak", "Stworki", "Ucieczka", "Co zrobi", "Dziki",
+        "Somaskan wyrwal sie", "Schwytano", "SOMADEXIE",
+    ):
         if token not in final_battle:
             raise SystemExit(f"missing SOMADEX battle UI token after patch: {token}")
     if '_("STWORKI")' not in final_strings:
         raise SystemExit("generic STWORKI label missing after patch")
 
-    print("PHASE4 BATTLE UI PASS: reachable action menu + first wild-battle language converted to SOMADEX")
+    print("PHASE4 BATTLE UI PASS: action menu + first wild/capture language converted to SOMADEX")
 
 
 if __name__ == "__main__":
