@@ -37,6 +37,11 @@ python3 "$SOMADEX_ROOT/phase3/pokeemerald-expansion/generate_phase3_assets.py" \
   --somadex-root "$SOMADEX_ROOT" \
   --upstream-root "$UPSTREAM_ROOT"
 
+# First reachable battle surface: keep the proven controller, replace player-facing
+# Pokémon terminology/action copy with the SOMADEX language used in Vela.
+python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/apply_vela_battle_ui.py" \
+  --upstream-root "$UPSTREAM_ROOT"
+
 # Phase 4 visual core: replace the reachable Vela terrain vocabulary before
 # composing the maps that reference those owned metatile IDs.
 python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/generate_vela_tileset.py" \
@@ -55,6 +60,11 @@ sha256sum \
   data/tilesets/primary/general/metatile_attributes.bin \
   | tee "$SOMADEX_ROOT/phase4-vela-tileset.sha256"
 
+# Lightweight source assertions for the two production surfaces in this block.
+grep -Fq 'Atak{CLEAR_TO 56}Plecak' src/battle_message.c
+grep -Fq 'Stworki{CLEAR_TO 56}Ucieczka' src/battle_message.c
+grep -Fq '_("STWORKI")' src/strings.c
+
 # Keep the same production identity guard while expanding the world.
 if git diff --unified=0 HEAD | grep '^+' | grep -E 'SPECIES_TREECKO|MOVE_POUND|ITEM_POKE_BALL' | grep -vE '^\+\+\+'; then
   echo "forbidden PoC identity remap found in Phase 4 additions" >&2
@@ -71,4 +81,4 @@ sha256sum "$ROM" | tee "$SOMADEX_ROOT/phase4-world-rom.sha256"
 stat -c '%s' "$ROM" | tee "$SOMADEX_ROOT/phase4-world-rom.bytes"
 arm-none-eabi-size "$ELF" | tee "$SOMADEX_ROOT/phase4-world-memory.txt"
 
-echo "PHASE4 WORLD BUILD PASS: connected Vela starter world + owned visual core built locally; ROM is intentionally not published"
+echo "PHASE4 WORLD BUILD PASS: connected Vela starter world + owned visual core + SOMADEX battle UI built locally; ROM is intentionally not published"
