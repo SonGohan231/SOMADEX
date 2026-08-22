@@ -1,0 +1,41 @@
+schema: somadex.foundation-lock.v1
+status: LOCKED_FOR_PHASE3_VERTICAL_SLICE
+locked_at_utc: 2026-08-22
+
+foundation:
+  repository: rh-hideout/pokeemerald-expansion
+  branch_reference: master
+  commit: bb6f399bce71db7e82a4bfa40e72b29498ef1de6
+  platform: GBA_ROM_IN_PHONE_EMULATOR
+
+verified_poc:
+  verdict: CONDITIONAL_PASS
+  acceptance_steps_passed: 10
+  acceptance_steps_total: 10
+  local_test_rom_size_bytes: 33554432
+  local_test_rom_sha256: f1ca18cfcf62ec3d498430e92afe443df46ffa86f967ce2278217e1c16e3ba7b
+  toolchain: xPack_GNU_Arm_Embedded_GCC_14.2.1-1.1
+  emulator: mGBA_0.10.5
+  imagemagick: 6.9.12-98
+
+distribution:
+  mode: SOURCE_ASSETS_PLUS_PATCH_ONLY
+  patch_formats:
+    - BPS
+    - UPS
+  completed_rom_publication: FORBIDDEN
+  third_party_game_content_in_public_release: FORBIDDEN
+  legal_review_before_public_release: REQUIRED
+
+change_control:
+  upstream_upgrade_without_new_foundation_review: FORBIDDEN
+  switch_foundation_without_phase0_reopen: FORBIDDEN
+  resume_godot_as_parallel_runtime: FORBIDDEN
+  mass_content_migration_before_phase3_gate: FORBIDDEN
+  production_reuse_of_upstream_numeric_ids_as_somadex_ids: FORBIDDEN
+
+phase3:
+  allowed: true
+  scope: SMALL_VERTICAL_SLICE_ONLY
+  full_migration_allowed: false
+  mass_asset_production_allowed: false
