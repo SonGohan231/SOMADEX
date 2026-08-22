@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "foundation": {
+    "repository": "rh-hideout/pokeemerald-expansion",
+    "commit": "bb6f399bce71db7e82a4bfa40e72b29498ef1de6"
+  },
+  "save_compatibility_declared": false,
+  "families": [
+    {
+      "id": "SOMADEX_FAMILY_001",
+      "name": "Rodzina Luzika"
+    }
+  ],
+  "species": [
+    {
+      "id": "SOMADEX_SPECIES_LUZIK",
+      "runtime_id": "SPECIES_LUZIK",
+      "family_id": "SOMADEX_FAMILY_001",
+      "name": "Luzik",
+      "types": ["ELECTRIC"],
+      "moves": ["SOMADEX_MOVE_IMPULS_WARSTWOWY"],
+      "assets": {
+        "front": "graphics/pokemon/luzik/anim_front.png",
+        "back": "graphics/pokemon/luzik/back.png",
+        "icon": "graphics/pokemon/luzik/icon.png",
+        "provenance": "SOMADEX_DERIVED_FROM_OWN_CONCEPT_ART"
+      }
+    }
+  ],
+  "moves": [
+    {
+      "id": "SOMADEX_MOVE_IMPULS_WARSTWOWY",
+      "runtime_id": "MOVE_IMPULS_WARSTWOWY",
+      "name": "Impuls Warstwowy",
+      "type": "ELECTRIC",
+      "power": 45,
+      "accuracy": 96,
+      "pp": 20
+    }
+  ],
+  "items": [
+    {
+      "id": "SOMADEX_ITEM_KULA_SPLOTU",
+      "runtime_id": "ITEM_KULA_SPLOTU",
+      "name": "Kula Splotu",
+      "purpose": "capture",
+      "assets": {
+        "icon": "graphics/items/icons/kula_splotu.png",
+        "provenance": "SOMADEX_ORIGINAL"
+      }
+    }
+  ],
+  "flags": [
+    {
+      "id": "SOMADEX_FLAG_MET_MIRA",
+      "runtime_id": "FLAG_MET_MIRA",
+      "owner": "Vela/Mira",
+      "initial": false,
+      "persistence": "native_save"
+    }
+  ],
+  "locations": [
+    {
+      "id": "SOMADEX_LOCATION_VELA_TEST",
+      "runtime_id": "MAP_ROUTE101",
+      "name": "VELA TEST",
+      "scope": "phase3_vertical_slice"
+    }
+  ]
+}
