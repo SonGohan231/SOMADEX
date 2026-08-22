@@ -1,0 +1,60 @@
+name: Phase 4 Vela World Block
+
+on:
+  push:
+    branches:
+      - codex/phase4-vela-world-block
+  pull_request:
+    branches:
+      - codex/phase3-small-vertical-slice
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phase4-world:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout SOMADEX
+        uses: actions/checkout@v4
+
+      - name: Install GBA tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            binutils-arm-none-eabi \
+            gcc-arm-none-eabi \
+            libnewlib-arm-none-eabi \
+            libpng-dev \
+            imagemagick
+
+      - name: Fetch locked foundation
+        run: |
+          git clone https://github.com/rh-hideout/pokeemerald-expansion.git upstream
+          git -C upstream checkout bb6f399bce71db7e82a4bfa40e72b29498ef1de6
+          test "$(git -C upstream rev-parse HEAD)" = "bb6f399bce71db7e82a4bfa40e72b29498ef1de6"
+
+      - name: Build connected Vela world block
+        run: |
+          bash phase4/pokeemerald-expansion/run_phase4_world.sh "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE/upstream"
+
+      - name: Record source-safe evidence
+        if: always()
+        run: |
+          mkdir -p ci-evidence
+          for f in phase4-world-build.log phase4-world-rom.sha256 phase4-world-rom.bytes phase4-world-memory.txt; do
+            if test -f "$f"; then cp "$f" ci-evidence/; fi
+          done
+          printf '%s\n' 'ROM output is intentionally excluded from artifacts.' > ci-evidence/README.txt
+
+      - name: Upload source-safe evidence only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase4-vela-world-source-safe-evidence
+          path: ci-evidence/
+          if-no-files-found: warn
+          retention-days: 14
