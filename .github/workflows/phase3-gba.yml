@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - codex/phase3-small-vertical-slice
+  pull_request:
+    branches:
+      - codex/foundation-v3-lock
   workflow_dispatch:
 
 permissions:
