@@ -23,12 +23,10 @@ cd "$UPSTREAM_ROOT"
 git reset --hard "$PINNED"
 git clean -fdx
 
-# Recreate the accepted Phase 3 SOMADEX slice first.
 git apply --binary "$SOMADEX_ROOT/poc/pokeemerald-expansion/upstream.patch"
 python3 "$SOMADEX_ROOT/phase3/pokeemerald-expansion/apply_phase3.py" \
   --upstream-root "$UPSTREAM_ROOT"
 
-# Phase 0 patch uses a battle-position constant without this include in the locked TU.
 if ! grep -Fxq '#include "constants/battle.h"' src/battle_main.c; then
   sed -i '/#include "constants\/abilities.h"/a #include "constants/battle.h"' src/battle_main.c
 fi
@@ -37,26 +35,17 @@ python3 "$SOMADEX_ROOT/phase3/pokeemerald-expansion/generate_phase3_assets.py" \
   --somadex-root "$SOMADEX_ROOT" \
   --upstream-root "$UPSTREAM_ROOT"
 
-# First reachable battle surface: keep proven battle/capture algorithms while
-# replacing player-facing terminology, capture copy and capture-device graphics.
 python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/apply_vela_battle_ui.py" \
   --upstream-root "$UPSTREAM_ROOT"
 python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/apply_kula_splotu_capture.py" \
   --upstream-root "$UPSTREAM_ROOT"
-
-# Own reachable battle presentation: reskin the stock geometry instead of
-# rewriting battle logic, and give Impuls Warstwowy a dedicated animation label.
 python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/generate_somadex_battle_hud.py" \
   --upstream-root "$UPSTREAM_ROOT"
 python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/apply_impuls_warstwowy_anim.py" \
   --upstream-root "$UPSTREAM_ROOT"
 
-# Phase 4 visual core: replace the reachable Vela terrain vocabulary before
-# composing the maps that reference those owned metatile IDs.
 python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/generate_vela_tileset.py" \
   --upstream-root "$UPSTREAM_ROOT"
-
-# Phase 4 connected world block: three Vela areas, no reachable legacy story hooks.
 python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/apply_vela_world.py" \
   --upstream-root "$UPSTREAM_ROOT"
 python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/generate_vela_world_maps.py" \
@@ -82,7 +71,7 @@ sha256sum \
   graphics/battle_interface/text_pp.pal \
   | tee "$SOMADEX_ROOT/phase4-somadex-battle-hud.sha256"
 
-# Lightweight source assertions for the production surfaces in this block.
+# Assertions for the player-facing battle surface.
 grep -Fq 'Atak{CLEAR_TO 56}Plecak' src/battle_message.c
 grep -Fq 'Stworki{CLEAR_TO 56}Ucieczka' src/battle_message.c
 grep -Fq '_("STWORKI")' src/strings.c
@@ -92,7 +81,18 @@ grep -Fq 'extern const u8 gBattleAnimMove_ImpulsWarstwowy[];' include/battle_ani
 grep -Fq 'gBattleAnimMove_ImpulsWarstwowy::' data/battle_anim_scripts.s
 grep -Fq '.battleAnimScript = gBattleAnimMove_ImpulsWarstwowy,' src/data/moves_info.h
 
-# Keep the same production identity guard while expanding the world.
+# Every first-battle HUD source included in the hash must exist after transformation.
+for asset in \
+  graphics/battle_interface/healthbox_singles_player.png \
+  graphics/battle_interface/healthbox_singles_opponent.png \
+  graphics/battle_interface/textbox.png \
+  graphics/battle_interface/move_info_window_l.png \
+  graphics/battle_interface/move_info_window_r.png \
+  graphics/battle_interface/text.pal \
+  graphics/battle_interface/text_pp.pal; do
+  [[ -s "$asset" ]]
+done
+
 if git diff --unified=0 HEAD | grep '^+' | grep -E 'SPECIES_TREECKO|MOVE_POUND|ITEM_POKE_BALL' | grep -vE '^\+\+\+'; then
   echo "forbidden PoC identity remap found in Phase 4 additions" >&2
   exit 1
