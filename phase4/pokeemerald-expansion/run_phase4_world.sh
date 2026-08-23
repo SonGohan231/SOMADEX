@@ -35,6 +35,13 @@ python3 "$SOMADEX_ROOT/phase3/pokeemerald-expansion/generate_phase3_assets.py" \
   --somadex-root "$SOMADEX_ROOT" \
   --upstream-root "$UPSTREAM_ROOT"
 
+# First playable Vela roster: five additional approved base forms, signature moves,
+# runtime battle art and two real wild encounter pools. Luzik remains the Phase 3 anchor.
+python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/apply_vela_roster.py" \
+  --upstream-root "$UPSTREAM_ROOT"
+python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/generate_vela_roster_assets.py" \
+  --upstream-root "$UPSTREAM_ROOT"
+
 python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/apply_vela_battle_ui.py" \
   --upstream-root "$UPSTREAM_ROOT"
 python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/apply_kula_splotu_capture.py" \
@@ -70,6 +77,13 @@ sha256sum \
   graphics/battle_interface/text.pal \
   graphics/battle_interface/text_pp.pal \
   | tee "$SOMADEX_ROOT/phase4-somadex-battle-hud.sha256"
+sha256sum \
+  graphics/pokemon/bocznik/anim_front.png graphics/pokemon/bocznik/back.png graphics/pokemon/bocznik/icon.png \
+  graphics/pokemon/milimik/anim_front.png graphics/pokemon/milimik/back.png graphics/pokemon/milimik/icon.png \
+  graphics/pokemon/wahlik/anim_front.png graphics/pokemon/wahlik/back.png graphics/pokemon/wahlik/icon.png \
+  graphics/pokemon/nucik/anim_front.png graphics/pokemon/nucik/back.png graphics/pokemon/nucik/icon.png \
+  graphics/pokemon/dudnik/anim_front.png graphics/pokemon/dudnik/back.png graphics/pokemon/dudnik/icon.png \
+  | tee "$SOMADEX_ROOT/phase4-vela-roster-art.sha256"
 
 # Assertions for the player-facing battle surface.
 grep -Fq 'Atak{CLEAR_TO 56}Plecak' src/battle_message.c
@@ -81,7 +95,15 @@ grep -Fq 'extern const u8 gBattleAnimMove_ImpulsWarstwowy[];' include/battle_ani
 grep -Fq 'gBattleAnimMove_ImpulsWarstwowy::' data/battle_anim_scripts.s
 grep -Fq '.battleAnimScript = gBattleAnimMove_ImpulsWarstwowy,' src/data/moves_info.h
 
-# Every first-battle HUD source included in the hash must exist after transformation.
+# First roster must be source-addressable and present in wild encounter data.
+for species in LUZIK BOCZNIK MILIMIK WAHLIK NUCIK DUDNIK; do
+  grep -Fq "SPECIES_${species}" include/constants/species.h
+  grep -Fq "SPECIES_${species}" src/data/wild_encounters.json
+done
+for move in IMPULS_WARSTWOWY SLIZG_BOCZNY MIKROSKOK FALA_WAHADLA NUTA_REZONANSU DWUPUNKT; do
+  grep -Fq "MOVE_${move}" include/constants/moves.h
+done
+
 for asset in \
   graphics/battle_interface/healthbox_singles_player.png \
   graphics/battle_interface/healthbox_singles_opponent.png \
@@ -108,4 +130,4 @@ sha256sum "$ROM" | tee "$SOMADEX_ROOT/phase4-world-rom.sha256"
 stat -c '%s' "$ROM" | tee "$SOMADEX_ROOT/phase4-world-rom.bytes"
 arm-none-eabi-size "$ELF" | tee "$SOMADEX_ROOT/phase4-world-memory.txt"
 
-echo "PHASE4 WORLD BUILD PASS: Vela world + owned visual core + SOMADEX battle HUD/capture/Impuls presentation built locally; ROM is intentionally not published"
+echo "PHASE4 WORLD BUILD PASS: Vela world + six-creature roster + SOMADEX battle HUD/capture/Impuls presentation built locally; ROM is intentionally not published"
