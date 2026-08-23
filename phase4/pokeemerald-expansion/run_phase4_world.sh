@@ -44,6 +44,13 @@ python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/apply_vela_battle_ui.py" \
 python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/apply_kula_splotu_capture.py" \
   --upstream-root "$UPSTREAM_ROOT"
 
+# Own reachable battle presentation: reskin the stock geometry instead of
+# rewriting battle logic, and give Impuls Warstwowy a dedicated animation label.
+python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/generate_somadex_battle_hud.py" \
+  --upstream-root "$UPSTREAM_ROOT"
+python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/apply_impuls_warstwowy_anim.py" \
+  --upstream-root "$UPSTREAM_ROOT"
+
 # Phase 4 visual core: replace the reachable Vela terrain vocabulary before
 # composing the maps that reference those owned metatile IDs.
 python3 "$SOMADEX_ROOT/phase4/pokeemerald-expansion/generate_vela_tileset.py" \
@@ -65,6 +72,13 @@ sha256sum \
   graphics/balls/poke.png \
   graphics/balls/open.png \
   | tee "$SOMADEX_ROOT/phase4-kula-splotu-battle-art.sha256"
+sha256sum \
+  graphics/battle_interface/healthbox_singles_player.png \
+  graphics/battle_interface/healthbox_singles_opponent.png \
+  graphics/battle_interface/textbox.png \
+  graphics/battle_interface/move_info_window_l.png \
+  graphics/battle_interface/move_info_window_r.png \
+  | tee "$SOMADEX_ROOT/phase4-somadex-battle-hud.sha256"
 
 # Lightweight source assertions for the production surfaces in this block.
 grep -Fq 'Atak{CLEAR_TO 56}Plecak' src/battle_message.c
@@ -72,6 +86,9 @@ grep -Fq 'Stworki{CLEAR_TO 56}Ucieczka' src/battle_message.c
 grep -Fq '_("STWORKI")' src/strings.c
 grep -Fq '.itemId = ITEM_KULA_SPLOTU,' src/pokeball.c
 grep -Fq 'Schwytano {B_DEF_NAME}!' src/battle_message.c
+grep -Fq 'extern const u8 gBattleAnimMove_ImpulsWarstwowy[];' include/battle_anim_scripts.h
+grep -Fq 'gBattleAnimMove_ImpulsWarstwowy::' data/battle_anim_scripts.s
+grep -Fq '.battleAnimScript = gBattleAnimMove_ImpulsWarstwowy,' src/data/moves_info.h
 
 # Keep the same production identity guard while expanding the world.
 if git diff --unified=0 HEAD | grep '^+' | grep -E 'SPECIES_TREECKO|MOVE_POUND|ITEM_POKE_BALL' | grep -vE '^\+\+\+'; then
@@ -89,4 +106,4 @@ sha256sum "$ROM" | tee "$SOMADEX_ROOT/phase4-world-rom.sha256"
 stat -c '%s' "$ROM" | tee "$SOMADEX_ROOT/phase4-world-rom.bytes"
 arm-none-eabi-size "$ELF" | tee "$SOMADEX_ROOT/phase4-world-memory.txt"
 
-echo "PHASE4 WORLD BUILD PASS: Vela world + owned visual core + SOMADEX battle/capture presentation built locally; ROM is intentionally not published"
+echo "PHASE4 WORLD BUILD PASS: Vela world + owned visual core + SOMADEX battle HUD/capture/Impuls presentation built locally; ROM is intentionally not published"
