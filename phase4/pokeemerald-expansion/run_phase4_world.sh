@@ -78,6 +78,8 @@ sha256sum \
   graphics/battle_interface/textbox.png \
   graphics/battle_interface/move_info_window_l.png \
   graphics/battle_interface/move_info_window_r.png \
+  graphics/battle_interface/text.pal \
+  graphics/battle_interface/text_pp.pal \
   | tee "$SOMADEX_ROOT/phase4-somadex-battle-hud.sha256"
 
 # Lightweight source assertions for the production surfaces in this block.
