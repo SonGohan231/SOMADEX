@@ -65,11 +65,12 @@ def main() -> None:
         if not path.is_file():
             raise SystemExit(f"locked animation source missing: {path}")
 
-    if LABEL not in header.read_text(encoding="utf-8"):
+    header_text = header.read_text(encoding="utf-8")
+    if f"extern const u8 {LABEL}[];" not in header_text:
         replace_once(
             header,
             "extern const u8 gBattleAnimMove_ThunderShock[];",
-            "extern const u8 gBattleAnimMove_ImpulsWarstwowy[];\nextern const u8 gBattleAnimMove_ThunderShock[];",
+            f"extern const u8 {LABEL}[];\nextern const u8 gBattleAnimMove_ThunderShock[];",
             "animation extern",
         )
 
@@ -83,19 +84,18 @@ def main() -> None:
         )
 
     move_text = moves.read_text(encoding="utf-8")
-    pattern = re.compile(
-        r"(?P<head>\[MOVE_IMPULS_WARSTWOWY\]\s*=\s*\{.*?\.battleAnimScript\s*=\s*)"
-        r"gBattleAnimMove_ThunderShock(?P<tail>\s*,.*?\n\s*\},)",
-        re.DOTALL,
-    )
-    if "gBattleAnimMove_ImpulsWarstwowy" not in move_text:
-        move_text, count = pattern.subn(
-            lambda m: m.group("head") + LABEL + m.group("tail"),
-            move_text,
-            count=1,
-        )
-        if count != 1:
-            raise SystemExit("MOVE_IMPULS_WARSTWOWY: expected one ThunderShock animation dependency")
+    start = move_text.find("[MOVE_IMPULS_WARSTWOWY]")
+    end = move_text.find("[MOVE_POUND]", start)
+    if start < 0 or end < 0:
+        raise SystemExit("cannot isolate Impuls Warstwowy move block")
+    block = move_text[start:end]
+
+    if f".battleAnimScript = {LABEL}," not in block:
+        old = ".battleAnimScript = gBattleAnimMove_ThunderShock,"
+        if block.count(old) != 1:
+            raise SystemExit("MOVE_IMPULS_WARSTWOWY: expected exactly one ThunderShock animation dependency")
+        block = block.replace(old, f".battleAnimScript = {LABEL},", 1)
+        move_text = move_text[:start] + block + move_text[end:]
         moves.write_text(move_text, encoding="utf-8")
 
     # Strong source assertions: the custom move must point to its own label and
@@ -103,8 +103,6 @@ def main() -> None:
     final_moves = moves.read_text(encoding="utf-8")
     start = final_moves.find("[MOVE_IMPULS_WARSTWOWY]")
     end = final_moves.find("[MOVE_POUND]", start)
-    if start < 0 or end < 0:
-        raise SystemExit("cannot isolate Impuls Warstwowy move block")
     block = final_moves[start:end]
     if f".battleAnimScript = {LABEL}," not in block:
         raise SystemExit("Impuls Warstwowy does not use its custom animation")
