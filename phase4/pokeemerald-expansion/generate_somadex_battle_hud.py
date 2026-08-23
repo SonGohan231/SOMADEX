@@ -2,21 +2,23 @@
 """Reskin the reachable singles battle HUD into the SOMADEX/Vela visual language.
 
 The engine geometry, sprite sizes, HP logic and text placement remain untouched.
-We only replace indexed-PNG palette chunks for the first reachable battle surface,
-which keeps the proven GBA layouts while changing their visible identity.
+We replace only player-facing indexed palettes / palette sources for the first
+reachable battle surface. This keeps the proven GBA layout while changing its
+visible identity.
 """
 
 from __future__ import annotations
 
 import argparse
 import binascii
+import re
 import struct
 from pathlib import Path
 
 PNG_SIG = b"\x89PNG\r\n\x1a\n"
 
 # Vela/SOMADEX HUD ramp: deep slate -> teal -> pale cyan. Saturated semantic
-# colours (HP/EXP accents) are handled separately so readability is preserved.
+# colours (HP/EXP/status accents) stay recognisable for gameplay readability.
 RAMP = [
     (12, 27, 35),
     (18, 44, 53),
@@ -30,12 +32,18 @@ RAMP = [
     (224, 247, 238),
 ]
 
-TARGETS = (
+PNG_TARGETS = (
     "graphics/battle_interface/healthbox_singles_player.png",
     "graphics/battle_interface/healthbox_singles_opponent.png",
     "graphics/battle_interface/textbox.png",
     "graphics/battle_interface/move_info_window_l.png",
     "graphics/battle_interface/move_info_window_r.png",
+)
+
+# These palette sources feed generated .gbapal files used by text / PP windows.
+PAL_TARGETS = (
+    "graphics/battle_interface/text.pal",
+    "graphics/battle_interface/text_pp.pal",
 )
 
 
@@ -47,7 +55,6 @@ def png_chunk(kind: bytes, payload: bytes) -> bytes:
 
 def map_colour(rgb: tuple[int, int, int], index: int) -> tuple[int, int, int]:
     r, g, b = rgb
-    # Index zero is normally transparent/background in these indexed assets.
     if index == 0:
         return (0, 0, 0)
 
@@ -61,7 +68,6 @@ def map_colour(rgb: tuple[int, int, int], index: int) -> tuple[int, int, int]:
     if b > 150 and r < 130:
         return (79, 183, 221)   # active cyan/blue
 
-    # Convert neutral/legacy colours to the coherent teal luminance ramp.
     lum = (r * 299 + g * 587 + b * 114) // 1000
     slot = min(len(RAMP) - 1, lum * len(RAMP) // 256)
     return RAMP[slot]
@@ -83,6 +89,8 @@ def reskin_indexed_png(path: Path) -> int:
         length = struct.unpack(">I", data[pos : pos + 4])[0]
         kind = data[pos + 4 : pos + 8]
         payload = data[pos + 8 : pos + 8 + length]
+        if pos + 12 + length > len(data):
+            raise SystemExit(f"invalid PNG chunk length in {path}")
         pos += 12 + length
 
         if kind == b"PLTE":
@@ -107,6 +115,33 @@ def reskin_indexed_png(path: Path) -> int:
     return changed
 
 
+def reskin_jasc_palette(path: Path) -> int:
+    text = path.read_text(encoding="ascii")
+    lines = text.splitlines()
+    if len(lines) < 4 or lines[0] != "JASC-PAL" or lines[1] != "0100":
+        raise SystemExit(f"unsupported palette format: {path}")
+    try:
+        count = int(lines[2])
+    except ValueError as exc:
+        raise SystemExit(f"invalid palette count: {path}") from exc
+    if len(lines[3:]) < count:
+        raise SystemExit(f"truncated palette: {path}")
+
+    changed = 0
+    out = lines[:3]
+    for i, line in enumerate(lines[3 : 3 + count]):
+        m = re.fullmatch(r"\s*(\d+)\s+(\d+)\s+(\d+)\s*", line)
+        if not m:
+            raise SystemExit(f"invalid palette row in {path}: {line!r}")
+        old = tuple(map(int, m.groups()))
+        new = map_colour(old, i)
+        out.append(f"{new[0]} {new[1]} {new[2]}")
+        changed += int(old != new)
+    out.extend(lines[3 + count :])
+    path.write_text("\n".join(out) + "\n", encoding="ascii")
+    return changed
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--upstream-root", required=True, type=Path)
@@ -114,7 +149,8 @@ def main() -> None:
     root = args.upstream_root.resolve()
 
     total = 0
-    for rel in TARGETS:
+    touched = 0
+    for rel in PNG_TARGETS:
         path = root / rel
         if not path.is_file():
             raise SystemExit(f"locked HUD source missing: {path}")
@@ -122,9 +158,21 @@ def main() -> None:
         if changed == 0:
             raise SystemExit(f"HUD reskin made no palette changes: {path}")
         total += changed
+        touched += 1
         print(f"SOMADEX HUD: {rel}: {changed} palette entries remapped")
 
-    print(f"PHASE4 BATTLE HUD PASS: {len(TARGETS)} reachable assets reskinned, {total} palette entries changed")
+    for rel in PAL_TARGETS:
+        path = root / rel
+        if not path.is_file():
+            raise SystemExit(f"locked HUD palette source missing: {path}")
+        changed = reskin_jasc_palette(path)
+        if changed == 0:
+            raise SystemExit(f"HUD palette reskin made no changes: {path}")
+        total += changed
+        touched += 1
+        print(f"SOMADEX HUD: {rel}: {changed} palette entries remapped")
+
+    print(f"PHASE4 BATTLE HUD PASS: {touched} reachable HUD assets/palettes reskinned, {total} entries changed")
 
 
 if __name__ == "__main__":
