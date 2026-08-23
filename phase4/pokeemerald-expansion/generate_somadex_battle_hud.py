@@ -40,7 +40,6 @@ PNG_TARGETS = (
     "graphics/battle_interface/move_info_window_r.png",
 )
 
-# These palette sources feed generated .gbapal files used by text / PP windows.
 PAL_TARGETS = (
     "graphics/battle_interface/text.pal",
     "graphics/battle_interface/text_pp.pal",
@@ -57,17 +56,14 @@ def map_colour(rgb: tuple[int, int, int], index: int) -> tuple[int, int, int]:
     r, g, b = rgb
     if index == 0:
         return (0, 0, 0)
-
-    # Preserve semantic saturated accents in a SOMADEX-compatible form.
     if r > 180 and g > 140 and b < 110:
-        return (242, 198, 74)   # EXP / warm accent
+        return (242, 198, 74)
     if r > 160 and g < 115 and b < 115:
-        return (224, 79, 88)    # danger / critical
+        return (224, 79, 88)
     if g > 140 and r < 130 and b < 150:
-        return (67, 194, 119)   # healthy/status green
+        return (67, 194, 119)
     if b > 150 and r < 130:
-        return (79, 183, 221)   # active cyan/blue
-
+        return (79, 183, 221)
     lum = (r * 299 + g * 587 + b * 114) // 1000
     slot = min(len(RAMP) - 1, lum * len(RAMP) // 256)
     return RAMP[slot]
@@ -82,16 +78,18 @@ def reskin_indexed_png(path: Path) -> int:
     pos = len(PNG_SIG)
     changed = 0
     saw_plte = False
+    saw_iend = False
 
     while pos < len(data):
         if pos + 12 > len(data):
             raise SystemExit(f"truncated PNG chunk in {path}")
         length = struct.unpack(">I", data[pos : pos + 4])[0]
+        chunk_end = pos + 12 + length
+        if chunk_end > len(data):
+            raise SystemExit(f"invalid PNG chunk length in {path}")
         kind = data[pos + 4 : pos + 8]
         payload = data[pos + 8 : pos + 8 + length]
-        if pos + 12 + length > len(data):
-            raise SystemExit(f"invalid PNG chunk length in {path}")
-        pos += 12 + length
+        pos = chunk_end
 
         if kind == b"PLTE":
             saw_plte = True
@@ -107,10 +105,13 @@ def reskin_indexed_png(path: Path) -> int:
 
         out.extend(png_chunk(kind, payload))
         if kind == b"IEND":
+            saw_iend = True
             break
 
     if not saw_plte:
         raise SystemExit(f"reachable HUD PNG is not indexed / missing PLTE: {path}")
+    if not saw_iend:
+        raise SystemExit(f"reachable HUD PNG is missing IEND: {path}")
     path.write_bytes(bytes(out))
     return changed
 
@@ -134,6 +135,8 @@ def reskin_jasc_palette(path: Path) -> int:
         if not m:
             raise SystemExit(f"invalid palette row in {path}: {line!r}")
         old = tuple(map(int, m.groups()))
+        if any(not 0 <= component <= 255 for component in old):
+            raise SystemExit(f"palette component outside 0..255 in {path}: {line!r}")
         new = map_colour(old, i)
         out.append(f"{new[0]} {new[1]} {new[2]}")
         changed += int(old != new)
