@@ -1,25 +1,54 @@
-# Vela visual core — implementation contract
+# Vela visual core — production contract
 
-This file is intentionally short and implementation-facing. The actual source of truth is the generator code in this directory.
+This Phase 4 block owns the visual language reachable in the first SOMADEX slice.
+The goal is not to redraw the entire upstream engine at once. We replace the assets
+the player actually sees first while retaining proven GBA geometry, memory layouts,
+collision semantics and battle controllers.
 
-## Engine fit
+## Overworld core
 
-- primary GBA source sheet: 128x256 px, indexed, 16 colours;
-- selected metatiles: 18 owned/replaced definitions inside the 512-entry primary `general` tileset;
-- all new Vela metatiles use palette 0;
-- map cells preserve known Phase 3 collision/elevation encodings;
-- metatile behaviour bytes are copied from proven walkable, tall-grass or solid entries instead of hardcoding undocumented attribute bits.
+The Vela world generator supplies a deterministic 128×256 indexed source sheet,
+a 16-colour palette and selected primary metatiles used by the three starter maps.
+The currently owned vocabulary covers:
 
-## Visual vocabulary now available
+- grass ground and dirt paths;
+- tall encounter grass;
+- stone plaza;
+- flowers, sand and water;
+- 2×2 trees;
+- fences and hedges;
+- resonance crystals and signs;
+- building wall / roof / door facade modules;
+- lamps.
 
-Walkable: ground grass, dirt path, stone plaza, flower ground, sand, tall grass.
+The three starter maps are Vela South, Vela Center and Resonance Grove. Technical
+map slots inherited from the locked engine remain an implementation detail.
 
-Solid/obstacle: water, 2x2 tree, fence, resonance crystal, sign, building wall, roof, door facade, lamp, hedge.
+## First battle surface
 
-## Current reachable Vela block
+The same visual rule now applies to the first reachable wild battle:
 
-1. Vela South — starter approach, small water pocket, stone staging plaza, flowers, fencing, sign.
-2. Vela Center — central plaza, resonance landmark, lamps, two building facades, Mira and controlled first encounter belt.
-3. Resonance Grove — denser tall grass, pool, crystal clearing and exploration space.
+- player and opponent singles healthboxes keep their proven dimensions and HP
+  mechanics but receive a SOMADEX teal/slate/cyan palette treatment;
+- the battle textbox and left/right move-information windows use the same visual
+  family instead of the legacy cream/olive presentation;
+- battle text and PP palette sources are remapped while preserving semantic danger,
+  healthy, EXP and active-state colours for readability;
+- visible action/capture language is SOMADEX-facing (`Atak`, `Plecak`, `Stworki`,
+  `Ucieczka`, Kula Splotu and SOMADEX capture copy);
+- Kula Splotu owns the reachable thrown/open capture-device art;
+- `MOVE_IMPULS_WARSTWOWY` owns a dedicated `gBattleAnimMove_ImpulsWarstwowy`
+  animation sequence. It reuses low-level battle-animation primitives for safety,
+  but no longer points to the ThunderShock animation script.
 
-The large concept atlas is a direction/reference source only. The ROM build uses the compact deterministic GBA generator so the game is reproducible and does not depend on manually slicing a concept image.
+## Constraints retained intentionally
+
+- No battle controller rewrite.
+- No HP/EXP calculation rewrite.
+- No new sprite callback code for the first custom move.
+- No global replacement of inaccessible upstream screens in this block.
+- ASCII-safe Polish remains temporary until the dedicated charmap/font pass.
+- Deferred CI/build failures remain cleanup work and do not block content production.
+
+This keeps the fastest production path: own the visible SOMADEX identity while
+reusing the mature engine underneath it.
