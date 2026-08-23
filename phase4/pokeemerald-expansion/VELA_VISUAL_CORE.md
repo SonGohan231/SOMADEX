@@ -41,6 +41,14 @@ The same visual rule now applies to the first reachable wild battle:
   animation sequence. It reuses low-level battle-animation primitives for safety,
   but no longer points to the ThunderShock animation script.
 
+## Deliberately deferred from this block
+
+The large environment/background tiles behind the combatants remain a separate art
+replacement task. They are not required to own the battle controls, HUD, move art
+or capture presentation and replacing them now would mix another asset subsystem
+into the current block. They should be replaced together with the next environment
+art pass rather than by a fragile one-off recolour.
+
 ## Constraints retained intentionally
 
 - No battle controller rewrite.
